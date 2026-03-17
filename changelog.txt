@@ -1,0 +1,179 @@
+SDGBP - CONTROL DE CAMBIOS (CHANGELOG)
+=====================================
+Fecha: 2026-03-14
+
+-- 13:02 -- [INTERFAZ PREMIUM]
+- models/header.php (Integración de Select2, Flatpickr y CSS Azul SDGBP)
+- models/footer.php (Inicialización global de Select2 y Flatpickr)
+- vistas/editar_comprobante.php (Nuevas clases .datepicker-flat y .form-select-select2)
+- vistas/formulario_comprobante.php (Nuevas clases .datepicker-flat y .form-select-select2)
+
+-- 13:07 -- [CONTRASEÑAS: NOTIFICACIONES]
+- (BD) updates.sql: ALTER TABLE usuario ADD COLUMN fecha_cambio_clave
+- models/header.php (Lógica de notificación de vencimiento de 180 días)
+- acciones/update_clave.php (Reinicio de fecha de vencimiento al cambiar clave)
+
+-- 13:14 -- [CONTRASEÑAS: BLOQUEO POR VENCIMIENTO]
+- models/header.php (Mandatory redirect a nueva_clave.php si venció)
+
+-- 13:18 -- [SEGURIDAD 2FA: EMAIL VERIFICATION]
+- (BD) updates.sql: ALTER TABLE usuario ADD COLUMN codigo_verificacion
+- acciones/solicitar_cambio_clave.php (Generación y envío prioritario de código)
+- vistas/confirmar_codigo.php (Nueva interfaz de validación de 6 dígitos)
+- acciones/verificar_y_actualizar.php (Lógica de confirmación final)
+- vistas/nueva_clave.php (Ajuste de redirección al flujo 2FA)
+
+-- 14:53 -- [MONEDA: FORMATO BANCARIO REAL-TIME]
+- models/footer.php (Máscara global 1.500,00 y limpieza pre-envío)
+- vistas/registro_pagos.php (Monto formateado)
+- vistas/registro_pagos_egresos.php (Monto formateado)
+- vistas/formulario_comprobante.php (Monto formateado)
+- vistas/editar_comprobante.php (Monto formateado)
+- vistas/aprobar_pago.php (Comisión formateada en tiempo real)
+
+-- 15:15 -- [COMPROBANTES: SUBIDA Y LIMPIEZA]
+- (BD) updates.sql: ALTER TABLE pagos ADD COLUMN comprobante_archivo
+- (DIR) uploads/comprobantes/ (Directorio de almacenamiento)
+- vistas/registro_pagos.php (Campo de subida de archivo)
+- vistas/registro_pagos_egresos.php (Campo de subida de archivo)
+- acciones/controlador_pago.php (Lógica de procesado de archivo)
+- acciones/controlador_pago_egreso.php (Lógica de procesado de archivo)
+- acciones/limpiar_comprobantes.php (Script de auto-eliminación > 60 días)
+- vistas/aprobar_pago.php (Botón 'Ver' para validar comprobantes)
+- vistas/ver_pagos.php (Historial de comprobantes del usuario)
+- vistas/registro_pagos[_egresos].php (Campo de subida restringido a usuarios 'upu')
+- acciones/controlador_pago_egreso.php (Auto-aprobación para roles 'admin' y 'cont')
+
+-- 15:43 -- [USUARIOS: ESTADOS DETALLADOS]
+- vistas/usuario.php (Columna Estado diferencia: Activo, Pendiente, Bloqueado Admin, Bloqueado Intentos, Clave Vencida)
+
+-----------------------------------------------------------------------
+Fecha: 2026-03-15
+
+-- 20:55 -- [INTERFAZ: MODO OSCURO SEGURO]
+- models/header.php (Implementación de variables CSS dinámicas :root / [data-theme="dark"])
+- models/header.php (Inyección de botón Toggle premium en el Navbar)
+- models/header.php (Script de persistencia localStorage para el tema)
+- models/footer.php (Adaptación dinámica del footer con variables CSS)
+- models/header.php (Forzado global de visibilidad para vistas internas: contrastes de textos, tablas y formularios)
+- models/header.php (Restauración de color original en títulos H1-H6 por requerimiento estético)
+- models/footer.php (Corrección de maskCurrency: Se eliminó el error de truncamiento de decimales en cero al cargar montos del servidor)
+
+-- 18:05 -- [FONDO PREMIUM: REDISEÑO TOTAL]
+- (IMG) img/fondo_sistema_premium.png (Generación de fondo corporativo mediante IA)
+- css/estilos.css (Implementación de Sistema de Capas Transparentes Inteligentes)
+- css/estilos.css (Eliminación de fondo estático por integración dinámica con overlays)
+- models/header.php (Ajuste de variables --content-overlay para máxima legibilidad)
+
+-- 18:15:30 -- [FIX: MODALES Y VISIBILIDAD]
+- css/estilos.css (Corrección de z-index y pointer-events para modales)
+- models/header.php (Refuerzo de z-index global y contraste crítico de fuentes)
+
+-- 18:40:15 -- [SEGURIDAD: SENSIBILIDAD BINARIA]
+- acciones/login.php (Implementación de BINARY en SQL para validación exacta de usuario)
+- acciones/recuperar_clave.php (Implementación de BINARY para validación exacta de usuario en recuperación)
+- GLOBAL: Protección contra suplantación mediante distinción de mayúsculas/minúsculas.
+
+-- 19:10:22 -- [MODULO 2FA: RECUPERACIÓN DE CUENTA]
+- vistas/seleccionar_meto_recu.php (Nueva interfaz de selección de métodos de recuperación)
+- vistas/confirmar_2fa_recu.php (Interfaz de validación de código 2FA de 6 dígitos)
+- acciones/enviar_2fa_recu.php (Controlador de generación y despacho de código vía PHPMailer)
+- acciones/validar_2fa_recu.php (Lógica de validación de código y apertura de sesión segura)
+- acciones/procesar_seleccion_recu.php (Enrutador de métodos de recuperación seleccionados)
+
+-- 19:25:05 -- [OPTIMIZACIÓN: FLUJO SIN REDUNDANCIA]
+- acciones/validar_2fa_recu.php (Activación de bandera 'identidad_verificada' post-validación)
+- acciones/validar_res.php (Activación de bandera 'identidad_verificada' tras responder preguntas)
+- acciones/solicitar_cambio_clave.php (Modificación lógica: Actualización directa de clave si la identidad fue verificada previamente, eliminando el segundo 2FA)
+
+-- 19:35:48 -- [RECUPERACIÓN BLINDADA: NOMBRE DE USUARIO]
+- vistas/recuperar.php (Inclusión de enlace '¿Olvidaste tu Usuario?')
+- vistas/recuperar_usuario.php (Rediseño: Capa 1 - Verificación estricta de Cédula de Identidad)
+- vistas/verificar_email_usuario.php (Capa 2 - Validación de correo completo con pista enmascarada)
+- vistas/confirmar_2fa_usuario_recu.php (Capa 3 - Interfaz de validación de código de seguridad final)
+- acciones/validar_ci_recu_usuario.php (Validador de CI y generador de máscara de correo)
+- acciones/enviar_2fa_usuario.php (Gestor de envío de código 2FA para recuperación de usuario)
+- acciones/finalizar_recu_usuario.php (Validador final y despacho de credencial al correo del titular)
+
+-- 19:43:55 -- [ESTANDARIZACIÓN UI: STEP WIZARD 4 PASOS]
+- vistas/recuperar.php (Paso 1: ID - Integración de indicador de progreso)
+- vistas/seleccionar_meto_recu.php (Paso 2: Método - Sincronización visual del stepper)
+- vistas/confirmar_2fa_recu.php (Paso 3: Validar - Actualización de estado del stepper)
+- vistas/pregunta.php (Paso 3: Validar - Integración de stepper en flujo de preguntas)
+- vistas/recu_correo.php (Paso 3: Validar - Integración de stepper en flujo de enlace)
+- vistas/nueva_clave.php (Paso 4: Clave - Meta final del stepper de recuperación interna)
+- vistas/restablecer_contraseña.php (Paso 4: Clave - Ajuste visual para flujo de enlace externo)
+- GLOBAL: Mejora de UX mediante guía visual constante en todos los procesos de seguridad.
+
+-- 19:46:43 -- [CHANGELOG: REFACTORIZACIÓN FORMATO]
+- changelog.txt (Actualización de estructura: Agrupación por carpetas, descripción técnica detallada y marcas de tiempo con precisión de segundos)
+
+-- 19:55:12 -- [SEGURIDAD: BLOQUEO UNIVERSAL DE CLAVE]
+- models/header.php (Eliminación de excepción para administradores en el bloqueo por vencimiento)
+- models/header.php (Endurecimiento de política para fechas NULL: Forzado de cambio inmediato)
+- models/header.php (Implementación de salvaguarda de redirección para evitar bucles infinitos)
+
+-- 20:10:45 -- [SEGURIDAD: FIX ROBUSTO VENCIMIENTO]
+- models/header.php (Corrección: Detección de fechas vacías o '0000-00-00' que evadían el bloqueo)
+- models/header.php (Migración a Unix Timestamps para cálculo de días 100% fiable)
+- models/header.php (Unificación de bloqueo: Redirección obligatoria para cualquier usuario con clave > 180 días)
+
+-- 20:15:30 -- [SEGURIDAD: REDIRECCIÓN BLINDADA]
+- models/header.php (Optimización: Consolidación de consultas de seguridad en un solo llamado)
+- models/header.php (Nueva: Redirección híbrida HTTP + JS para garantizar el bloqueo de sesión vencida)
+- models/header.php (Garantía: Bloqueo ineludible para administradores y usuarios con fechas inválidas)
+
+-- 20:25:15 -- [SEGURIDAD: REINICIO DE VIGENCIA]
+- solicitar_cambio_clave.php (Añadido: Actualización de fecha_cambio_clave tras éxito por 2FA)
+- restablecer_contraseña.php (Añadido: Actualización de fecha_cambio_clave tras éxito por recuperación de correo)
+- General: Ahora el contador de 180 días vuelve a 0 automáticamente al cambiar la clave.
+
+-- 20:30:10 -- [UI: AJUSTE DE NOTIFICACIONES]
+- models/header.php (Cambio: Color de texto de mensajes 'text-muted' a 'text-dark' para mejor contraste)
+
+-- 20:35:45 -- [UI: REDISEÑO OSCURO NOTIFICACIONES]
+- models/header.php (Cajón de notificaciones: Fondo cambiado de 'bg-light' a 'bg-dark' con texto blanco)
+
+-- 20:42:15 -- [UI: FIX DEFINITIVO NOTIFICACIONES]
+- models/header.php (Estilo: Forzado de fondo negro absoluto #000 en el dropdown y #1a1a1a en los items con !important)
+
+-- 20:46:20 -- [UI: ARMONIZACIÓN MODO OSCURO]
+- models/header.php (Ajuste: Colores de notificaciones cambiados a #1e293b y #1a2235 para sincronizar con el tema global)
+
+-----------------------------------------------------------------------
+Fecha: 2026-03-16
+
+-- 14:10 -- [FIX: BIENES Y LISTADOS]
+- vistas/lista_bienes.php (Fix: Cierre de tag PHP que causaba error 500)
+- vistas/lista_bienes.php (Estabilidad: Control de DataTables ante tablas vacías)
+- vistas/lista_bienes.php (Integración de SweetAlert2 para confirmaciones de borrado)
+
+-- 14:45 -- [PDF: ETIQUETADO PREMIUM SIN GD]
+- (DIR) fpdf/ (Librería base para generación de etiquetas)
+- fpdf/etiqueta_bien.php (Nueva: Generación de etiquetas Ultra Premium sin dependencia de PHP-GD)
+- fpdf/etiqueta_bien.php (Diseño: Centrado total, logo corporativo y píldora de código serializada)
+
+-- 15:20 -- [INTERFAZ: MODERNIZACIÓN COMPROBANTES]
+- vistas/listar_comprobantes.php (Rediseño total Ultra Premium con Glassmorphism)
+- vistas/formulario_comprobante.php (Modernización de formulario y agrupadores de información)
+- vistas/editar_comprobante.php (Adaptación premium para edición de archivos Excel)
+
+-- 17:30 -- [INTERFAZ: MODERNIZACIÓN PRODUCTOS Y CATEGORÍAS]
+- vistas/productos.php (UI Premium, tarjetas métricas dinámicas y fix de DataTables)
+- vistas/agregar_producto.php (Maquetación 2 columnas, controles premium y secciones)
+- vistas/editar_producto.php (Vista de edición con preview de imagen optimizada)
+- vistas/agregar_categoria_producto.php (Sincronización visual y fix de DataTables)
+- vistas/editar_categoria_producto.php (Interfaz centrada y limpia para gestión de nombres)
+
+-- 19:15 -- [INTERFAZ: OPTIMIZACIÓN MODO OSCURO GLOBAL]
+- GLOBAL: Actualización de todas las vistas modernizadas con variables CSS adaptables.
+- models/header.php (Fix: Visibilidad total del botón Modo Oscuro en dispositivos móviles)
+- (UI) Corrección de contrastes en tarjetas, inputs y tablas para legibilidad nocturna.
+
+-- 19:50 -- [INTERFAZ: MODERNIZACIÓN GESTIÓN DE USUARIOS]
+- vistas/usuario.php (Rediseño Ultra Premium: Tarjetas métricas Glassmorphism, Tema Space Violet, tabla premium con badges de estado, compatibilidad Modo Oscuro)
+- vistas/registro_u.php (Nuevo diseño: Form-section-cards agrupadas por categoría, inputs premium violeta, botón de submit con degradado)
+- vistas/edit_u.php (Modernización: Paneles de preview de foto de perfil, inputs premium, diseño responsivo modo oscuro)
+
+NOTA: Subir archivos en el orden indicado si se hace manualmente.
+Recuerda subir la carpeta 'vendor/' si hay cambios en librerías.

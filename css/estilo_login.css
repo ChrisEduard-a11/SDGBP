@@ -1,0 +1,327 @@
+/* Contenedor principal */
+#layoutAuthentication {
+    display: flex; /* Usa flexbox para dividir la pantalla */
+    flex-direction: row; /* Divide la pantalla en dos mitades */
+    height: 100vh; /* Asegura que ocupe exactamente la altura de la ventana */
+    overflow: hidden; /* Evita que toda la página sea desplazable */
+    background-color: #ffffff; /* Fondo claro */
+}
+
+/* Mitad izquierda: Imagen de fondo */
+.login-image-container {
+    margin-left: -200px;
+    margin-top: -200px;
+    flex: 1; /* Ocupa la mitad izquierda */
+    display: flex;
+    align-items: center; /* Centra la imagen verticalmente */
+    justify-content: center; /* Centra la imagen horizontalmente */
+    overflow: hidden; /* Evita el desplazamiento en esta sección */
+    background-color: #f18100cc; /* Color de fondo */; 
+    position: relative;
+    padding: 10rem; /* Espaciado interno */
+    box-shadow: 8px 0 16px #f18100c7; /* Sombra para separar del lado derecho */ 
+}
+
+/* Imagen dentro del contenedor */
+.login-image {
+    width: 600px;
+    height: 600px; /* Mantiene la proporción de la imagen */
+    object-fit: contain; /* Ajusta la imagen sin recortarla */
+    pointer-events: none; /* Desactiva cualquier interacción del usuario */
+    user-select: none; /* Evita que se seleccione la imagen */
+}
+
+/* Mitad derecha: Contenedor del formulario */
+.login-form-container {
+    flex: 1; /* Ocupa la mitad derecha */
+    display: flex; /* Usa flexbox para centrar el contenido */
+    flex-direction: column; /* Asegura que los elementos estén en columna */
+    justify-content: flex-start; /* Cambia de center a flex-start para ajustar la posición */
+    align-items: center; /* Centra horizontalmente */
+    padding: 2rem; /* Agrega espacio interno */
+    background-color: #ffffff; /* Fondo blanco */
+    overflow-y: auto; /* Habilita el desplazamiento vertical solo en este contenedor */
+    max-height: 100vh; /* Limita la altura al 100% de la ventana */
+    margin-top: 0rem; /* Baja el formulario 0rem */
+}
+
+/* Botones de roles con íconos */
+.boton-rol {
+    display: flex; /* Usa flexbox para alinear el contenido */
+    align-items: center; /* Centra verticalmente el ícono y el texto */
+    justify-content: center; /* Centra horizontalmente el contenido */
+    width: 100%; /* Ocupa todo el ancho del contenedor */
+    height: 50px; /* Altura fija para todos los botones */
+    padding: 0; /* Elimina el espaciado interno adicional */
+    margin-bottom: 1rem; /* Espaciado entre botones */
+    font-size: 1rem; /* Tamaño de fuente uniforme */
+    font-weight: bold; /* Texto en negrita */
+    text-align: center; /* Centra el texto horizontalmente */
+    color: white; /* Color del texto */
+    background-color: #f18000; /* Color de fondo azul */
+    border: none; /* Sin bordes */
+    border-radius: 8px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    transition: all 0.3s ease; /* Transición suave para los cambios */
+    gap: 0.5rem; /* Espaciado entre el ícono y el texto */
+}
+
+.boton-rol i {
+    font-size: 1.2rem; /* Tamaño del ícono */
+}
+
+.boton-rol:hover {
+    background-color: #f181008a; /* Color de fondo más oscuro al pasar sobre */
+    transform: translateY(-2px); /* Efecto de elevación */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+}
+
+.boton-rol:active,
+.boton-rol:focus {
+    background-color: #f180008a; /* Color más oscuro al hacer clic */
+    transform: translateY(2px); /* Efecto de presión */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra interna para resaltar el estado activo */
+    outline: none; /* Elimina el borde de enfoque predeterminado */
+}
+
+/* Botón de inicio de sesión */
+.login-button {
+    background-color: #f18000; /* Color de fondo azul */
+    color: white; /* Color del texto blanco */
+}
+/* Botón profesional de tipo submit */
+.boton {
+    display: inline-block; /* Asegura que el botón sea un bloque en línea */
+    padding: 12px 24px; /* Espaciado interno */
+    font-size: 1rem; /* Tamaño de fuente */
+    font-weight: bold; /* Texto en negrita */
+    text-align: center; /* Centra el texto */
+    color: white; /* Color del texto */
+    background-color: #f18000; /* Color de fondo azul */
+    border: none; /* Sin bordes */
+    border-radius: 8px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    transition: all 0.3s ease; /* Transición suave para los cambios */
+}
+
+.boton:hover {
+    background-color: #f181008a; /* Color de fondo más oscuro al pasar sobre */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+    transform: translateY(-2px); /* Efecto de elevación */
+}
+
+.boton:active {
+    background-color: #606060; /* Color más oscuro al hacer clic */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra más pequeña */
+    transform: translateY(1px); /* Efecto de presión */
+}
+
+.boton:disabled {
+    background-color: #cccccc; /* Color de fondo gris */
+    color: #666666; /* Color del texto gris */
+    cursor: not-allowed; /* Cursor no permitido */
+    box-shadow: none; /* Sin sombra */
+}
+
+/* Contenido del formulario */
+.form-content {
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    max-width: 500px; /* Limita el ancho máximo del formulario */
+    background-color: #ffffff; /* Fondo blanco */
+    padding: 2rem; /* Espaciado interno */
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para destacar el formulario */
+}
+
+/* Nombre del sistema */
+.system-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.logo {
+    width: 100px; /* Ajusta el tamaño según sea necesario */
+    height: auto;
+    display: block; /* Asegúrate de que sea visible */
+    margin: 0 auto; /* Centra el logo horizontalmente */
+}
+
+/* Footer fijo en la parte inferior */
+.footer_licencia {
+    font-size: 0.9rem; /* Tamaño de fuente */
+    color: #000000; /* Texto blanco */
+    text-align: center; /* Centra el texto */
+    background-color: #ffffff; /* Fondo oscuro */
+    padding: 1.5rem 1rem; /* Espaciado interno */
+    border-top: 3px solid #f18100; /* Línea superior con color destacado */
+    width: 100%; /* Asegura que ocupe todo el ancho */
+    margin-top: auto; /* Empuja el footer al final */
+}
+
+.footer_licencia a {
+    color: #f18100; /* Color del enlace */
+    text-decoration: none; /* Sin subrayado */
+    font-weight: bold; /* Enlaces en negrita */
+}
+
+.footer_licencia a:hover {
+    text-decoration: underline; /* Subrayado al pasar el mouse */
+}
+
+.footer_licencia img {
+    height: 22px !important;
+    margin-left: 3px;
+    vertical-align: text-bottom;
+}
+
+.footer_licencia small {
+    display: block;
+    margin-top: 1rem; /* Espaciado superior */
+    color: #000000; /* Color gris claro */
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    #layoutAuthentication {
+        flex-direction: column; /* Cambia a columna en pantallas pequeñas */
+    }
+
+    .login-image-container {
+        height: 200px; /* Reduce la altura de la imagen */
+        flex: none; /* Permite que la imagen ocupe solo el espacio necesario */
+    }
+
+    .login-form-container {
+        flex: none; /* Permite que el formulario ocupe solo el espacio necesario */
+        padding: 1rem; /* Reduce el espacio interno */
+    }
+
+    .form-content {
+        max-width: 100%; /* Asegura que el formulario ocupe todo el ancho */
+    }
+
+    .profile-pic-container {
+        width: 120px; /* Reduce el tamaño del contenedor circular */
+        height: 120px;
+    }
+    .boton-rol {
+        font-size: 0.8rem; /* Reduce el tamaño de la fuente */
+        height: 40px; /* Reduce la altura del botón */
+        padding: 0; /* Elimina el espaciado interno adicional */
+        margin-bottom: 0.8rem; /* Reduce el espaciado entre botones */
+        gap: 0.3rem; /* Reduce el espacio entre el ícono y el texto */
+    }
+
+    .boton-rol i {
+        font-size: 1rem; /* Reduce el tamaño del ícono */
+    }
+
+    .footer_licencia {
+        font-size: 0.8rem; /* Reduce el tamaño del texto del footer */
+        padding: 0.5rem; /* Reduce el padding */
+    }
+}
+
+.toast {
+    border: 2px solid #0056b3;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.toast-success {
+    background-color: #51A351 !important; /* Verde */
+}
+.toast-error {
+    background-color: #BD362F !important; /* Rojo */
+}
+.toast-info {
+    background-color: #2F96B4 !important; /* Azul */
+}
+.toast-warning {
+    background-color: #F89406 !important; /* Naranja */
+}
+
+.toast:hover {
+    transform: scale(1.05); /* Efecto de zoom al pasar el mouse */
+    opacity: 0.9; /* Reducir opacidad ligeramente */
+}
+/* Contenedor circular para la foto */
+.profile-pic-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    border: 2px dashed #ccc;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.profile-pic-container:hover {
+    border-color: #007bff;
+}
+
+/* Imagen de vista previa */
+.profile-pic-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Ícono de subida */
+.upload-icon {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.upload-icon:hover {
+    background-color: #0056b3;
+}
+
+/* Ocultar el campo de subida de archivo */
+#inputFoto {
+    display: none;
+}
+/* Contenedor del mensaje de fuerza de la contraseña */
+#passwordStrength {
+    min-height: 22px; /* Reserva espacio para el mensaje */
+    display: block; /* Asegura que siempre ocupe espacio */
+    font-size: 0.9rem;
+    color: #f18000; /* Color por defecto */
+    transition: color 0.3s ease; /* Transición suave para el cambio de color */
+}
+
+/* Colores para diferentes niveles de fuerza */
+#passwordStrength.weak {
+    color: red;
+}
+
+#passwordStrength.moderate {
+    color: orange;
+}
+
+#passwordStrength.strong {
+    color: green;
+}

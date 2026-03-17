@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# Redirige de www a sin www solo si es produccion
+RewriteCond %{HTTP_HOST} ^www\.sdgbp\.wuaze\.com [NC]
+RewriteRule ^(.*)$ https://sdgbp.wuaze.com/$1 [L,R=301]
+
+# Fuerza HTTPS solo si NO estamos en localhost
+RewriteCond %{HTTP_HOST} !^localhost$ [NC]
+RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://sdgbp.wuaze.com/$1 [L,R=301]
