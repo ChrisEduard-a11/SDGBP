@@ -1,19 +1,15 @@
 <?php
+ob_start();
 session_start();
-header('Content-Type: application/json');
+error_reporting(0);
+ob_clean();
+header('Content-Type: application/json; charset=utf-8');
 
-// Obtener el índice del producto a eliminar
 $data = json_decode(file_get_contents('php://input'), true);
-
 if (isset($data['index']) && isset($_SESSION['carrito'][$data['index']])) {
-    // Eliminar el producto del carrito
-    unset($_SESSION['carrito'][$data['index']]);
-
-    // Reindexar el array del carrito
-    $_SESSION['carrito'] = array_values($_SESSION['carrito']);
-
-    echo json_encode(['success' => true, 'carrito' => $_SESSION['carrito']]);
+    array_splice($_SESSION['carrito'], $data['index'], 1);
+    echo json_encode(['success' => true]);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Producto no encontrado.']);
+    echo json_encode(['success' => false]);
 }
-?>
+exit();

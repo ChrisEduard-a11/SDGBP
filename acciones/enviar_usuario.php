@@ -41,18 +41,64 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->Subject = 'Recuperación de Nombre de Usuario - SDGBP';
 
             $mail->Body = "
-                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;'>
-                    <h2 style='color: #f18000; text-align: center;'>Recordatorio de Usuario</h2>
-                    <p>Hola <strong>$nombre_real</strong>,</p>
-                    <p>Has solicitado recordar tu nombre de usuario para el sistema <strong>SDGBP</strong>.</p>
-                    <div style='text-align: center; margin: 30px 0; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;'>
-                        <p style='margin: 0; color: #64748b; font-size: 14px; text-transform: uppercase; font-weight: bold;'>Tu Nombre de Usuario es:</p>
-                        <h3 style='margin: 10px 0 0 0; color: #1e293b; font-size: 24px;'>$nombre_usuario</h3>
-                    </div>
-                    <p>Ahora puedes volver al sistema e iniciar sesión o continuar con la recuperación de tu contraseña si lo necesitas.</p>
-                    <hr style='border: 0; border-top: 1px solid #eee;'>
-                    <p style='text-align: center; color: #adb5bd; font-size: 11px;'>&copy; " . date('Y') . " SDGBP - Sistema de Gestión de Bienes y Pagos</p>
-                </div>
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+</head>
+<body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8fafc; color: #334155; -webkit-font-smoothing: antialiased;'>
+    <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f8fafc; padding: 40px 0;'>
+        <tr>
+            <td align='center'>
+                <table width='100%' style='max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; margin: 0 auto; border: 1px solid #e2e8f0;' cellpadding='0' cellspacing='0'>
+                    <!-- Header -->
+                    <tr>
+                        <td align='center' style='padding: 30px 20px; background-color: #0f172a; border-bottom: 4px solid #f18000;'>
+                            <h1 style='color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;'>Recordatorio de Usuario</h1>
+                            <p style='color: #94a3b8; font-size: 14px; margin: 5px 0 0 0;'>Sistema de Gestión de Bienes y Pagos</p>
+                        </td>
+                    </tr>
+                    <!-- Body Content -->
+                    <tr>
+                        <td style='padding: 40px 40px 30px 40px;'>
+                            <h2 style='color: #0f172a; font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 20px;'>Estimado/a {$nombre_real},</h2>
+                            <p style='font-size: 16px; line-height: 1.6; color: #475569; margin-top: 0; margin-bottom: 20px;'>
+                                Has solicitado recordar tu nombre de usuario para el sistema <strong>SDGBP</strong>. A continuación encontrarás la información solicitada:
+                            </p>
+                            <!-- Username Block -->
+                            <div style='text-align: center; margin: 30px 0;'>
+                                <p style='margin: 0 0 10px 0; color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;'>Tu Nombre de Usuario</p>
+                                <span style='display: inline-block; font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #0f172a; background: #f8fafc; padding: 15px 30px; border-radius: 8px; border: 2px dashed #cbd5e1;'>
+                                    {$nombre_usuario}
+                                </span>
+                            </div>
+                            <p style='font-size: 14px; line-height: 1.6; color: #64748b; margin-top: 30px; margin-bottom: 30px;'>
+                                Ahora puedes volver al sistema e iniciar sesión o continuar con la recuperación de tu contraseña empleando el usuario indicado.
+                            </p>
+                            <!-- Action Button -->
+                            <div style='text-align: center;'>
+                                <a href='https://sdgbp.wuaze.com/vistas/login.php' style='display: inline-block; padding: 14px 28px; background-color: #f18000; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Ir al Acceso del Sistema</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style='background-color: #f1f5f9; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;'>
+                            <p style='margin: 0 0 10px 0; font-size: 12px; color: #64748b; font-weight: 600;'>
+                                &copy; " . date('Y') . " SDGBP. Todos los derechos reservados.
+                            </p>
+                            <p style='margin: 0; font-size: 11px; color: #94a3b8;'>
+                                Este es un correo automatizado, por favor no responda a este mensaje.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
             ";
 
             $mail->send();

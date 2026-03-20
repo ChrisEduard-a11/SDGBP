@@ -570,6 +570,33 @@ endif; ?>
 <script>
     let modalPreview;
     
+    function cargarSaldoUPUPorMes(id) {
+        document.getElementById('mesFiltro').value = '';
+        document.getElementById('resultadoSaldoMes').innerHTML = '<i class="fas fa-chart-pie fa-3x text-muted opacity-25 mb-3"></i><p class="text-muted mb-0">Selecciona un periodo para analizar</p>';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const formFiltroMes = document.getElementById('formFiltroMes');
+        if (formFiltroMes) {
+            formFiltroMes.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const mes = document.getElementById('mesFiltro').value;
+                const resultadoDiv = document.getElementById('resultadoSaldoMes');
+                
+                resultadoDiv.innerHTML = '<div class="spinner-border text-primary my-4" role="status"><span class="visually-hidden">Cargando...</span></div><p class="text-muted small">Consultando...</p>';
+                
+                fetch(`../acciones/obtener_saldo_mes.php?mes=${mes}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        resultadoDiv.innerHTML = `<div class="p-4 bg-white rounded-4 shadow-sm border border-primary border-opacity-25">${data}</div>`;
+                    })
+                    .catch(error => {
+                        resultadoDiv.innerHTML = `<div class="text-danger py-4"><i class="fas fa-exclamation-circle fa-2x mb-2"></i><br>Error al consultar el saldo. Intente de nuevo.</div>`;
+                    });
+            });
+        }
+    });
+
     function previewComprobante(archivo) {
         if (!modalPreview) {
             modalPreview = new bootstrap.Modal(document.getElementById('modalPreview'));

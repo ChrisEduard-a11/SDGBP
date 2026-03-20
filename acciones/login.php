@@ -9,7 +9,6 @@ include('../models/bitacora.php');
 // Obtener los datos del formulario
 $usuario = $_POST['usuario'];
 $clavee = $_POST['clave'];
-$rol = $_POST['rol']; // Rol enviado desde el formulario
 $clave = sha1($clavee);
 
 // Consulta segura para obtener el usuario (Sensible a mayúsculas/minúsculas)
@@ -40,40 +39,6 @@ if ($count == 1) {
         exit();
     }
 
-    // Validar reCAPTCHA v3 antes de procesar el login (solo si no es localhost)
-    $is_localhost = false;
-    if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
-        $is_localhost = true;
-    }
-
-    if (!$is_localhost) {
-        if (empty($_POST['g-recaptcha-response'])) {
-            $_SESSION['estatus'] = 'error';
-            $_SESSION['mensaje'] = 'No se detectó el reCAPTCHA. Intenta de nuevo.';
-            header("Location: ../vistas/login.php");
-            exit();
-        }
-
-        $recaptcha_secret = '6LdOo14rAAAAAKA1Uo6U34_ilsW9Wa4uRTT1R5-g';
-        $recaptcha_response = $_POST['g-recaptcha-response'];
-
-        $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$recaptcha_secret}&response={$recaptcha_response}&remoteip=" . $_SERVER['REMOTE_ADDR']);
-        $captcha_success = json_decode($verify);
-
-        if (
-            !$captcha_success->success ||
-            !isset($captcha_success->score) ||
-            $captcha_success->score < 0.5 ||
-            !isset($captcha_success->action) ||
-            $captcha_success->action !== 'login'
-        ) {
-            $_SESSION['estatus'] = 'error';
-            $_SESSION['mensaje'] = 'Acceso denegado por seguridad (reCAPTCHA no válido).';
-            header("Location: ../vistas/login.php");
-            exit();
-        }
-    }
-
     // Verificar si el usuario está bloqueado por intentos fallidos
     if ($row['intentos'] >= 3) {
         $_SESSION['estatus'] = 'error';
@@ -95,14 +60,6 @@ if ($count == 1) {
         exit();
     }
 
-    // Verificar si el rol coincide
-    if ($row['tipos'] !== $rol) {
-        $_SESSION['estatus'] = 'error';
-        $_SESSION['mensaje'] = 'Rol incorrecto. Por favor, selecciona el rol correcto.';
-        header("Location: ../vistas/login.php");
-        exit();
-    }
-    
     // Generar y guardar el token de sesión único
     $token = bin2hex(random_bytes(16));
     $_SESSION['session_token'] = $token;
@@ -124,7 +81,7 @@ if ($count == 1) {
     $_SESSION["nacionalidad"] = $row['nacionalidad'];
     $_SESSION["cedula"] = $row['cedula'];
     $_SESSION["ip"] = $_SERVER["REMOTE_ADDR"];
-    $_SESSION["tipo"] = $row["tipos"];
+    $_SESSION["tipo"] = $row["tipos"];  // <-- El rol se asigna directamente desde la base de datos
     $_SESSION['foto'] = $row['foto'];
     $_SESSION['id'] = $row['id_usuario'];
     $_SESSION['type'] = 'success';

@@ -14,7 +14,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
     $id = $_POST["id"];
     $accion = $_POST["accion"];
     $descripcion = $_POST["descripcion"] ?? null; // Descripción para rechazos
-    $comision = isset($_POST["comision"]) ? floatval($_POST["comision"]) : 0; // Comisión para aprobar
+    $comision_raw = $_POST["comision"] ?? "0";
+    if (strpos($comision_raw, ',') !== false && strpos($comision_raw, '.') !== false) {
+        $comision_raw = str_replace('.', '', $comision_raw);
+        $comision_raw = str_replace(',', '.', $comision_raw);
+    } elseif (strpos($comision_raw, ',') !== false) {
+        $comision_raw = str_replace(',', '.', $comision_raw);
+    }
+    $comision = floatval($comision_raw); // Comisión para aprobar
 
     $estado = $accion == "aprobar" ? "aprobado" : "rechazado";
 
@@ -225,37 +232,84 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
 
     // Crear el mensaje del correo
     $asunto = "Notificación de Estado de Pago";
+    $color_banner = ($estado == "aprobado") ? "#10b981" : "#ef4444";
+    $titulo_banner = ($estado == "aprobado") ? "Pago Aprobado" : "Pago Rechazado";
+    
     $mensaje = "
-    <html>
-    <head>
-        <meta charset='UTF-8'>
-        <title>Notificación de Estado de Pago</title>
-    </head>
-    <body style='font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;'>
-        <!-- Encabezado -->
-        <div style='background-color: #f18000; padding: 10px; text-align: center; color: white;'>
-            <img src='https://lh5.googleusercontent.com/p/AF1QipMIuz9nSKZaDup5Zr7LIVwhyDKheMsfdeD_55hd=w408-h408-k-no' alt='Logo' style='width: 100px; height: auto;'>
-            <h1 style='margin: 0;'>Sistema de Gestión de Bienes y Pagos</h1>
-        </div>
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+</head>
+<body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8fafc; color: #334155; -webkit-font-smoothing: antialiased;'>
+    <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f8fafc; padding: 40px 0;'>
+        <tr>
+            <td align='center'>
+                <table width='100%' style='max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; margin: 0 auto; border: 1px solid #e2e8f0;' cellpadding='0' cellspacing='0'>
+                    <!-- Header -->
+                    <tr>
+                        <td align='center' style='padding: 30px 20px; background-color: #0f172a; border-bottom: 4px solid {$color_banner};'>
+                            <h1 style='color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;'>Estado de Pago Notificado</h1>
+                            <p style='color: #94a3b8; font-size: 14px; margin: 5px 0 0 0;'>Sistema de Gestión de Bienes y Pagos</p>
+                        </td>
+                    </tr>
+                    <!-- Body Content -->
+                    <tr>
+                        <td style='padding: 40px 40px 30px 40px;'>
+                            <h2 style='color: #0f172a; font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 20px;'>Estimado/a {$nombre},</h2>
+                            <p style='font-size: 16px; line-height: 1.6; color: #475569; margin-top: 0; margin-bottom: 25px;'>
+                                Le informamos oficialmente el estado de revisión de la siguiente transacción registrada a su nombre:
+                            </p>
+                            
+                            <table width='100%' cellpadding='10' cellspacing='0' style='background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px;'>
+                                <tr>
+                                    <td width='35%' style='color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0;'>Monto Transado:</td>
+                                    <td style='color: #0f172a; font-weight: 800; font-size: 18px; border-bottom: 1px solid #e2e8f0;'>Bs. {$monto}</td>
+                                </tr>
+                                <tr>
+                                    <td width='35%' style='color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0;'>Nro. Referencia:</td>
+                                    <td style='color: #0f172a; font-weight: 600; border-bottom: 1px solid #e2e8f0;'>{$referencia}</td>
+                                </tr>
+                                <tr>
+                                    <td width='35%' style='color: #64748b; font-weight: 700;'>Estado Final:</td>
+                                    <td style='color: {$color_banner}; font-weight: 800; text-transform: uppercase;'>{$titulo_banner}</td>
+                                </tr>
+                            </table>
 
-        <!-- Contenido principal -->
-        <div style='padding: 20px; background-color: white; margin: 20px auto; max-width: 600px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);'>
-            <h2 style='color: #f18000;'>Estimado/a $nombre,</h2>
-            <p>Le informamos que el pago con referencia: <strong>$referencia</strong> por un monto de: Bs. <strong>$monto</strong> ha sido <strong>" . ($estado == "aprobado" ? "aprobado" : "rechazado") . "</strong>.</p>
-            " . ($estado == "rechazado" && $descripcion ? "<p>Motivo del rechazo: <strong>$descripcion</strong></p>" : "") . "
-            <p>Si tiene alguna duda o requiere más información, no dude en contactarnos.</p>
-            <p style='text-align: center;'>
-                <a href='mailto:soporte.sdgbp2024@gmail.com' style='display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #f18000; text-decoration: none; border-radius: 5px;'>Contactar Soporte</a>
-            </p>
-        </div>
+                            " . ($estado == "rechazado" && $descripcion ? "
+                            <div style='background-color: #fef2f2; padding: 15px 20px; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 25px;'>
+                                <p style='margin: 0; color: #b91c1c; font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;'>Motivo del Rechazo:</p>
+                                <p style='margin: 0; color: #991b1b; font-size: 15px;'>{$descripcion}</p>
+                            </div>
+                            " : "") . "
 
-        <!-- Footer -->
-        <div style='background-color: #343a40; color: white; text-align: center; padding: 10px;'>
-            <p style='margin: 0; font-size: 0.9rem;'>Este mensaje fue enviado automáticamente por el sistema de gestión de Bienes y Pagos.</p>
-            <p style='margin: 0; font-size: 0.9rem;'>© " . date("Y") . " Sistema de Gestión de Bienes y Pagos. Todos los derechos reservados.</p>
-        </div>
-    </body>
-    </html>
+                            <!-- Action Button -->
+                            <div style='text-align: center; margin: 35px 0;'>
+                                <a href='https://sdgbp.wuaze.com/vistas/login.php' style='display: inline-block; padding: 14px 28px; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Consultar mi Cuenta</a>
+                            </div>
+                            <p style='font-size: 14px; line-height: 1.6; color: #64748b; margin-top: 30px; margin-bottom: 0;'>
+                                Si tiene alguna duda o requiere mayor información técnica respecto al estado de esta operación, puede responder directamente a este correo para contactar al servicio de soporte de <strong>SDGBP</strong>.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style='background-color: #f1f5f9; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;'>
+                            <p style='margin: 0 0 10px 0; font-size: 12px; color: #64748b; font-weight: 600;'>
+                                &copy; " . date('Y') . " SDGBP. Todos los derechos reservados.
+                            </p>
+                            <p style='margin: 0; font-size: 11px; color: #94a3b8;'>
+                                Mensaje emitido por el sistema contable automatizado.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
     ";
 
     // Configurar PHPMailer

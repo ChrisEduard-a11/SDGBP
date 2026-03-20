@@ -18,6 +18,92 @@ function validateFormSD() {
     return true;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Recuperar Cuenta Usuario
+function validateFormRCU() {
+    var usuario = document.getElementById("inputUsuario").value;
+    const audio = new Audio('../error/validation_error.mp3');
+    if (usuario === "") {
+        audio.play();
+        toastr.error("El campo de usuario es obligatorio", "Error de Validación");
+        return false;
+    }
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Recuperar Usuario (Olvidó su nombre)
+function validateFormRU() {
+    var ci = document.getElementById("inputCI").value;
+    const audio = new Audio('../error/validation_error.mp3');
+    if (ci === "") {
+        audio.play();
+        toastr.error("El campo Cédula de Identidad es obligatorio", "Error de Validación");
+        return false;
+    }
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Validar Código de 6 dígitos
+function validateFormCodigo() {
+    var codigo = document.getElementsByName("codigo")[0].value;
+    const audio = new Audio('../error/validation_error.mp3');
+    if (codigo === "" || codigo.length < 6) {
+        audio.play();
+        toastr.error("Debe ingresar el código válido de 6 dígitos enviado a su correo", "Error de Validación");
+        return false;
+    }
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Validar Confirmar Email (Recuperar Usuario)
+function validateFormVEU() {
+    var correo = document.getElementById("inputEmail").value;
+    const audio = new Audio('../error/validation_error.mp3');
+    if (correo === "") {
+        audio.play();
+        toastr.error("Debe escribir el correo de la pista para continuar", "Error de Validación");
+        return false;
+    }
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!re.test(correo)) {
+        audio.play();
+        toastr.error("El formato del correo electrónico es inválido", "Error de Validación");
+        return false;
+    }
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Validar Restablecer Contraseña (desde enlace de correo)
+function validateFormRC() {
+    var clave = document.getElementById("nueva_contrasena").value;
+    var clave1 = document.getElementById("confirmar_contrasena").value;
+    const audio = new Audio('../error/validation_error.mp3');
+
+    if (clave === "" || clave1 === "") {
+        audio.play();
+        toastr.error("Ambos campos de contraseña son obligatorios", "Error de Validación");
+        return false;
+    }
+
+    if (clave !== clave1) {
+        audio.play();
+        toastr.error("Las contraseñas no coinciden", "Error de Validación");
+        return false;
+    }
+
+    if (clave.length < 8) {
+        audio.play();
+        toastr.error("La contraseña debe tener al menos 8 caracteres", "Error de Seguridad");
+        return false;
+    }
+
+    return true;
+}
+
 // Configuración de Toastr
 toastr.options = {
     "closeButton": true,
@@ -381,6 +467,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const pregunta1 = document.getElementById('inputPregunta1');
     const pregunta2 = document.getElementById('inputPregunta2');
 
+    if (!pregunta1 || !pregunta2) return;
+
     // Guarda las opciones originales
     const opciones1 = Array.from(pregunta1.options).map(opt => opt.cloneNode(true));
     const opciones2 = Array.from(pregunta2.options).map(opt => opt.cloneNode(true));
@@ -550,124 +638,159 @@ function togglePasswordVisibility(inputId, button) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Login
-document.addEventListener('DOMContentLoaded', function() {
-    var form = document.forms['loginForm'];
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+// ====== WOW LOGIN & CAPTCHA ======
+let generatedWowCaptcha = "";
 
-            // Validación JS y AJAX de usuario bloqueado
-            var usuario = form["usuario"].value;
-            var clave = form["clave"].value;
-            var rol = document.getElementById('inputRole').value;
-            const audio = new Audio('../error/validation_error.mp3');
-
-            if (usuario === "" || clave === "") {
-                audio.play();
-                toastr.error("Todos los campos son obligatorios", "Error de Validación");
-                return;
-            }
-            if (rol === "") {
-                audio.play();
-                toastr.error("Por favor, selecciona un rol", "Error de Validación");
-                return;
-            }
-
-            // AJAX síncrono para bloqueo
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "../models/validar_bloqueo.php", false); // false = síncrono
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.send("usuario=" + encodeURIComponent(usuario));
-            if (xhr.status === 200 && xhr.responseText.trim() === "bloqueado") {
-                audio.play();
-                toastr.error("Este usuario está bloqueado por el administrador.", "Acceso Denegado");
-                return;
-            }
-
-            // Si pasa todas las validaciones, ejecuta reCAPTCHA y envía
-            if (typeof grecaptcha !== 'undefined') {
-                grecaptcha.ready(function() {
-                    grecaptcha.execute('6LdOo14rAAAAALmCONvTluM7hVcBK3i5O688C8pq', {action: 'login'}).then(function(token) {
-                        var input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'g-recaptcha-response';
-                        input.value = token;
-                        form.appendChild(input);
-                        form.submit();
-                    });
-                });
-            } else {
-                form.submit();
-            }
-        });
+function drawWowCaptcha() {
+    const canvas = document.getElementById('captchaCanvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Background
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Generate Random Text (6 chars: letters & numbers)
+    // Removed confusing characters like 0, O, 1, I, l
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    generatedWowCaptcha = "";
+    for(let i = 0; i < 6; i++) {
+        generatedWowCaptcha += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-});
-
-function selectRole1(button, role) {
-    // Eliminar la clase activa de todos los botones
-    const buttons = document.querySelectorAll('.form-group .btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-
-    // Agregar la clase activa al botón seleccionado
-    button.classList.add('active');
-
-    // Establecer el valor del rol en el campo oculto
-    const inputRole = document.getElementById('inputRole');
-    inputRole.value = role;
-
-    // Habilitar los campos de usuario y contraseña
-    document.getElementById('inputEmail').disabled = false;
-    document.getElementById('inputPassword').disabled = false;
-    checkLoginFields();
-
-    // Verificar en consola que el rol se actualice correctamente
-    console.log("Rol seleccionado:", inputRole.value);
+    
+    // Add noise (lines) - fewer and lighter lines
+    for(let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.strokeStyle = `rgba(${Math.random()*100+150},${Math.random()*100+150},${Math.random()*150}, 0.4)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+    
+    // Add noise (dots) - fewer and lighter dots
+    for(let i = 0; i < 30; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${Math.random()*150+100},${Math.random()*150+100},${Math.random()*150+100}, 0.4)`;
+        ctx.fill();
+    }
+    
+    // Draw Text with clear visibility for larger 240x70 canvas
+    ctx.font = 'bold 40px "Outfit", Arial, sans-serif';
+    ctx.textBaseline = 'middle';
+    
+    for(let i = 0; i < generatedWowCaptcha.length; i++) {
+        // Ancho 240 / 6 caracteres = ~40 de espacio por letra
+        const x = 20 + (i * 36);
+        const y = canvas.height / 2 + (Math.random() * 4 - 2); // Variación vertical mínima
+        const angle = (Math.random() * 0.16) - 0.08; 
+        
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        
+        // Colores oscuros muy legibles
+        ctx.fillStyle = `rgb(${Math.random()*40},${Math.random()*40},${Math.random()*40})`;
+        ctx.fillText(generatedWowCaptcha[i], 0, 0);
+        ctx.restore();
+    }
+    
+    checkWowLoginFields();
 }
 
-function checkLoginFields() {
-    const rol = document.getElementById('inputRole').value.trim();
-    const usuario = document.getElementById('inputEmail').value.trim();
-    const clave = document.getElementById('inputPassword').value.trim();
+function checkWowLoginFields() {
+    const usuario = document.getElementById('inputEmail');
+    const clave = document.getElementById('inputPassword');
+    const captchaInput = document.getElementById('captchaInput');
     const btnEntrar = document.getElementById('btnEntrar');
+    
+    if(!usuario || !clave || !captchaInput || !btnEntrar) return;
 
-    if (rol !== "" && usuario !== "" && clave !== "") {
+    if (usuario.value.trim() !== "" && clave.value.trim() !== "" && captchaInput.value.trim().length === 6) {
         btnEntrar.disabled = false;
     } else {
         btnEntrar.disabled = true;
     }
 }
 
-// Detectar cambios en los campos
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('inputEmail').addEventListener('input', checkLoginFields);
-    document.getElementById('inputPassword').addEventListener('input', checkLoginFields);
-    document.getElementById('inputRole').addEventListener('change', checkLoginFields);
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-    const togglePassword = document.getElementById('togglePassword');
-    togglePassword.addEventListener('click', function () {
-        const password = document.getElementById('inputPassword');
-        const icon = this.querySelector('i');
-        if (password.type === 'password') {
-            password.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            password.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+    // Inicializar WOW Captcha si estamos en la vista
+    const canvas = document.getElementById('captchaCanvas');
+    if (canvas) {
+        drawWowCaptcha();
+        
+        document.getElementById('inputEmail').addEventListener('input', checkWowLoginFields);
+        document.getElementById('inputPassword').addEventListener('input', checkWowLoginFields);
+        document.getElementById('captchaInput').addEventListener('input', checkWowLoginFields);
+        
+        const wowForm = document.forms['wowLoginForm'];
+        if(wowForm) {
+            wowForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const userCaptcha = document.getElementById('captchaInput').value.trim();
+                const audio = new Audio('../error/validation_error.mp3');
+                
+                if(userCaptcha !== generatedWowCaptcha) {
+                    audio.play().catch(err => console.log(err));
+                    toastr.error("El código Captcha es incorrecto. Inténtalo de nuevo.", "Validación Fallida");
+                    drawWowCaptcha();
+                    document.getElementById('captchaInput').value = '';
+                    document.getElementById('captchaInput').focus();
+                    checkWowLoginFields();
+                    return;
+                }
+                
+                var usuario = wowForm["usuario"].value;
+                fetch("../models/validar_bloqueo.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: "usuario=" + encodeURIComponent(usuario)
+                })
+                .then(response => response.text())
+                .then(text => {
+                    if (text.trim() === "bloqueado") {
+                        audio.play().catch(err => console.log(err));
+                        toastr.error("Este usuario está bloqueado por el administrador.", "Acceso Denegado");
+                        drawWowCaptcha();
+                        document.getElementById('captchaInput').value = '';
+                        checkWowLoginFields();
+                        return;
+                    }
+                    wowForm.submit();
+                })
+                .catch(err => {
+                    console.error("Fetch Error:", err);
+                    wowForm.submit();
+                });
+            });
         }
-    });
+    }
 });
 
-// Bloquear clic derecho en imágenes específicas
-document.querySelectorAll('.login-image').forEach(img => {
+function toggleWowPassword() {
+    const input = document.getElementById('inputPassword');
+    const icon = document.getElementById('wowEyeIcon');
+    if(!input || !icon) return;
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Configuración de Toastr y Bloqueos
+document.querySelectorAll('.login-image, .wow-logo').forEach(img => {
     img.addEventListener('contextmenu', event => event.preventDefault());
 });
 
-// Configuración de Toastr
 toastr.options = {
     "closeButton": true,
     "debug": false,

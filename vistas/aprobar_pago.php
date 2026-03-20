@@ -184,13 +184,16 @@ $result = $conexion->query($sql);
 
     /* Modal Styling */
     .modal-content-glass {
-        background: var(--glass-bg);
-        backdrop-filter: blur(15px);
-        border: 1px solid var(--glass-border);
+        background: #ffffff;
+        border: none;
         border-radius: 2rem;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     }
     [data-theme="dark"] .modal-content-glass {
         background: rgba(30, 41, 59, 0.95);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     }
     .modal-header-premium {
         background: var(--primary-gradient);
@@ -514,10 +517,26 @@ endif; ?>
 
     document.getElementById('btn-confirmar-aprobar').addEventListener('click', function() {
         if (currentPagoId) {
-            const comisionRaw = document.getElementById('modal-comision').value;
-            const comision = comisionRaw.replace(/\./g, "").replace(",", ".");
+            let comisionRaw = document.getElementById('modal-comision').value.trim();
             
-            if (isNaN(parseFloat(comision)) || parseFloat(comision) < 0) {
+            // Lógica robusta para parsear montos con comas o puntos
+            if (comisionRaw.includes(',') && comisionRaw.includes('.')) {
+                // Formato mixto: 1.000,50 -> elimina puntos y cambia coma a punto
+                comisionRaw = comisionRaw.replace(/\./g, "").replace(",", ".");
+            } else if (comisionRaw.includes(',')) {
+                // Formato solo con coma: 1,50 o 1000,50 -> cambia coma a punto
+                comisionRaw = comisionRaw.replace(",", ".");
+            } else if (comisionRaw.includes('.')) {
+                // Si tiene varios puntos (ej: 1.000.000), asumimos que son miles (eliminar)
+                if ((comisionRaw.match(/\./g) || []).length > 1) {
+                    comisionRaw = comisionRaw.replace(/\./g, "");
+                }
+                // Si tiene 1 solo punto (ej: 1.50) lo interpretamos como decimal y lo dejamos intacto.
+            }
+            
+            const comision = parseFloat(comisionRaw);
+            
+            if (isNaN(comision) || comision < 0) {
                  Swal.fire({
                     icon: 'error',
                     title: 'Comisión No Válida',

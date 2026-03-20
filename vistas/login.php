@@ -3,374 +3,338 @@ session_start();
 ?>
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <link rel="canonical" href="https://sdgbp.wuaze.com/<?php echo basename($_SERVER['REQUEST_URI']); ?>" />
-        <title>Login - SDGBP</title>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Login Institucional - SDGBP</title>
 
-        <!-- Favicon -->
-        <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 
-        <!-- Bootstrap core CSS-->
-        <link href="../css/styles.css" rel="stylesheet" />
-        <link href="../css/estilo_login.css" rel="stylesheet" />
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="../js/all.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-        <!--Icons-->
-        <script src="../js/all.js"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-        <!-- Toastr -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="../sweetalert/sweetalert2.min.css">
+    <script src="../sweetalert/sweetalert2.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#f18000',
+                        'primary-dark': '#d67100',
+                        'brand-blue': '#0f172a', /* Institucional Dark Blue */
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* Layout Split */
+        .login-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .login-image-side {
+            display: none;
+            position: relative;
+            flex: 1;
+            background-color: var(--brand-blue);
+            overflow: hidden;
+        }
+
+        @media (min-width: 1024px) {
+            .login-image-side { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        }
+
+        .login-bg-img {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        .login-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.4) 100%);
+            z-index: 1;
+        }
+
+        .login-image-content {
+            position: relative;
+            z-index: 2;
+            padding: 4rem;
+            color: #fff;
+            max-width: 650px;
+        }
+
+        .login-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: rgba(241, 128, 0, 0.2);
+            border: 1px solid rgba(241, 128, 0, 0.3);
+            color: #f18000;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2rem;
+        }
+
+        .login-image-title { font-size: 4rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px; }
+        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-image-desc { font-size: 1.15rem; color: rgba(255,255,255,0.8); line-height: 1.6; font-weight: 300; }
+
+        .login-form-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            width: 100%;
+            background-color: #ffffff;
+            position: relative;
+        }
+
+        @media (min-width: 1024px) {
+            .login-form-side { width: 500px; padding: 4rem; flex-shrink: 0; }
+        }
+        @media (min-width: 1280px) {
+            .login-form-side { width: 550px; }
+        }
+
+        .login-form-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .inst-logo { width: 75px; margin-bottom: 1.5rem; }
+        .inst-title { font-size: 2rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+        .inst-subtitle { font-size: 0.95rem; color: #64748b; font-weight: 400; margin-bottom: 2.5rem; }
+
+        .inst-input-wrapper {
+            display: flex; align-items: center;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0 1rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s;
+        }
+
+        .inst-input-wrapper:focus-within {
+            border-color: #f18000;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(241, 128, 0, 0.1);
+        }
+
+        .inst-icon { color: #94a3b8; font-size: 1.1rem; padding-right: 1rem; transition: color 0.3s; }
+        .inst-input-wrapper:focus-within .inst-icon { color: #f18000; }
         
-        <!--Sweetalert-->
-        <link rel="stylesheet" type="text/css" href="../sweetalert/sweetalert2.min.css">
-        <script src="../sweetalert/sweetalert2.js"></script>
+        .inst-input {
+            width: 100%; background: transparent; border: none; padding: 1.1rem 0;
+            color: #1e293b; font-size: 1rem; outline: none; font-weight: 500;
+        }
+        .inst-input::placeholder { color: #94a3b8; font-weight: 400; }
+        .inst-btn-eye { background: transparent; border: none; color: #94a3b8; cursor: pointer; padding-left: 1rem; }
+        .inst-btn-eye:hover { color: #f18000; }
 
-        <!--font Google-->
-        <link href="./css/font_google.css" rel="stylesheet">
+        /* Captcha Area */
+        .inst-captcha-container {
+            background: #f8fafc;
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
 
-        <!-- reCAPTCHA -->
-        <?php 
-        $host = $_SERVER['HTTP_HOST'];
-        if (strpos($host, 'localhost') === false && strpos($host, '127.0.0.1') === false): 
-        ?>
-        <script src="https://www.google.com/recaptcha/api.js?render=6LdOo14rAAAAALmCONvTluM7hVcBK3i5O688C8pq"></script>
-        <?php endif; ?>
+        .inst-captcha-label {
+            font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem;
+        }
 
-        <style >
-/* =========================================
-   SISTEMA SDGBP - DISEÑO ULTRA PREMIUM 2026
-   ========================================= */
+        .inst-captcha-flex {
+            display: flex; gap: 0.8rem; align-items: stretch;
+        }
 
-:root {
-    --primary: #f18000;
-    --primary-dark: #d67100;
-    --primary-light: rgba(241, 128, 0, 0.1);
-    --bg-body: #f1f5f9;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --border-color: #e2e8f0;
-    --radius-premium: 16px;
-    --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-}
+        .inst-captcha-visual {
+            position: relative; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex; align-items: center; justify-content: center;
+        }
 
-/* --- ESTILO DE LOS BOTONES DE ROL (TARJETAS) --- */
-.gap-2 {
-    gap: 12px !important;
-    margin-bottom: 20px;
-}
+        #captchaCanvas { display: block; cursor: pointer; }
 
-.boton-rol {
-    all: unset;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 80px; 
-    height: 85px;
-    background: #ffffff;
-    border: 2px solid #f1f5f9;
-    border-radius: var(--radius-premium);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--shadow-premium);
-}
+        .inst-captcha-refresh {
+            position: absolute; right: -12px; top: -12px; background: #fff; border: 1px solid #e2e8f0; color: #64748b;
+            border-radius: 50%; width: 26px; height: 26px; font-size: 0.7rem; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .inst-captcha-refresh:hover { color: #f18000; transform: rotate(180deg); }
 
-.boton-rol i {
-    font-size: 1.5rem !important;
-    margin-bottom: 6px;
-    color: var(--text-muted);
-    transition: all 0.3s ease;
-}
+        .inst-captcha-input {
+            flex: 1; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 8px;
+            padding: 0 1rem; text-align: center; font-size: 1.1rem; font-weight: 700; letter-spacing: 2px;
+            outline: none; color: #1e293b; transition: all 0.3s; text-transform: uppercase;
+        }
+        .inst-captcha-input:focus { border-color: #f18000; box-shadow: 0 0 0 4px rgba(241, 128, 0, 0.1); }
 
-.boton-rol span, .boton-rol {
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-}
+        .inst-btn-submit {
+            width: 100%; padding: 1.1rem; border: none; border-radius: 12px;
+            background: #0f172a; color: #fff; font-size: 1rem; font-weight: 700; letter-spacing: 0.5px;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .inst-btn-submit:hover:not(:disabled) { background: #f18000; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(241, 128, 0, 0.3); }
+        .inst-btn-submit:disabled { background: #cbd5e1; cursor: not-allowed; color: #f8fafc; }
 
-.boton-rol:hover {
-    border-color: var(--primary);
-    transform: translateY(-4px);
-    background: var(--primary-light);
-}
+        .inst-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 2rem; }
+        .inst-link { color: #64748b; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: color 0.3s; display: flex; align-items: center; gap: 0.4rem; }
+        .inst-link:hover { color: #f18000; }
 
-.boton-rol:hover i {
-    color: var(--primary);
-}
+        .inst-footer { margin-top: auto; text-align: center; width: 100%; padding-top: 2rem; }
+        .inst-footer p { font-size: 0.75rem; color: #94a3b8; }
+        .inst-footer a { color: #64748b; font-weight: 500; text-decoration: none; }
+        .inst-footer a:hover { color: #f18000; }
+    </style>
+</head>
+<body>
 
-/* Clase activa cuando se selecciona un rol */
-.boton-rol.active {
-    background: var(--primary) !important;
-    border-color: var(--primary) !important;
-    box-shadow: 0 12px 20px rgba(241, 128, 0, 0.3) !important;
-    transform: scale(1.05);
-}
+    <div class="login-layout">
 
-.boton-rol.active i, 
-.boton-rol.active span,
-.boton-rol.active {
-    color: #ffffff !important;
-}
-/* Mitad Izquierda */
-.login-image-container {
-    flex: 1.2; /* Un poco más ancho para registro */
-    position: relative;
-}
-
-.login-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-/* --- INPUTS Y FORMULARIOS --- */
-.form-control, .form-select {
-    border: 1.5px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    background-color: #ffffff !important;
-    font-size: 0.95rem !important;
-    font-weight: 500 !important;
-    color: var(--text-main) !important;
-    transition: all 0.25s ease !important;
-}
-
-.form-control:focus {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 4px var(--primary-light) !important;
-    background: #fff !important;
-}
-
-.form-floating > label {
-    color: var(--text-muted) !important;
-    font-weight: 500;
-}
-
-/* --- FOTO DE PERFIL (REGISTRO) --- */
-.profile-pic-container {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 15px;
-    border-radius: 50%;
-    background: #fff;
-    padding: 3px;
-    box-shadow: 0 0 0 2px var(--border-color), var(--shadow-premium);
-}
-
-#profilePicPreview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-.upload-icon {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background: var(--primary);
-    color: white;
-    width: 35px;
-    height: 35px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 3px solid #fff;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-/* --- BOTÓN PRINCIPAL (SUBMIT) --- */
-.boton {
-    width: 100%;
-    max-width: 320px;
-    height: 55px;
-    background: linear-gradient(135deg, #f18000 0%, #ff9800 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 14px !important;
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 8px 20px rgba(241, 128, 0, 0.25) !important;
-    cursor: pointer;
-    transition: all 0.3s ease !important;
-}
-
-.boton:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 25px rgba(241, 128, 0, 0.4) !important;
-}
-
-.boton:disabled {
-    background: #cbd5e1 !important;
-    box-shadow: none !important;
-    cursor: not-allowed;
-}
-
-/* --- BOTONES SECUNDARIOS (LINKS) --- */
-.btn-outline-secondary.btn-sm, .btn-secondary.btn-sm {
-    border: none !important;
-    background: #f1f5f9 !important;
-    color: var(--text-muted) !important;
-    font-weight: 600 !important;
-    padding: 10px 18px !important;
-    border-radius: 10px !important;
-    transition: 0.2s;
-    text-decoration: none;
-}
-
-.btn-outline-secondary.btn-sm:hover {
-    background: #e2e8f0 !important;
-    color: var(--primary) !important;
-}
-
-/* Ojo de contraseña */
-.input-group .btn-outline-secondary {
-    border: 1.5px solid var(--border-color) !important;
-    border-left: none !important;
-    background: #fff !important;
-    border-radius: 0 12px 12px 0 !important;
-}
-
-.input-group .form-control {
-    border-top-right-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-}
-        </style>
-    </head>
-    <body>
-        <div id="layoutAuthentication">
-            <!-- Mitad izquierda: Imagen de fondo -->
-            <div class="login-image-container d-none d-lg-block">
-                <img src="../img/fondo_izq.webp" alt="Imagen de fondo" class="login-image">
+        <!-- Left: Corporate Image Side -->
+        <div class="login-image-side">
+            <img src="../img/login_bg_premium.png" alt="Corporative Office" class="login-bg-img">
+            <div class="login-overlay"></div>
+            <div class="login-image-content">
+                <div class="login-badge">Sistema Institucional</div>
+                <h1 class="login-image-title">Sistema de</h1>
+                <h2 class="login-image-title"><span>Gestión</span> de Bienes y Pagos</h1>
+                <p class="login-image-desc">
+                    Una plataforma robusta, elegante y segura para la administración centralizada de bienes y pagos. Acceda al mejor entorno corporativo.
+                </p>
+                <div class="flex items-center gap-4 mt-8">
+                    <div class="flex -space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center"><i class="fas fa-shield-alt text-slate-300 text-sm"></i></div>
+                        <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center"><i class="fas fa-lock text-slate-300 text-sm"></i></div>
+                        <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center"><i class="fas fa-server text-slate-300 text-sm"></i></div>
+                    </div>
+                    <span class="text-sm font-medium text-slate-300">Infraestructura Segura</span>
+                </div>
             </div>
+        </div>
 
-            <!-- Mitad derecha: Formulario -->
+        <!-- Right: Form Side -->
+        <div class="login-form-side">
             <div class="login-form-container">
-                <main>
-                    <div class="form-content">
-                        <!-- Nombre del sistema y logo -->
-                        <div class="text-center mb-4">
-                            <img src="../img/Logo-OP2_V4.webp" alt="Logo Empresa" class="logo mb-3">
-                            <h1 class="system-name">Sistema de Gestión Bienes y Pagos</h1>
-                        </div>
-                        <!-- Formulario sin caja -->
-                        <div class="form-container">
-                            <form name="loginForm" action="../acciones/login.php" method="POST" onsubmit="return validateFormLOGIN()">
-                                <div class="form-floating mb-3">
-                                    <input 
-                                        class="form-control" 
-                                        id="inputEmail" 
-                                        type="text" 
-                                        placeholder="Usuario" 
-                                        name="usuario" 
-                                        disabled
-                                    />
-                                    <label for="inputEmail">Usuario(*):</label>
-                                </div>
-                                <div class="form-floating mb-3">
-                                    <div class="input-group">
-                                        <input 
-                                            class="form-control" 
-                                            id="inputPassword" 
-                                            type="password" 
-                                            placeholder="Contraseña(*):" 
-                                            name="clave" 
-                                            disabled
-                                        />
-                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="form-group mb-3 text-center">
-                                    <label class="mb-2">Para habilitar los campos selecciona tu rol:</label>
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <button type="button" class=" boton-rol" onclick="selectRole1(this, 'admin')">
-                                            <i class="fas fa-user-shield"></i> S U
-                                        </button>
-                                        <button type="button" class=" boton-rol" onclick="selectRole1(this, 'cont')">
-                                            <i class="fas fa-calculator"></i> ADMIN
-                                        </button>
-                                        <button type="button" class=" boton-rol" onclick="selectRole1(this, 'inv')">
-                                            <i class="fas fa-check-circle"></i> CHECK
-                                        </button>
-                                        <button type="button" class=" boton-rol" onclick="selectRole1(this, 'upu')">
-                                            <i class="fas fa-users"></i> UPU
-                                        </button>
-                                    </div>
-                                    <input type="hidden" id="inputRole" name="rol" value="" required />
-                                </div>
-                                <!-- Mensaje de error -->
-                                <?php include("../models/sweetalert.php"); ?>
-                                <!-- Botones estilizados -->
-                                <div class="d-flex justify-content-center align-items-center mt-4 gap-3 flex-wrap">
-                                    <a class="btn btn-outline-secondary btn-sm" href='recuperar.php'>
-                                        <i class="fas fa-unlock-alt"></i> Recuperar
-                                    </a>
-                                    <a class="btn btn-outline-secondary btn-sm" href='solicitar_desbloqueo.php'>
-                                        <i class="fas fa-unlock-alt"></i> Desbloquear
-                                    </a>
-                                    <a class="btn btn-outline-secondary btn-sm" href='register.php'>
-                                        <i class="fas fa-user-plus"></i> Registrarse
-                                    </a>
-                                </div>
-                                <!-- Botón de envío -->
-                                <div class="text-center mt-4">
-                                    <button class="boton" type="submit" id="btnEntrar" disabled>Entrar</button>
-                                </div>
-                            </form>
-                            <?php include("../models/sweetalert.php"); ?>
-                            <!-- Botón para volver a la página principal -->
-                            <div class="text-center mt-4">
-                                <a class="btn btn-secondary btn-sm" href='../index.php'>
-                                    <i class="fas fa-home"></i> Volver al Inicio
-                                </a>
+                
+                <div class="text-center md:text-left">
+                    <img src="../img/Logo-OP2_V4.webp" alt="Logo" class="inst-logo mx-auto md:mx-0">
+                    <h2 class="inst-title">Iniciar Sesión</h2>
+                    <p class="inst-subtitle">Ingresa tus credenciales para continuar</p>
+                </div>
+
+                <form name="wowLoginForm" id="wowLoginForm" action="../acciones/login.php" method="POST" autocomplete="off">
+                    
+                    <div class="inst-input-wrapper">
+                        <i class="fas fa-user inst-icon"></i>
+                        <input type="text" id="inputEmail" name="usuario" class="inst-input" placeholder="Usuario">
+                    </div>
+
+                    <div class="inst-input-wrapper">
+                        <i class="fas fa-lock inst-icon"></i>
+                        <input type="password" id="inputPassword" name="clave" class="inst-input" placeholder="Contraseña">
+                        <button type="button" class="inst-btn-eye" onclick="toggleWowPassword()">
+                            <i id="wowEyeIcon" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <?php include("../models/sweetalert.php"); ?>
+
+                    <!-- Captcha Manual Premium -->
+                    <div class="mb-5 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <label class="inst-label mb-2 block text-center">Código de Seguridad</label>
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="flex flex-col sm:flex-row items-center gap-3">
+                                <canvas id="captchaCanvas" width="240" height="70" class="rounded-lg shadow-sm border-2 border-slate-200 cursor-pointer bg-white" onclick="drawWowCaptcha()"></canvas>
+                                <button type="button" onclick="drawWowCaptcha()" class="bg-white border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-colors p-3 rounded-xl shadow-sm" title="Recargar imagen">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            <div class="inst-input-wrapper mt-2 mb-0 w-full" style="max-width: 240px;">
+                                <i class="fas fa-shield-alt inst-icon"></i>
+                                <input type="text" id="captchaInput" autocomplete="off" class="inst-input text-center font-bold tracking-widest text-lg" placeholder="Escribe el código" maxlength="6" />
                             </div>
                         </div>
                     </div>
-                </main>
-                 <!-- Footer -->
-                 <footer class="footer_licencia text-center mt-4">
-                    <p>
-                        Este trabajo está licenciado bajo 
-                        <a href="https://creativecommons.org/licenses/by-nc/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer">
-                            Creative Commons BY-NC 4.0
-                            <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="CC">
-                            <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="BY">
-                            <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt="NC">
-                        </a>
-                    </p>
-                    <b><small>&copy; <?php echo date("Y"); ?> Sistema de Gestión de Bienes y Pagos. Todos los derechos reservados.</small></b>
-                </footer>
-                <script src="../js/vali_login.js"></script>
-                <?php include("../models/footer_index.php"); ?>
-                <!--Start of Tawk.to Script-->
-                <script type="text/javascript">
-                var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-                (function(){
-                var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-                s1.async=true;
-                s1.src='https://embed.tawk.to/69222aed34679319611b35ee/1jamnfbva';
-                s1.charset='UTF-8';
-                s1.setAttribute('crossorigin','*');
-                s0.parentNode.insertBefore(s1,s0);
-                })();
-                </script>
-                <!--End of Tawk.to Script-->
+
+                    <button type="submit" id="btnEntrar" class="inst-btn-submit" disabled>
+                        Acceder al Sistema <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                </form>
+
+                <div class="inst-links">
+                    <a href="recuperar.php" class="inst-link"><i class="fas fa-unlock-alt"></i> Recuperar</a>
+                    <a href="solicitar_desbloqueo.php" class="inst-link"><i class="fas fa-key"></i> Desbloquear</a>
+                    <a href="register.php" class="inst-link"><i class="fas fa-user-plus"></i> Registrarse</a>
+                </div>
+
+            </div>
+
+            <div class="inst-footer">
+                <p>&copy; <?php echo date("Y"); ?> SDGBP. Todos los derechos reservados.</p>
+                <p class="mt-1">Licencia <a href="https://creativecommons.org/licenses/by-nc/4.0/?ref=chooser-v1" target="_blank">Creative Commons BY-NC 4.0</a></p>
             </div>
         </div>
-    </body>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/vali_login.js?v=<?php echo time(); ?>"></script>
+    
+    <!-- Tawk.to Script -->
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/69222aed34679319611b35ee/1jamnfbva';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+</body>
 </html>
 <?php
-// Limpiar las variables de sesión después de usarlas
 unset($_SESSION['old_usuario']);
 unset($_SESSION['old_clave']);
 ?>

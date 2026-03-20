@@ -4,12 +4,30 @@ function cargarCategorias() {
         .then(response => response.json())
         .then(categorias => {
             const categoriaFiltro = document.getElementById('categoriaFiltro');
-            categorias.forEach(categoria => {
-                const option = document.createElement('option');
-                option.value = categoria.id;
-                option.textContent = categoria.nombre;
-                categoriaFiltro.appendChild(option);
-            });
+            const pillsContainer = document.getElementById('pillsContainer');
+
+            if (categoriaFiltro) {
+                categorias.forEach(categoria => {
+                    const option = document.createElement('option');
+                    option.value = categoria.id;
+                    option.textContent = categoria.nombre;
+                    categoriaFiltro.appendChild(option);
+                });
+            }
+
+            if (pillsContainer) {
+                categorias.forEach(categoria => {
+                    const pill = document.createElement('div');
+                    pill.className = 'pill-item';
+                    pill.textContent = categoria.nombre;
+                    pill.onclick = () => {
+                        document.querySelectorAll('.pill-item').forEach(p => p.classList.remove('active'));
+                        pill.classList.add('active');
+                        filtrarPorCategoria(categoria.id);
+                    };
+                    pillsContainer.appendChild(pill);
+                });
+            }
         })
         .catch(error => {
             console.error('Error al cargar las categorías:', error);
@@ -140,36 +158,24 @@ function agregarAlCarrito(nombre, precio, stockId, cantidadId, productoId) {
     });
 }
 
-// Llamar a la función al cargar la página
-document.addEventListener('DOMContentLoaded', () => {
-    cargarProductos(); // Cargar todos los productos inicialmente
-});
-
 // Filtrar productos por categoría
-function filtrarPorCategoria() {
-    const categoria = document.getElementById('categoriaFiltro').value;
-    cargarProductos(categoria); // Llamar a la función con la categoría seleccionada
-}
-
-// Filtrar productos por nombre
-function filtrarProductosPorNombre() {
-    const busqueda = document.getElementById('busquedaProducto').value.toLowerCase();
-    const productos = document.querySelectorAll('#productosGrid .card');
-
-    productos.forEach(producto => {
-        const nombreProducto = producto.querySelector('.card-title').textContent.toLowerCase();
-        if (nombreProducto.includes(busqueda)) {
-            producto.parentElement.style.display = 'block'; // Mostrar el producto
-        } else {
-            producto.parentElement.style.display = 'none'; // Ocultar el producto
-        }
-    });
+function filtrarPorCategoria(catId) {
+    let categoria = '';
+    const categoriaFiltro = document.getElementById('categoriaFiltro');
+    
+    if (catId !== undefined && catId !== '') {
+        categoria = catId;
+    } else if (categoriaFiltro) {
+        categoria = categoriaFiltro.value;
+    }
+    
+    cargarProductos(categoria); 
 }
 
 // Llamar a las funciones al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
     cargarCategorias();
-    cargarProductos(); // Cargar todos los productos inicialmente
+    cargarProductos(); 
 });
 
 // Array para almacenar los productos seleccionados
@@ -204,10 +210,12 @@ function actualizarCarrito() {
             let html = '<ul class="list-group">';
             let total = 0;
             data.carrito.forEach((producto, index) => {
-                total += producto.precio * producto.cantidad;
+                let precioReal = parseFloat(producto.precio) || 0;
+                let cantidadReal = parseInt(producto.cantidad) || 0;
+                total += precioReal * cantidadReal;
                 html += `
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        ${producto.nombre} - $${producto.precio.toFixed(2)} x ${producto.cantidad} unidades
+                        ${producto.nombre} - $${precioReal.toFixed(2)} x ${cantidadReal} unidades
                         <button class="btn btn-danger btn-sm" onclick="eliminarDelCarrito(${index})">Eliminar</button>
                     </li>
                 `;
@@ -219,7 +227,7 @@ function actualizarCarrito() {
     })
     .catch(error => {
         console.error('Error:', error);
-        mostrarToast('error', 'Error al actualizar el carrito.');
+        mostrarToast('danger', 'Error al actualizar el carrito.');
         actualizarCarritoBadge();
     });
 }
@@ -239,7 +247,7 @@ function eliminarDelCarrito(index) {
             actualizarCarritoBadge();
             mostrarToast('info', 'Producto eliminado del carrito.');
         } else {
-            mostrarToast('error', 'Error al eliminar el producto del carrito.');
+            mostrarToast('danger', 'Error al eliminar el producto del carrito.');
         }
     })
     .catch(error => {
@@ -276,35 +284,35 @@ function mostrarToast(tipo, mensaje) {
 }
 
 // Abrir el modal de pago desde el botón del carrito
-document.getElementById('btnAbrirPago').addEventListener('click', () => {
-    if (carrito.length === 0) {
-        mostrarToast('error', 'El carrito está vacío.');
-        return;
-    }
-
-    // Calcular el monto total del carrito en dólares
-    const totalUSD = carrito.reduce((acc, producto) => acc + producto.precio * producto.cantidad, 0);
-    document.getElementById('monto').value = totalUSD.toFixed(2);
-
-    // Obtener la tasa del USD y calcular el monto en bolívares
-    fetch('https://api.dolarvzla.com/public/exchange-rate')
-        .then(response => response.json())
-        .then(data => {
-            const tasaBCV = data.current.usd;
-            if (!tasaBCV) {
-                throw new Error('No se pudo obtener la tasa del BCV.');
+document.addEventListener('DOMContentLoaded', () => {
+    const btnAbrirPago = document.getElementById('btnAbrirPago');
+    if (btnAbrirPago) {
+        btnAbrirPago.addEventListener('click', () => {
+            if (carrito.length === 0) {
+                mostrarToast('danger', 'El carrito está vacío.');
+                return;
             }
-            const totalBs = totalUSD * tasaBCV;
-            document.getElementById('montoBs').value = totalBs.toFixed(2);
 
-            // Mostrar el modal de pago
-            const pagoModal = new bootstrap.Modal(document.getElementById('pagoModal'));
-            pagoModal.show();
-        })
-        .catch(error => {
-            console.error('Error al obtener la tasa del BCV:', error);
-            mostrarToast('error', 'No se pudo obtener la tasa del BCV.');
+            const totalUSD = carrito.reduce((acc, producto) => acc + (parseFloat(producto.precio) || 0) * (parseInt(producto.cantidad) || 0), 0);
+            document.getElementById('monto').value = totalUSD.toFixed(2);
+
+            fetch('https://ve.dolarapi.com/v1/dolares/oficial')
+                .then(response => response.json())
+                .then(data => {
+                    const tasaBCV = data.promedio || data.venta;
+                    if (!tasaBCV) throw new Error('No se pudo obtener la tasa del BCV.');
+                    const totalBs = totalUSD * tasaBCV;
+                    document.getElementById('montoBs').value = totalBs.toFixed(2);
+
+                    const pagoModal = new bootstrap.Modal(document.getElementById('pagoModal'));
+                    pagoModal.show();
+                })
+                .catch(error => {
+                    console.error('Error al obtener la tasa:', error);
+                    mostrarToast('danger', 'No se pudo obtener la tasa del BCV. Verifique su conexión y vuelva a intentar.');
+                });
         });
+    }
 });
 // Manejar el cambio del método de pago
 document.getElementById('metodoPago').addEventListener('change', (event) => {

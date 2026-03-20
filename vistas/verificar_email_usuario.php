@@ -1,199 +1,178 @@
 <?php
 session_start();
-if (empty($_SESSION['temp_recu_cedula'])) {
-    header("Location: recuperar_usuario.php");
-    exit();
-}
+if (empty($_SESSION['temp_recu_cedula'])) { header("Location: recuperar_usuario.php"); exit(); }
 
-// Función para enmascarar el correo
 function enmascararCorreo($correo) {
     if (!$correo) return "";
     $partes = explode("@", $correo);
+    if(count($partes) < 2) return $correo;
     $nombre = $partes[0];
     $dominio = $partes[1];
-    
     $long = strlen($nombre);
-    if ($long <= 4) {
-        $enmascarado = substr($nombre, 0, 1) . str_repeat('*', $long - 1);
-    } else {
-        $enmascarado = substr($nombre, 0, 2) . str_repeat('*', $long - 4) . substr($nombre, -2);
-    }
-    
+    if ($long <= 4) { $enmascarado = substr($nombre, 0, 1) . str_repeat('*', $long - 1); } 
+    else { $enmascarado = substr($nombre, 0, 2) . str_repeat('*', $long - 4) . substr($nombre, -2); }
     return $enmascarado . "@" . $dominio;
 }
-
 $correo_pista = enmascararCorreo($_SESSION['temp_recu_correo_real']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Paso 2: Verificar Correo - SDGBP</title>
 
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
-    <link href="../css/styles.css" rel="stylesheet" />
-    <link href="../css/estilo_login.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../js/all.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Sweetalert -->
-    <link rel="stylesheet" type="text/css" href="../sweetalert/sweetalert2.min.css">
+    <!-- Toastr & SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link rel="stylesheet" href="../sweetalert/sweetalert2.min.css">
     <script src="../sweetalert/sweetalert2.js"></script>
 
-    <!-- font Google -->
-    <link href="./css/font_google.css" rel="stylesheet">
-    <style>
-        .recovery-icon {
-            font-size: 3rem;
-            color: #f18000;
-            margin-bottom: 1.5rem;
-            background: rgba(241, 128, 0, 0.1);
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            margin-left: auto;
-            margin-right: auto;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#f18000', 'primary-dark': '#d67100', 'brand-blue': '#0f172a' },
+                    fontFamily: { sans: ['Outfit', 'sans-serif'], }
+                }
+            }
         }
-        .email-pista {
-            background: #f8fafc;
-            border: 1px dashed #f18000;
-            color: #1e293b;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
+    </script>
 
-        /* Estilos del Stepper */
-        .stepper {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            position: relative;
-        }
-        .stepper::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #e2e8f0;
-            z-index: 1;
-        }
-        .step-item {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-        }
-        .step-circle {
-            width: 32px;
-            height: 32px;
-            background: #fff;
-            border: 2px solid #e2e8f0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 8px;
-            font-weight: bold;
-            color: #64748b;
-            transition: all 0.3s ease;
-        }
-        .step-item.active .step-circle {
-            background: #f18000;
-            border-color: #f18000;
-            color: #fff;
-            box-shadow: 0 0 0 5px rgba(241, 128, 0, 0.2);
-        }
-        .step-item.completed .step-circle {
-            background: #28a745;
-            border-color: #28a745;
-            color: #fff;
-        }
-        .step-label {
-            font-size: 11px;
-            font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .step-item.active .step-label {
-            color: #f18000;
-        }
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Outfit', sans-serif; background-color: #f8fafc; }
+        .login-layout { display: flex; min-height: 100vh; width: 100%; }
+
+        .login-image-side { display: none; position: relative; flex: 1; background-color: var(--brand-blue); overflow: hidden; position: sticky; top: 0; height: 100vh; }
+        @media (min-width: 1024px) { .login-image-side { display: flex; flex-direction: column; justify-content: center; align-items: center; } }
+
+        .login-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+        .login-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.6) 100%); z-index: 1; }
+        .login-image-content { position: relative; z-index: 2; padding: 4rem; color: #fff; max-width: 650px; }
+        .login-badge { display: inline-block; padding: 0.4rem 1rem; background: rgba(241, 128, 0, 0.2); border: 1px solid rgba(241, 128, 0, 0.3); color: #f18000; border-radius: 50px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; backdrop-filter: blur(4px); margin-bottom: 2rem; }
+        .login-image-title { font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px; }
+        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-image-desc { font-size: 1.1rem; color: rgba(255,255,255,0.8); line-height: 1.6; font-weight: 300; }
+
+        .login-form-side { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; width: 100%; background-color: #ffffff; overflow-y: auto; overflow-x: hidden; }
+        @media (min-width: 1024px) { .login-form-side { width: 500px; padding: 3rem 4rem; flex-shrink: 0; } }
+
+        .login-form-container { width: 100%; max-width: 420px; }
+        .inst-logo { width: 65px; margin-bottom: 1.2rem; }
+        .inst-title { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+
+        .inst-input-wrapper { display: flex; align-items: center; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0 1rem; margin-bottom: 1.25rem; transition: all 0.3s; }
+        .inst-input-wrapper:focus-within { border-color: #f18000; background: #fff; box-shadow: 0 0 0 4px rgba(241, 128, 0, 0.1); }
+        .inst-icon { color: #94a3b8; font-size: 1.1rem; padding-right: 1rem; transition: color 0.3s; }
+        .inst-input-wrapper:focus-within .inst-icon { color: #f18000; }
+        .inst-input { width: 100%; background: transparent; border: none; padding: 1.1rem 0; color: #1e293b; font-size: 1rem; outline: none; font-weight: 500; }
+        .inst-input::placeholder { color: #94a3b8; font-weight: 400; }
+        .inst-label { font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.3rem; margin-left: 0.2rem; text-transform: uppercase; letter-spacing: 0.5px; display: block;}
+        
+        .inst-btn-submit { width: 100%; padding: 1.1rem; border: none; border-radius: 12px; background: #0f172a; color: #fff; font-size: 1rem; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .inst-btn-submit:hover { background: #f18000; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(241, 128, 0, 0.3); }
+
+        .inst-links { display: flex; justify-content: center; margin-top: 1.5rem; }
+        .inst-link { color: #64748b; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: color 0.3s; display: flex; align-items: center; gap: 0.4rem; }
+        .inst-link:hover { color: #f18000; }
+
+        .inst-footer { margin-top: auto; text-align: center; width: 100%; padding-top: 2rem; }
+        .inst-footer p { font-size: 0.75rem; color: #94a3b8; }
+
+        .recovery-icon { font-size: 2.5rem; color: #f18000; margin-bottom: 1.5rem; background: rgba(241, 128, 0, 0.1); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(241, 128, 0, 0.2); box-shadow: 0 4px 15px rgba(241, 128, 0, 0.1); margin-left: auto; margin-right: auto; }
+
+        /* Stepper */
+        .stepper { display: flex; justify-content: space-between; margin-bottom: 30px; position: relative; }
+        .stepper::before { content: ''; position: absolute; top: 15px; left: 15%; right: 15%; height: 2px; background: #e2e8f0; z-index: 1; }
+        .step-item { position: relative; z-index: 2; text-align: center; flex: 1; }
+        .step-circle { width: 32px; height: 32px; background: #fff; border: 2px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold; color: #64748b; transition: all 0.3s ease; }
+        .step-item.active .step-circle { background: #f18000; border-color: #f18000; color: #fff; box-shadow: 0 0 0 4px rgba(241, 128, 0, 0.2); }
+        .step-item.completed .step-circle { background: #10b981; border-color: #10b981; color: #fff; }
+        .step-label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .step-item.active .step-label { color: #f18000; }
+        .step-item.completed .step-label { color: #10b981; }
+
+        .email-pista { background: #f8fafc; border: 1px dashed #cbd5e1; color: #1e293b; padding: 12px; border-radius: 12px; font-weight: 700; display: inline-block; margin-bottom: 20px; font-size: 0.95rem; letter-spacing: 1px; width: 100%; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
     </style>
 </head>
 <body>
-    <div id="layoutAuthentication">
-        <div class="login-image-container d-none d-lg-block">
-            <img src="../img/fondo_izq.webp" alt="Fondo" class="login-image">
-        </div>
-
-        <div class="login-form-container">
-            <main>
-                <div class="form-content">
-                    <div class="text-center mb-4">
-                        <img src="../img/Logo-OP2_V4.webp" alt="Logo" class="logo mb-2" style="max-width: 60px;">
-                        <h1 class="system-name">Recuperación de Usuario</h1>
-                    </div>
-
-                    <!-- Indicador de Pasos -->
-                    <div class="stepper">
-                        <div class="step-item completed">
-                            <div class="step-circle"><i class="fas fa-check"></i></div>
-                            <div class="step-label">ID</div>
-                        </div>
-                        <div class="step-item active">
-                            <div class="step-circle">2</div>
-                            <div class="step-label">Correo</div>
-                        </div>
-                        <div class="step-item">
-                            <div class="step-circle">3</div>
-                            <div class="step-label">2FA</div>
-                        </div>
-                    </div>
-
-                    <div class="text-center mb-4">
-                        <h4 class="fw-bold">Paso 2: Verificar Correo</h4>
-                        <p class="text-muted small">Ingresa el correo completo para recibir el código.</p>
-                        <div class="email-pista">Pista: <?php echo $correo_pista; ?></div>
-                    </div>
-
-                    <div class="form-container">
-                        <div class="recovery-icon mb-4">
-                            <i class="fas fa-at"></i>
-                        </div>
-
-                        <form action="../acciones/enviar_2fa_usuario.php" method="POST">
-                            <div class="form-floating mb-4">
-                                <input class="form-control" id="inputEmail" type="email" placeholder="Correo Electrónico" name="correo" required />
-                                <label for="inputEmail" class="w-100 text-center">Confirmar Correo Electrónico(*)</label>
-                            </div>
-
-                            <div class="text-center mt-4 mb-4">
-                                <button class="boton" type="submit">Validar y Enviar Código</button>
-                            </div>
-                        </form>
-
-                        <?php include("../models/sweetalert.php"); ?>
-
-                        <div class="text-center mt-4">
-                            <a class="btn btn-secondary btn-sm" href='recuperar_usuario.php'>
-                                <i class="fas fa-chevron-left"></i> Volver
-                            </a>
-                        </div>
+    <div class="login-layout">
+        <div class="login-image-side">
+            <img src="../img/login_bg_premium.png" alt="Corporative Office" class="login-bg-img">
+            <div class="login-overlay"></div>
+            <div class="login-image-content">
+                <div class="login-badge">Protección de Datos</div>
+                <h1 class="login-image-title">Confirma tu<br><span>Identidad</span></h1>
+                <p class="login-image-desc">Ingresa la dirección completa del correo electrónico asociado a tu cuenta para confirmar la pre-identificación corporativa.</p>
+                <div class="flex items-center gap-4 mt-8">
+                    <div class="flex -space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center"><i class="fas fa-at text-slate-300 text-sm"></i></div>
+                        <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center"><i class="fas fa-search text-slate-300 text-sm"></i></div>
                     </div>
                 </div>
-            </main>
-            <footer class="footer_licencia text-center mt-auto pt-4">
-                <b><small class="text-muted">&copy; <?php echo date("Y"); ?> SDGBP. Todos los derechos reservados.</small></b>
-            </footer>
+            </div>
+        </div>
+
+        <div class="login-form-side">
+            <div class="login-form-container">
+                <div class="text-center md:text-left mb-6">
+                    <img src="../img/Logo-OP2_V4.webp" alt="Logo" class="inst-logo mx-auto md:mx-0">
+                    <h2 class="inst-title">Recuperación de Usuario</h2>
+                </div>
+
+                <div class="stepper">
+                    <div class="step-item completed">
+                        <div class="step-circle"><i class="fas fa-check"></i></div><div class="step-label">ID</div>
+                    </div>
+                    <div class="step-item active">
+                        <div class="step-circle">2</div><div class="step-label">Correo</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-circle">3</div><div class="step-label">2FA</div>
+                    </div>
+                </div>
+
+                <div class="text-center md:text-left mb-6">
+                    <h4 class="font-bold text-lg text-slate-800">Paso 2: Completar Correo</h4>
+                    <p class="text-slate-500 text-sm font-medium mt-1">Ingresa el correo completo basándote en la pista.</p>
+                </div>
+
+                <div class="email-pista">
+                    <i class="fas fa-mask mr-2 text-primary"></i> <?php echo $correo_pista; ?>
+                </div>
+
+                <form action="../acciones/enviar_2fa_usuario.php" method="POST" onsubmit="return validateFormVEU()" class="mt-4">
+                    <div class="recovery-icon mx-auto md:mx-0"><i class="fas fa-envelope"></i></div>
+
+                    <div>
+                        <label class="inst-label text-center md:text-left" for="inputEmail">Correo Electrónico (*)</label>
+                        <div class="inst-input-wrapper">
+                            <i class="fas fa-at inst-icon"></i>
+                            <input id="inputEmail" type="email" name="correo" class="inst-input" placeholder="Ingresa el correo completo aquí" autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <button class="inst-btn-submit mt-4" type="submit">
+                        Validar y Enviar Código <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+
+                <?php include("../models/sweetalert.php"); ?>
+
+                <div class="inst-links">
+                    <a href="recuperar_usuario.php" class="inst-link"><i class="fas fa-arrow-left"></i> Volver al Paso 1</a>
+                </div>
+            </div>
+            <div class="inst-footer"><p>&copy; <?php echo date("Y"); ?> SDGBP. Todos los derechos reservados.</p></div>
         </div>
     </div>
+    <script src="../js/vali_login.js"></script>
 </body>
 </html>
