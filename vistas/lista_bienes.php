@@ -328,7 +328,9 @@ if ($categoria_seleccionada) {
     function printEtiqueta(id) {
         const frame = document.getElementById('etiquetaFrame');
         if (frame) {
-            frame.src = '../fpdf/etiqueta_bien.php?id=' + id;
+            const labelUrl = '../fpdf/etiqueta_bien.php?id=' + id;
+            console.log("Intentando cargar etiqueta desde:", labelUrl);
+            frame.src = labelUrl;
             const myModal = new bootstrap.Modal(document.getElementById('etiquetaModal'));
             myModal.show();
         }
