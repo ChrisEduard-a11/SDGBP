@@ -75,16 +75,19 @@ require_once("../models/header.php");
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
 
-        <div class="mb-4">
-            <h3 class="fw-bold mb-1"><i class="fas fa-user-edit me-2" style="color: var(--premium-violet, #8b5cf6);"></i> Editar Usuario</h3>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-user-edit me-2"></i>Editar Usuario</h1>
+                <p class="text-muted">Modificación de perfiles, roles y permisos de acceso del personal administrativo</p>
+            </div>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('usuario.php')" class="text-decoration-none">Usuarios</a></li>
                     <li class="breadcrumb-item active">Editar</li>
                 </ol>
             </nav>
-        </div>
+        </header>
 
         <?php
         include('../conexion.php');

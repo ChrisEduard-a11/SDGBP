@@ -11,6 +11,17 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST["accion"])) {
+    // Verificar token de idempotencia
+    $token = $_POST['idempotency_token'] ?? '';
+    if (empty($token) || !isset($_SESSION['form_tokens'][$token])) {
+        $_SESSION["mensaje"] = "Error: Esta acción ya ha sido procesada o el token es inválido.";
+        $_SESSION["estatus"] = "error";
+        header("Location: ../vistas/aprobar_pago.php");
+        exit();
+    }
+    // Eliminar el token de la sesión para evitar re-procesamiento
+    unset($_SESSION['form_tokens'][$token]);
+
     $id = $_POST["id"];
     $accion = $_POST["accion"];
     $descripcion = $_POST["descripcion"] ?? null; // Descripción para rechazos
@@ -84,6 +95,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
         if ($estado == "aprobar" || $estado == "aprobado") { // Solo para pagos aprobados
             // 1. Validar saldo suficiente para comisión y egreso
             $saldo_despues_comision = $saldo_actual;
+            // Calcular saldo resultante con bcmath para máxima precisión
+            $saldo_resultante = bcadd($saldo_actual, $monto, 2);
             if ($comision > 0) {
                 $saldo_despues_comision = $saldo_actual - $comision;
                 if ($saldo_despues_comision < 0) {
@@ -235,6 +248,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
     $color_banner = ($estado == "aprobado") ? "#10b981" : "#ef4444";
     $titulo_banner = ($estado == "aprobado") ? "Pago Aprobado" : "Pago Rechazado";
     
+    // Obtener la URL base dinámica para el enlace del correo
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $script_dirname = dirname($_SERVER['SCRIPT_NAME']);
+    $base_dir = preg_replace('/\/acciones$/i', '', $script_dirname);
+    $login_url = rtrim($protocol . '://' . $host . $base_dir, '/') . '/vistas/login.php';
+
     $mensaje = "
 <!DOCTYPE html>
 <html lang='es'>
@@ -286,7 +306,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
 
                             <!-- Action Button -->
                             <div style='text-align: center; margin: 35px 0;'>
-                                <a href='https://sdgbp.wuaze.com/vistas/login.php' style='display: inline-block; padding: 14px 28px; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Consultar mi Cuenta</a>
+                                <a href='{$login_url}' style='display: inline-block; padding: 14px 28px; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Consultar mi Cuenta</a>
                             </div>
                             <p style='font-size: 14px; line-height: 1.6; color: #64748b; margin-top: 30px; margin-bottom: 0;'>
                                 Si tiene alguna duda o requiere mayor información técnica respecto al estado de esta operación, puede responder directamente a este correo para contactar al servicio de soporte de <strong>SDGBP</strong>.

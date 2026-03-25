@@ -27,6 +27,11 @@ $sql = "SELECT pagos.*, usuario_pagos.usuario_id AS usuario_id, usuario.nombre A
     WHERE pagos.estado = 'pendiente'
     ORDER BY usuario.nombre ASC, pagos.fecha_pago ASC, pagos.referencia ASC";
 $result = $conexion->query($sql);
+
+// Inicializar tokens en sesión
+if (!isset($_SESSION['form_tokens'])) {
+    $_SESSION['form_tokens'] = [];
+}
 ?>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -215,17 +220,17 @@ $result = $conexion->query($sql);
 <div id="layoutSidenav_content">
     <div class="container-fluid dashboard-container px-4">
         
-        <header class="mb-5 d-flex justify-content-between align-items-center fade-in-up">
+        <header class="page-header-standard d-flex justify-content-between align-items-center animate__animated animate__fadeIn">
             <div>
-                <h1 class="fw-bold mb-0">Centro de Aprobaciones</h1>
-                <p class="text-muted">Gestión inteligente de flujos financieros</p>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-check-double me-2"></i>Centro de Aprobaciones</h1>
+                <p class="text-muted">Gestión inteligente de flujos financieros y validación de pagos</p>
             </div>
-            <div class="breadcrumb-container">
+            <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none"><i class="fas fa-home me-1"></i> Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Aprobar Pagos</li>
                 </ol>
-            </div>
+            </nav>
         </header>
 
         <!-- Metrics Section -->
@@ -344,16 +349,22 @@ $result = $conexion->query($sql);
                                                 </button>
                                             </div>
                                             <!-- Formularios ocultos -->
-                                            <form id="form-aprobar-<?php echo $row['id']; ?>" method="post" action="../acciones/aprobar_pago.php" style="display:none;">
-                                                <input type="hidden" name="id" value="<?php echo $row["id"]; ?>">
-                                                <input type="hidden" name="accion" value="aprobar">
-                                                <input type="hidden" name="comision" id="comision-<?php echo $row['id']; ?>">
-                                            </form>
-                                            <form id="form-rechazar-<?php echo $row['id']; ?>" method="post" action="../acciones/aprobar_pago.php" style="display:none;">
-                                                <input type="hidden" name="id" value="<?php echo $row["id"]; ?>">
-                                                <input type="hidden" name="accion" value="rechazar">
-                                                <input type="hidden" name="descripcion" id="descripcion-<?php echo $row['id']; ?>">
-                                            </form>
+                                             <?php
+                                                $idempotency_token = bin2hex(random_bytes(16));
+                                                $_SESSION['form_tokens'][$idempotency_token] = time();
+                                             ?>
+                                             <form id="form-aprobar-<?php echo $row['id']; ?>" method="post" action="../acciones/aprobar_pago.php" style="display:none;">
+                                                 <input type="hidden" name="id" value="<?php echo $row["id"]; ?>">
+                                                 <input type="hidden" name="accion" value="aprobar">
+                                                 <input type="hidden" name="comision" id="comision-<?php echo $row['id']; ?>">
+                                                 <input type="hidden" name="idempotency_token" value="<?php echo $idempotency_token; ?>">
+                                             </form>
+                                             <form id="form-rechazar-<?php echo $row['id']; ?>" method="post" action="../acciones/aprobar_pago.php" style="display:none;">
+                                                 <input type="hidden" name="id" value="<?php echo $row["id"]; ?>">
+                                                 <input type="hidden" name="accion" value="rechazar">
+                                                 <input type="hidden" name="descripcion" id="descripcion-<?php echo $row['id']; ?>">
+                                                 <input type="hidden" name="idempotency_token" value="<?php echo $idempotency_token; ?>">
+                                             </form>
                                         </td>
                                     </tr>
                                 <?php

@@ -172,438 +172,322 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                     --footer-text: #475569; /* Texto gris oscuro legible */
                 }
 
-                /* ================= TEMA OSCURO (Dark Mode) ================= */
+                /* ================= TEMA OSCURO (Dark Mode)                /* ================= TEMA OSCURO PROFUNDO (Deep Dark Mode) ================= */
                 [data-theme="dark"] {
-                    /* Mesh Gradient Premium "Deep Nebula" */
-                    --bg-app: fixed linear-gradient(135deg, #0f172a 0%, #1e293b 100%),
-                              fixed radial-gradient(at 100% 0%, rgba(251, 146, 60, 0.1) 0, transparent 50%),
-                              fixed radial-gradient(at 0% 100%, rgba(59, 130, 246, 0.1) 0, transparent 50%);
-                    --sidebar-bg: #1e293b; 
-                    --navbar-bg: #1e293b; 
-                    --navbar-text: #f8fafc; 
+                    --bg-app: #000000 !important; /* Negro Puro por solicitud */
+                    --sidebar-bg: #111827; 
+                    --navbar-bg: #111827; 
+                    --navbar-text: #ffffff; 
                     
-                    --accent-color: #fb923c; 
-                    --accent-glow: rgba(251, 146, 60, 0.25);
-                    --accent-gradient: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+                    --accent-color: #f18000; 
+                    --accent-glow: rgba(241, 128, 0, 0.3);
+                    --accent-gradient: linear-gradient(135deg, #ea580c 0%, #f18000 100%);
                     
-                    --text-main: #f8fafc; 
-                    --text-muted: #cbd5e1; /* Gris mucho más claro para legibilidad */
-                    --sidebar-text: #e2e8f0; 
-                    --sidebar-border: rgba(255,255,255,0.05); 
-                    --footer-bg: #0b1120; 
-                    --footer-text: #cbd5e1; /* Gris claro para el footer */
+                    --text-main: #ffffff; 
+                    --text-muted: #e2e8f0; 
+                    --sidebar-text: #ffffff; 
+                    --sidebar-text-muted: #ffffff; 
+                    --sidebar-border: rgba(255,255,255,0.1); 
+                    --footer-bg: #000000; 
+                    --footer-text: #ffffff; 
                     
-                    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-                    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
-                    --shadow-float: 0 10px 25px -5px rgba(0,0,0,0.5);
-                    --shadow-sidebar: 2px 0 12px rgba(0,0,0,0.3); 
+                    --shadow-sm: 0 1px 3px rgba(255,255,255,0.1);
+                    --shadow-md: 0 4px 6px -1px rgba(255,255,255,0.15);
+                    --shadow-float: 0 10px 25px -5px rgba(255,255,255,0.2);
                     
-                    /* Overlay oscuro para que la imagen de fondo sea sutil */
-                    --content-overlay: rgba(15, 23, 42, 0.94);
+                    --content-overlay: rgba(0, 0, 0, 0.96);
                 }
 
-                /* Forzado de colores Dark para elementos estándar de Bootstrap */
+                /* Forzado Universal para Modo Oscuro */
+                [data-theme="dark"] body { 
+                    background-color: #000000 !important; 
+                    color: #ffffff !important; 
+                }
+                
                 [data-theme="dark"] .bg-white, 
                 [data-theme="dark"] .card,
-                [data-theme="dark"] .modal-content {
-                    background-color: #1e293b !important;
-                    color: #f8fafc !important;
-                    border-color: rgba(255,255,255,0.05) !important;
+                [data-theme="dark"] .modal-content,
+                [data-theme="dark"] .dropdown-menu {
+                    background-color: #121212 !important;
+                    color: #ffffff !important;
+                    border: 1px solid #333 !important;
                 }
-                [data-theme="dark"] .text-dark:not(.btn *),
+
+                [data-theme="dark"] .card-header {
+                    background-color: #1a1a1a !important;
+                    border-bottom: 1px solid #333 !important;
+                    color: #ffffff !important;
+                }
+
+                /* Formularios y Campos */
+                [data-theme="dark"] .form-control, 
+                [data-theme="dark"] .form-select,
+                [data-theme="dark"] textarea {
+                    background-color: #000000 !important;
+                    color: #ffffff !important;
+                    border: 1px solid #444 !important;
+                }
+                [data-theme="dark"] .form-control:focus, 
+                [data-theme="dark"] .form-select:focus {
+                    border-color: var(--accent-color) !important;
+                    box-shadow: 0 0 0 0.25rem rgba(241, 128, 0, 0.25) !important;
+                }
+                [data-theme="dark"] .form-control::placeholder {
+                    color: #888 !important;
+                }
+                [data-theme="dark"] .input-group-text {
+                    background-color: #1a1a1a !important;
+                    color: #ffffff !important;
+                    border: 1px solid #444 !important;
+                }
+
+                /* Tablas y DataTables */
+                [data-theme="dark"] .table {
+                    color: #ffffff !important;
+                    border-color: #333 !important;
+                }
+                [data-theme="dark"] .table thead th {
+                    background-color: #1a1a1a !important;
+                    color: #ffffff !important;
+                    border-bottom: 2px solid #444 !important;
+                }
+                [data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+                    background-color: rgba(255,255,255,0.03) !important;
+                }
+                [data-theme="dark"] .table-hover tbody tr:hover {
+                    background-color: rgba(255,255,255,0.07) !important;
+                    color: #ffffff !important;
+                }
+                [data-theme="dark"] .page-link {
+                    background-color: #121212 !important;
+                    border-color: #333 !important;
+                    color: #ffffff !important;
+                }
+                [data-theme="dark"] .page-item.active .page-link {
+                    background-color: var(--accent-color) !important;
+                    border-color: var(--accent-color) !important;
+                }
+
+                /* Select2 Dark Support */
+                [data-theme="dark"] .select2-container--bootstrap-5 .select2-selection {
+                    background-color: #000000 !important;
+                    color: #ffffff !important;
+                    border: 1px solid #444 !important;
+                }
+                [data-theme="dark"] .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+                    color: #ffffff !important;
+                }
+                [data-theme="dark"] .select2-dropdown {
+                    background-color: #121212 !important;
+                    color: #ffffff !important;
+                    border: 1px solid #444 !important;
+                }
+                [data-theme="dark"] .select2-results__option--highlighted {
+                    background-color: var(--accent-color) !important;
+                }
+
+                /* Flatpickr Dark Theme */
+                [data-theme="dark"] .flatpickr-calendar {
+                    background: #121212 !important;
+                    box-shadow: 0 10px 20px rgba(255,255,255,0.05) !important;
+                    color: #ffffff !important;
+                    border: 1px solid #333 !important;
+                }
+                [data-theme="dark"] .flatpickr-day { color: #ffffff !important; }
+                [data-theme="dark"] .flatpickr-day.today { border-color: var(--accent-color) !important; }
+                [data-theme="dark"] .flatpickr-day.selected { background: var(--accent-color) !important; }
+                [data-theme="dark"] .flatpickr-current-month, [data-theme="dark"] .flatpickr-month {
+                    fill: #ffffff !important;
+                    color: #ffffff !important;
+                }
+
+                /* SweetAlert2 Deep Dark Mode Override */
+                body.swal2-shown [data-theme="dark"] .swal2-popup {
+                    background: #121212 !important;
+                    color: #ffffff !important;
+                }
+
+                /* Colores de Texto Generales */
+                [data-theme="dark"] .text-dark, 
                 [data-theme="dark"] .card-title,
                 [data-theme="dark"] .modal-title,
-                [data-theme="dark"] .breadcrumb-item.active,
-                [data-theme="dark"] strong:not(.alert *), [data-theme="dark"] b:not(.alert *), 
-                [data-theme="dark"] span:not(.badge):not(.alert *),
-                [data-theme="dark"] label:not(.btn),
-                [data-theme="dark"] .table td, [data-theme="dark"] .table th,
-                [data-theme="dark"] .card-body:not(.alert *),
-                [data-theme="dark"] p:not(.alert *) {
-                    color: #f8fafc !important;
+                [data-theme="dark"] label,
+                [data-theme="dark"] span:not(.badge),
+                [data-theme="dark"] p,
+                [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 {
+                    color: #ffffff !important;
                 }
-                [data-theme="dark"] .text-secondary,
-                [data-theme="dark"] .text-muted,
-                [data-theme="dark"] .small,
-                [data-theme="dark"] p.text-secondary {
-                    color: #cbd5e1 !important; /* Forzar gris legible */
+                [data-theme="dark"] .text-muted, [data-theme="dark"] .small {
+                    color: #cccccc !important;
                 }
-                [data-theme="dark"] .text-primary, [data-theme="dark"] .page-title-icon { color: #60a5fa !important; }
-                [data-theme="dark"] .text-success, [data-theme="dark"] .saldo-display { color: #4ade80 !important; }
-                [data-theme="dark"] .text-info { color: #22d3ee !important; }
-                
-                [data-theme="dark"] .breadcrumb {
-                    background-color: #1a2235 !important;
-                    border: 1px solid rgba(255,255,255,0.05) !important;
+                /* Navbar y Sidebar en Modo Oscuro */
+                [data-theme="dark"] .sb-topnav {
+                    background-color: #000000 !important;
+                    border-bottom: 1px solid #333 !important;
                 }
-                [data-theme="dark"] .breadcrumb-item a {
-                    color: #fb923c !important;
+                [data-theme="dark"] .sb-sidenav {
+                    background-color: #000000 !important;
+                    border-right: 1px solid #333 !important;
                 }
-                [data-theme="dark"] .alert-super-admin {
-                    background-color: #1e293b !important;
-                    color: #f8fafc !important;
-                    border-left-color: #fb923c !important;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-                }
-                [data-theme="dark"] .alert-super-admin .text-muted,
-                [data-theme="dark"] .alert-super-admin .small,
-                [data-theme="dark"] .alert-super-admin strong {
-                    color: #94a3b8 !important;
-                }
-                [data-theme="dark"] .img-circular {
-                    border-color: rgba(255,255,255,0.1) !important;
-                    box-shadow: 0 0 8px rgba(0,0,0,0.4) !important;
-                }
-                
-                /* Correcciones específicas para estilos embebidos en Vistas */
-                [data-theme="dark"] #layoutSidenav_content .bg-light,
-                [data-theme="dark"] #layoutSidenav_content form.bg-light,
-                [data-theme="dark"] #layoutSidenav_content .bg-white,
-                [data-theme="dark"] #layoutSidenav_content .card {
-                    background-color: #1e293b !important;
-                    color: #f8fafc !important;
-                    border-color: rgba(255,255,255,0.05) !important;
-                }
-                [data-theme="dark"] #layoutSidenav_content .table th {
-                    background-color: #111827 !important;
-                    color: #f8fafc !important;
-                }
-                [data-theme="dark"] #layoutSidenav_content .ingreso-cell {
-                    background-color: rgba(16, 185, 129, 0.1) !important;
-                    color: #4ade80 !important;
-                    border: none !important;
-                }
-                [data-theme="dark"] #layoutSidenav_content .egreso-cell {
-                    background-color: rgba(239, 68, 68, 0.1) !important;
-                    color: #f87171 !important;
-                    border: none !important;
-                }
-                [data-theme="dark"] #layoutSidenav_content .saldo-final {
-                    background-color: rgba(59, 130, 246, 0.1) !important;
-                    color: #60a5fa !important;
-                }
-                [data-theme="dark"] #layoutSidenav_content .text-primary {
-                    color: #fb923c !important; 
-                }
-                [data-theme="dark"] .card-header-custom,
-                [data-theme="dark"] .card-header-secondary {
-                    background-color: #334155 !important;
-                    border-bottom-color: rgba(255,255,255,0.1) !important;
-                }
-                
-                /* Forzado total de color de texto en el area de contenido */
-                [data-theme="dark"] #layoutSidenav_content * {
-                    border-color: rgba(255,255,255,0.05);
-                }
-                [data-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd)>* {
-                    --bs-table-accent-bg: rgba(255,255,255,0.02) !important;
-                    color: #f8fafc !important;
+                [data-theme="dark"] .sb-sidenav-footer {
+                    background-color: #000000 !important;
+                    border-top: 1px solid #333 !important;
                 }
 
-                /* Estilos para Alertas en Modo Oscuro (Texto Negro s/ fondo color) */
-                [data-theme="dark"] .alert {
-                    border: none !important;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-                    color: #1e293b !important; /* Texto oscuro para legibilidad */
-                }
-                [data-theme="dark"] .alert-info { background-color: #7dd3fc !important; }
-                [data-theme="dark"] .alert-success { background-color: #6ee7b7 !important; }
-                [data-theme="dark"] .alert-warning { background-color: #fde047 !important; }
-                [data-theme="dark"] .alert-danger { background-color: #fca5a5 !important; }
-                [data-theme="dark"] .alert,
-                [data-theme="dark"] .alert *,
-                [data-theme="dark"] .alert .text-dark, 
-                [data-theme="dark"] .alert .alert-heading {
-                    color: #000000 !important;
-                    border-color: rgba(0,0,0,0.1) !important;
-                }
-                
-                /* --- Estilos Flatpickr (Calendario) Modo Oscuro --- */
-                [data-theme="dark"] .flatpickr-calendar {
-                    background: #1e293b !important;
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
-                    border: 1px solid rgba(255,255,255,0.1) !important;
-                }
-                [data-theme="dark"] .flatpickr-day, 
-                [data-theme="dark"] .flatpickr-month,
-                [data-theme="dark"] .flatpickr-weekday,
-                [data-theme="dark"] .flatpickr-current-month,
-                [data-theme="dark"] .flatpickr-monthDropdown-months,
-                [data-theme="dark"] .cur-month, [data-theme="dark"] .numInput {
-                    color: #f8fafc !important;
-                    fill: #f8fafc !important;
-                }
-                [data-theme="dark"] .flatpickr-day.nextMonthDay, 
-                [data-theme="dark"] .flatpickr-day.prevMonthDay {
-                    color: rgba(255,255,255,0.2) !important;
-                }
-                [data-theme="dark"] .flatpickr-day:hover,
-                [data-theme="dark"] .flatpickr-day.prevMonthDay:hover,
-                [data-theme="dark"] .flatpickr-day.nextMonthDay:hover {
-                    background: rgba(255,255,255,0.1) !important;
-                    color: #fff !important;
-                }
-                [data-theme="dark"] .flatpickr-day.selected {
-                    background: var(--accent-color) !important;
-                    border-color: var(--accent-color) !important;
-                    color: #fff !important;
-                }
-                [data-theme="dark"] .flatpickr-months .flatpickr-prev-month, 
-                [data-theme="dark"] .flatpickr-months .flatpickr-next-month {
-                    color: #f8fafc !important;
-                    fill: #f8fafc !important;
+                /* ================= NUCLEAR CSS OVERRIDES FOR DARK MODE ================= */
+                /* Estas reglas tienen máxima especificidad para machacar estilos inline de las vistas */
+                html[data-theme="dark"] body #layoutSidenav_content .card-premium,
+                html[data-theme="dark"] body #layoutSidenav_content .card,
+                html[data-theme="dark"] body #layoutSidenav_content .glass-card,
+                html[data-theme="dark"] body #layoutSidenav_content .welcome-card {
+                    background-color: #000000 !important;
+                    background: #000000 !important;
+                    color: #ffffff !important;
+                    border: 1px solid #333 !important;
+                    box-shadow: none !important;
                 }
 
-                /* --- Estilos SweetAlert2 Modo Oscuro --- */
-                [data-theme="dark"] .swal2-popup {
-                    background-color: #1e293b !important;
-                    color: #f8fafc !important;
-                    border: 1px solid rgba(255,255,255,0.1) !important;
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+                html[data-theme="dark"] body #layoutSidenav_content .breadcrumb-premium,
+                html[data-theme="dark"] body #layoutSidenav_content .filter-section-premium {
+                    background-color: #0c0c0c !important;
+                    background: #0c0c0c !important;
+                    border: 1px solid #444 !important;
+                    color: #ffffff !important;
                 }
-                [data-theme="dark"] .swal2-title {
-                    color: #ffffff !important; /* Blanco puro para el título solicitado */
+
+                /* Tablas DataTables - Forzado Nuclear */
+                html[data-theme="dark"] body #layoutSidenav_content #datatablesSimple {
+                    background-color: #000000 !important;
+                    color: #ffffff !important;
                 }
-                [data-theme="dark"] .swal2-html-container {
-                    color: #cbd5e1 !important; /* Gris claro para el cuerpo del texto */
+                html[data-theme="dark"] body #layoutSidenav_content #datatablesSimple thead th {
+                    background-color: #1a1a1a !important;
+                    color: #ffffff !important;
+                    border-bottom: 2px solid #444 !important;
                 }
-                [data-theme="dark"] .swal2-icon.swal2-warning {
-                    border-color: #facc15 !important;
-                    color: #facc15 !important;
+                html[data-theme="dark"] body #layoutSidenav_content #datatablesSimple tbody tr {
+                    background-color: #000000 !important;
+                    color: #ffffff !important;
+                    border-bottom: 1px solid #222 !important;
                 }
-                [data-theme="dark"] .swal2-icon.swal2-info {
-                    border-color: #38bdf8 !important;
-                    color: #38bdf8 !important;
-                }
-                [data-theme="dark"] .swal2-success-circular-line, [data-theme="dark"] .swal2-success-fix {
+                html[data-theme="dark"] body #layoutSidenav_content #datatablesSimple td {
+                    color: #ffffff !important;
                     background-color: transparent !important;
                 }
-
-                /* --- Fix para Modales con Fondo Adaptable --- */
-                .modal {
-                    z-index: 1060 !important;
-                }
-                .modal-backdrop {
-                    z-index: 1050 !important;
-                }
-                
-                body {
-                    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-                    background: var(--bg-app) !important; /* Corregido: background permite degradados */
-                    color: var(--text-main) !important; 
-                    animation: fadeInBody 0.6s ease-out;
-                    min-height: 100vh;
-                }
-                
-                /* Forzado de visibilidad para Títulos en todas las vistas */
-                h1, h2, h3, h4, h5, h6, .page-title, .page-title *, h3 * {
-                    color: var(--text-main) !important;
-                    text-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-                    font-weight: 700 !important;
+                html[data-theme="dark"] body #layoutSidenav_content #datatablesSimple tbody tr:hover {
+                    background-color: #111111 !important;
                 }
 
-                /* Forzado para el Footer */
-                #footer, #footer *, #footer p, #footer span {
-                    color: var(--footer-text) !important;
+                /* Footer, Alerts e Inputs - Forzado Nuclear */
+                html[data-theme="dark"] footer#footer {
+                    background-color: #000000 !important;
+                    color: #ffffff !important;
+                    border-top: 1px solid #333 !important;
                 }
-                #footer .fw-bold, #footer span.fw-bold {
-                    color: var(--text-main) !important;
+                html[data-theme="dark"] footer#footer .text-muted {
+                    color: #888 !important;
                 }
-
-                /* ================= NAVBAR SUPERIOR (Adaptable) ================= */
-                .bg-navbar {
-                    background-color: var(--navbar-bg) !important;
-                    background-image: linear-gradient(to right, #ea580c, #f97316); /* Gradiente naranja premium */
-                    border-bottom: 2px solid rgba(0,0,0,0.1); 
-                    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
-                    padding-top: 0.5rem;
-                    padding-bottom: 0.5rem;
-                    z-index: 1040;
+                html[data-theme="dark"] .alert, 
+                html[data-theme="dark"] .instruction-alert {
+                    background-color: #1e1e1e !important;
+                    color: #ffffff !important;
+                    border: 1px solid #444 !important;
                 }
-                [data-theme="dark"] .bg-navbar {
-                    background-image: none !important;
-                    border-bottom: 1px solid rgba(255,255,255,0.05);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                html[data-theme="dark"] .input-group-text,
+                html[data-theme="dark"] .input-group-text-premium {
+                    background-color: #222 !important;
+                    color: #ffffff !important;
+                    border-color: #444 !important;
                 }
-                
-                .navbar-brand {
-                    font-weight: 800;
-                    font-size: 1.4rem;
-                    letter-spacing: -0.5px;
-                    color: var(--navbar-text) !important;
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Ligera sombra para asegurar legibilidad */
-                }
-                .navbar-brand span {
-                    color: var(--navbar-text) !important;
-                }
-                .navbar-brand img {
-                    border: 3px solid #fff;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                    border-radius: 12px !important;
-                    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-                }
-                .navbar-brand:hover img {
-                    transform: scale(1.1) rotate(-5deg);
+                html[data-theme="dark"] .bg-light {
+                    background-color: #111 !important;
                 }
 
-                /* Control Lateral (Hamburguesa) */
-                #sidebarToggle {
-                    color: var(--navbar-text) !important;
-                    background: rgba(255, 255, 255, 0.15); /* Fondo semitransparente sobre naranja */
-                    border-radius: var(--radius-xl);
-                    width: 42px;
-                    height: 42px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 1px solid rgba(255,255,255,0.2);
-                    transition: all 0.3s ease;
+                /* SweetAlert2 - Forzado Nuclear */
+                html[data-theme="dark"] .swal2-popup {
+                    background-color: #000000 !important;
+                    background: #000000 !important;
+                    color: #ffffff !important;
+                    border: 1px solid #333 !important;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.8) !important;
                 }
-                #sidebarToggle:hover {
-                    background: rgba(255, 255, 255, 0.3);
-                    color: #fff !important;
-                    transform: translateY(-2px);
+                html[data-theme="dark"] .swal2-title,
+                html[data-theme="dark"] .swal2-html-container,
+                html[data-theme="dark"] .swal2-content {
+                    color: #ffffff !important;
                 }
-
-                /* Reloj Navbar */
-                #fecha {
-                    color: var(--navbar-text) !important;
-                    font-weight: 600;
-                    font-size: 0.95rem;
-                    padding: 8px 16px;
-                    background: rgba(0,0,0,0.15); /* Fondo oscuro semitransparente sobre naranja */
-                    border-radius: var(--radius-pill);
+                html[data-theme="dark"] .swal2-input,
+                html[data-theme="dark"] .swal2-textarea,
+                html[data-theme="dark"] .swal2-select {
+                    background-color: #111111 !important;
+                    color: #ffffff !important;
+                    border: 1px solid #444 !important;
+                    box-shadow: none !important;
+                }
+                html[data-theme="dark"] .swal2-input:focus,
+                html[data-theme="dark"] .swal2-textarea:focus {
+                    border-color: #f18000 !important;
+                    box-shadow: 0 0 0 2px rgba(241,128,0,0.2) !important;
                 }
 
-                /* Iconos Navbar (Notif / User) */
-                .navbar-nav .nav-link {
-                    color: var(--navbar-text) !important;
-                    opacity: 0.9;
-                    padding: 0.5rem 0.8rem !important;
-                    position: relative;
-                    transition: all 0.3s ease;
+                /* Arreglo de Iconos SweetAlert2 en Modo Oscuro */
+                html[data-theme="dark"] .swal2-icon.swal2-success [class^='swal2-success-circular-line'],
+                html[data-theme="dark"] .swal2-icon.swal2-success .swal2-success-fix,
+                html[data-theme="dark"] .swal2-icon.swal2-error [class^='swal2-x-mark-line'],
+                html[data-theme="dark"] .swal2-icon.swal2-error {
+                    background-color: transparent !important;
                 }
-                .navbar-nav .nav-link:hover {
-                    color: #fff !important;
-                    opacity: 1;
-                    transform: scale(1.1);
+                html[data-theme="dark"] .swal2-icon {
+                    border-color: rgba(255,255,255,0.2) !important;
                 }
-                .navbar-nav .nav-link i {
-                    font-size: 1.25rem;
-                }
-                .navbar-nav .dropdown-toggle::after {
-                    display: none; /* Quitamos flecha por defecto */
+                html[data-theme="dark"] .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step {
+                    background: #f18000 !important;
                 }
 
-                /* Notificaciones Badge */
-                .badge-pulse {
-                    animation: pulse-badge 2s infinite;
-                    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
-                    border: 2px solid #fff;
-                    padding: 0.35em 0.55em;
+                /* Select2 Search - Forzado Nuclear */
+                html[data-theme="dark"] .select2-container--bootstrap-5 .select2-search__field {
+                    background-color: #1a1a1a !important;
+                    color: #ffffff !important;
+                    border-color: #444 !important;
                 }
-                @keyframes pulse-badge {
-                    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-                    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
-                    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+                html[data-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown {
+                    background-color: #111111 !important;
+                    color: #ffffff !important;
+                    border-color: #333 !important;
                 }
-
-                /* ================= SUPER DROPDOWNS FLOTANTES ================= */
-                .dropdown-menu {
-                    border-radius: 20px;
-                    box-shadow: var(--shadow-float);
-                    border: 1px solid var(--glass-border-light);
-                    padding: 1rem;
-                    margin-top: 15px !important;
-                    background: rgba(255, 255, 255, 0.95);
-                    backdrop-filter: blur(20px);
-                    animation: dropFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                    transform-origin: top right;
+                html[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option {
+                    color: #ffffff !important;
                 }
-                @keyframes dropFade {
-                    0% { opacity: 0; transform: translateY(-10px) scale(0.95); }
-                    100% { opacity: 1; transform: translateY(0) scale(1); }
-                }
-                .dropdown-header {
-                    font-size: 1rem;
-                    color: var(--text-main);
-                    padding: 0.5rem 1rem;
-                }
-                .dropdown-divider {
-                    border-color: rgba(0,0,0,0.06);
-                    margin: 0.5rem 0;
+                html[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option--highlighted {
+                    background-color: #f18000 !important;
+                    color: #ffffff !important;
                 }
 
-                /* Dropdown en Modo Oscuro */
-                [data-theme="dark"] .dropdown-menu {
-                    background: rgba(30, 41, 59, 0.98) !important;
-                    border-color: rgba(255,255,255,0.1) !important;
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+                /* Dropdowns - Forzado Nuclear */
+                html[data-theme="dark"] .dropdown-menu {
+                    background-color: #111111 !important;
+                    border: 1px solid #333 !important;
+                    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5) !important;
                 }
-                [data-theme="dark"] .dropdown-item {
-                    color: #f8fafc !important;
+                html[data-theme="dark"] .dropdown-item {
+                    color: #ffffff !important;
                 }
-                [data-theme="dark"] .dropdown-item:hover {
-                    background-color: rgba(255,255,255,0.05) !important;
+                html[data-theme="dark"] .dropdown-item:hover {
+                    background-color: #222222 !important;
+                    color: #f18000 !important;
                 }
-                [data-theme="dark"] .dropdown-divider {
-                    border-color: rgba(255,255,255,0.1) !important;
+                html[data-theme="dark"] .dropdown-header,
+                html[data-theme="dark"] .dropdown-header span,
+                html[data-theme="dark"] .dropdown-header .text-dark {
+                    color: #ffffff !important;
                 }
-                [data-theme="dark"] .dropdown-header,
-                [data-theme="dark"] .dropdown-header * {
-                    color: #94a3b8 !important; /* Gris azulado para el titulo del header */
-                }
-                [data-theme="dark"] .dropdown-header .text-dark {
-                    color: #ffffff !important; /* Forzar blanco para el nombre del usuario */
-                }
-                
-                /* User Dropdown Profile */
-                .dropdown-menu img.rounded-circle.shadow-sm {
-                    border: 4px solid #fff !important;
-                    box-shadow: var(--shadow-md) !important;
-                    width: 110px!important; 
-                    height: 110px!important;
-                }
-                .btn-danger.rounded-pill {
-                    background: #fee2e2;
-                    color: #ef4444;
-                    border: none;
-                    font-weight: 600;
-                    padding: 10px 20px;
-                    box-shadow: none;
-                    transition: all 0.3s ease;
-                }
-                .btn-danger.rounded-pill:hover {
-                    background: #ef4444;
-                    color: #fff;
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 15px -3px rgba(239, 68, 68, 0.3);
+                html[data-theme="dark"] .dropdown-divider {
+                    border-color: #333 !important;
+                    opacity: 1 !important;
                 }
 
-                /* Notif Dropdown Items */
-                .notif-item {
-                    border: 1px solid transparent;
-                    border-left-width: 4px !important;
-                    background: #fff !important;
-                    box-shadow: var(--shadow-sm);
-                    margin-bottom: 8px;
-                    border-radius: 12px !important;
-                    transition: all 0.3s ease;
-                }
-                .notif-item:hover {
-                    transform: translateX(5px);
-                    box-shadow: var(--shadow-md);
-                    border-color: rgba(0,0,0,0.03);
-                    border-left-color: inherit !important;
-                }
-
-
-                /* Toggle Dark Mode Button */
+                /* Botón de Modo Oscuro */
                 #btn-dark-mode {
-                    background: rgba(255, 255, 255, 0.15);
                     border-radius: var(--radius-pill);
                     border: 1px solid rgba(255,255,255,0.2);
                     width: 40px;
@@ -620,8 +504,9 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                     transform: scale(1.1);
                 }
                 [data-theme="dark"] #btn-dark-mode {
-                    background: rgba(255,255,255,0.05);
-                    color: #fbbf24;
+                    background: rgba(255,255,255,0.1) !important;
+                    color: #ffcc00 !important;
+                    border-color: #444 !important;
                 }
 
                 /* ================= SIDEBAR (Light/Dark Switchable) ================= */
@@ -632,10 +517,10 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                 }
                 
                 /* Títulos de sección */
-                .sb-sidenav-menu-heading-pro {
+                .sb-sidenav-menu-heading {
                     padding: 1.5rem 1.25rem 0.6rem;
                     font-size: 0.72rem;
-                    color: #64748b; /* Gris corporativo */
+                    color: var(--sidebar-text-muted) !important;
                     font-weight: 800;
                     text-transform: uppercase;
                     letter-spacing: 1px;
@@ -664,24 +549,23 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                     transform: translateX(2px); /* Desplazamiento sutil */
                 }
                 
-                /* Enlace Activo */
+                /* Enlace Activo - Naranja corporativo con letras blancas para resaltar */
                 .sb-sidenav-menu .nav-link.active {
-                    background: #fff2e5; /* Fondo naranjoso claro pero definido para el activo */
-                    color: var(--accent-color) !important;
+                    background: var(--accent-color) !important; 
+                    color: #ffffff !important;
                     font-weight: 700;
-                    border-left: 4px solid var(--accent-color); /* Indicador izquierdo estilo admin robusto */
-                    border-radius: 4px 8px 8px 4px; /* Ajuste para el borde grueso izquierdo */
-                    padding-left: 0.75rem; /* Ajustar padding por el borde izquierdo grueso */
+                    border-radius: 8px;
                 }
                 
-                /* Iconos del menú */
+                /* Iconos del menú - Siempre naranja vibrante */
                 .sb-sidenav .sb-sidenav-menu .sb-nav-link-icon {
-                    color: var(--accent-color) !important; /* Iconos siempre naranjas fijos por solicitud */
+                    color: var(--accent-color) !important; 
                     font-size: 1.25rem;
                     width: 2.25rem;
                     transition: all 0.2s ease;
                     display: flex;
                     align-items: center;
+                    opacity: 1; /* Asegurar opacidad total para resaltar */
                 }
                 /* Efectos Hover Iconos */
                 .sb-sidenav-menu .nav-link:hover .sb-nav-link-icon,
@@ -704,6 +588,119 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                     opacity: 1;
                 }
 
+                /* --- Nuclear Overrides for Stat Cards (Pure Black) --- */
+        html[data-theme="dark"] .metric-card,
+        html[data-theme="dark"] .card.metric-card,
+        html[data-theme="dark"] .welcome-card,
+        html[data-theme="dark"] .card.bg-gradient-warning,
+        html[data-theme="dark"] .card.bg-gradient-danger,
+        html[data-theme="dark"] .card.bg-gradient-primary,
+        html[data-theme="dark"] .card.bg-gradient-success,
+        html[data-theme="dark"] .card.bg-gradient-info,
+        html[data-theme="dark"] .card.bg-gradient-secondary,
+        html[data-theme="dark"] .card.bg-gradient-success-alt,
+        html[data-theme="dark"] .card.bg-gradient-blue,
+        html[data-theme="dark"] .card.bg-gradient-rose,
+        html[data-theme="dark"] .card.bg-gradient-teal,
+        html[data-theme="dark"] .card.bg-gradient-indigo,
+        html[data-theme="dark"] .card.bg-gradient-wallet,
+        html[data-theme="dark"] .card.bg-gradient-pending,
+        html[data-theme="dark"] .card.bg-gradient-activity,
+        html[data-theme="dark"] .card.glass-card {
+            background: #000000 !important;
+            background-color: #000000 !important;
+            border: 1px solid #333 !important;
+            box-shadow: none !important;
+            background-image: none !important;
+        }
+
+        /* Contenedores de iconos opacos */
+        html[data-theme="dark"] .bg-primary.bg-opacity-10,
+        html[data-theme="dark"] .bg-success.bg-opacity-10,
+        html[data-theme="dark"] .bg-info.bg-opacity-10,
+        html[data-theme="dark"] .bg-warning.bg-opacity-10,
+        html[data-theme="dark"] .bg-danger.bg-opacity-10,
+        html[data-theme="dark"] .bg-indigo.bg-opacity-10,
+        html[data-theme="dark"] .avatar-circle.bg-light {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: #fff !important;
+        }
+
+        /* Mantener indicador de color lateral para categorización */
+        html[data-theme="dark"] .bg-gradient-blue, html[data-theme="dark"] .bg-gradient-primary { border-left: 5px solid #4361ee !important; }
+        html[data-theme="dark"] .bg-gradient-rose, html[data-theme="dark"] .bg-gradient-danger { border-left: 5px solid #e71d36 !important; }
+        html[data-theme="dark"] .bg-gradient-teal, html[data-theme="dark"] .bg-gradient-success, html[data-theme="dark"] .bg-gradient-success-alt { border-left: 5px solid #2ec4b6 !important; }
+        html[data-theme="dark"] .bg-gradient-indigo, html[data-theme="dark"] .bg-gradient-wallet { border-left: 5px solid #4f46e5 !important; }
+        html[data-theme="dark"] .bg-gradient-warning, html[data-theme="dark"] .bg-gradient-pending { border-left: 5px solid #f7b731 !important; }
+        html[data-theme="dark"] .bg-gradient-info { border-left: 5px solid #4facfe !important; }
+        html[data-theme="dark"] .bg-gradient-secondary { border-left: 5px solid #6c757d !important; }
+
+        html[data-theme="dark"] .metric-card::before,
+        html[data-theme="dark"] .metric-card::after {
+            display: none !important;
+        }
+
+        html[data-theme="dark"] .metric-icon {
+            opacity: 0.1 !important;
+        }
+
+        /* --- Fin de Nuclear Overrides --- */
+
+        /* Forzado Logo sin bordes */
+        .navbar-brand img, .profile-pic, .img-circular, .avatar-img {
+            border: none !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            mix-blend-mode: normal !important;
+            filter: none !important; /* Prevenir cambios de color en fotos */
+        }
+
+        /* Avatar Placeholder en Navbar */
+        .nav-user-avatar-placeholder {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] .nav-user-avatar-placeholder {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Estilos Globales para Encabezados de Vistas */
+        header.page-header-standard {
+            margin-bottom: 2.5rem;
+        }
+        header.page-header-standard h1 {
+            font-size: 1.85rem;
+            letter-spacing: -0.025em;
+        }
+        header.page-header-standard .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        [data-theme="dark"] header.page-header-standard .breadcrumb-item a {
+            color: #60a5fa !important;
+        }
+        [data-theme="dark"] header.page-header-standard .breadcrumb-item.active {
+            color: #94a3b8 !important;
+        }
+
+        /* Transición suave para todos los elementos */
+        * { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+
+        /* Nuclear Dropdown Overrides */
                 /* Submenús Dropdowns Administrativos */
                 .sb-sidenav-menu-nested {
                     margin-left: 1.2rem;
@@ -721,21 +718,20 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
 
                 /* Footer del Sidebar Claro/Oscuro */
                 .sb-sidenav-footer {
-                    background: var(--bg-app) !important; 
+                    background: #0f172a !important; 
                     border-top: 1px solid var(--sidebar-border);
                     padding: 1.25rem !important;
-                    transition: background 0.3s ease;
                 }
-                .sb-sidenav-footer .text-white-50 {
-                    color: #64748b !important; /* Gris solido en vez de class white */
+                .sb-sidenav-footer .small {
+                    color: var(--sidebar-text-muted) !important;
                     font-size: 0.75rem;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                     margin-bottom: 2px;
                     font-weight: 600;
                 }
-                .sb-sidenav-footer .text-primary {
-                    color: #0f172a !important; /* Rol de usuario en negro/gris muy oscuro */
+                .sb-sidenav-footer span {
+                    color: var(--sidebar-text) !important;
                     font-size: 1rem;
                     font-weight: 700;
                 }
@@ -778,13 +774,13 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
             </style>
         </head>
         <body class="sb-nav-fixed" >
-        <nav class="sb-topnav navbar navbar-expand bg-navbar">
-            <a class="navbar-brand ps-4 pe-2" href="javascript:void(0);" onclick="navigateTo('inicio.php')">
-                <img src="<?php echo $_SESSION['foto']; ?>" alt="foto" width="38" height="38" style="object-fit: cover;"> 
-                <span>SDGBP</span>
+        <nav class="sb-topnav navbar navbar-expand navbar-dark" style="background-color: #f18000 !important;">
+            <a class="navbar-brand ps-3 d-flex align-items-center gap-2" href="javascript:void(0);" onclick="navigateTo('inicio.php')">
+                <img src="../img/Logo-OP2_V4.webp" alt="Logo" style="width: 40px; height: 40px; object-fit: contain;"> 
+                <span class="text-white fw-bold">SDGBP</span>
             </a>
 
-            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
+            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0 text-white" id="sidebarToggle" href="#!">
                 <i class="fas fa-bars"></i>
             </button>
             
@@ -796,69 +792,68 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                 </div>
             </form>
             
-            <ul class="navbar-nav ms-auto ms-md-0 me-3 d-flex align-items-center">
+            <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4 d-flex align-items-center gap-2">
                 
-                <li class="nav-item me-2">
+                <li class="nav-item">
                     <div id="btn-dark-mode" onclick="toggleDarkMode()">
                         <i class="fas fa-moon"></i>
                     </div>
                 </li>
 
                 <!-- Dropdown de Notificaciones -->
-                <li class="nav-item dropdown px-2">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdownNotif" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle position-relative px-2" id="navbarDropdownNotif" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-bell"></i>
-                        <?php if (count($notificaciones) > 0): ?>
-                            <span class="position-absolute top-10 start-90 translate-middle badge rounded-pill bg-danger badge-pulse">
+                        <?php if (count($notificaciones) > 0) { ?>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.35em 0.65em;">
                                 <?php echo count($notificaciones); ?>
                             </span>
-                        <?php
-endif; ?>
+                        <?php } ?>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" aria-labelledby="navbarDropdownNotif" style="width: 300px; background-color: #1e293b !important; border: 1px solid rgba(255,255,255,0.05) !important;">
-                        <li class="dropdown-header text-center fw-bold text-white">Notificaciones</li>
-                        <li><hr class="dropdown-divider border-secondary"></li>
-                        <?php if (count($notificaciones) > 0): ?>
-                            <?php foreach ($notificaciones as $notif): ?>
-                                <li class="p-2">
-                                        <div class="d-flex align-items-center p-3 rounded border-start border-4 border-<?php echo $notif['tipo']; ?> notif-item cursor-pointer" style="background-color: #1a2235 !important; color: #fff !important;">
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="navbarDropdownNotif" style="width: 300px;">
+                        <li class="dropdown-header text-center fw-bold">Notificaciones</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <?php if (count($notificaciones) > 0) {
+                            foreach ($notificaciones as $notif) { ?>
+                                <li class="px-2">
+                                    <div class="d-flex align-items-center p-2 rounded border-start border-4 border-<?php echo $notif['tipo']; ?> hover:bg-light mb-1">
                                         <div class="flex-shrink-0 me-3">
-                                            <i class="<?php echo $notif['icono']; ?> text-<?php echo $notif['tipo']; ?> fs-4"></i>
+                                            <i class="<?php echo $notif['icono']; ?> text-<?php echo $notif['tipo']; ?> fs-5"></i>
                                         </div>
                                         <div>
-                                            <div class="small fw-bold text-white"><?php echo $notif['titulo']; ?></div>
-                                            <div class="small text-white-50"><?php echo $notif['mensaje']; ?></div>
+                                            <div class="small fw-bold text-dark"><?php echo $notif['titulo']; ?></div>
+                                            <div class="small text-muted"><?php echo $notif['mensaje']; ?></div>
                                         </div>
                                     </div>
                                 </li>
-                            <?php
-    endforeach; ?>
-                        <?php
-else: ?>
-                            <li class="dropdown-item text-center text-white-50 small py-3" style="background-color: transparent !important;">No tienes notificaciones pendientes</li>
-                        <?php
-endif; ?>
+                            <?php }
+                        } else { ?>
+                            <li class="dropdown-item text-center text-muted small py-3">No tienes notificaciones pendientes</li>
+                        <?php } ?>
                     </ul>
                 </li>
 
-                <li class="nav-item dropdown px-2">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user-astronaut"></i>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <?php if (!empty($_SESSION['foto']) && file_exists("../" . $_SESSION['foto'])) { ?>
+                            <img src="../<?php echo $_SESSION['foto']; ?>" alt="Avatar" class="rounded-circle border border-white border-opacity-25" style="width: 32px; height: 32px; object-fit: cover;">
+                        <?php } else { ?>
+                            <div class="nav-user-avatar-placeholder">
+                                <i class="fas fa-user-circle fs-5"></i>
+                            </div>
+                        <?php } ?>
+                        <span class="d-none d-md-inline small text-white fw-semibold"><?php echo $nombre_usuario; ?></span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3" aria-labelledby="navbarDropdown">
-                        <li class="dropdown-header text-center pb-2">
-                            <span class="text-dark fw-bold d-block"><?php echo $nombre_usuario; ?></span>
-                            <span class="small text-primary"><?php echo ucfirst($tipo_usuario); ?></span>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 min-w-[200px]" aria-labelledby="navbarDropdown">
+                        <li class="dropdown-header text-center">
+                            <span class="fw-bold d-block text-dark"><?php echo $nombre_usuario; ?></span>
+                            <span class="small text-muted"><?php echo ucfirst($tipo_usuario); ?></span>
                         </li>
                         <li><hr class="dropdown-divider"></li>
-                        
-                        <li class="text-center mb-3">
-                            <img src="<?php echo $_SESSION['foto']; ?>" alt="User Image" class="rounded-circle p-1 shadow-sm" width="100" height="100" style="object-fit: cover; border: 3px solid var(--accent-color);">
-                        </li>
+                        <li><a class="dropdown-item py-2" onclick="navigateTo('configuracion_usuario.php')"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Mi Cuenta</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        
-                        <li class="text-center pt-2">
-                            <button class="btn btn-danger btn-sm w-75 rounded-pill" onclick="confsalir(event)">
+                        <li class="px-3 py-1">
+                            <button class="btn btn-danger btn-sm w-100 rounded-pill" onclick="confsalir(event)">
                                 <i class="fas fa-sign-out-alt me-1"></i> Salir
                             </button>
                         </li>
@@ -873,13 +868,13 @@ endif; ?>
                     <div class="sb-sidenav-menu">
                         <div class="nav">
                             
-                            <div class="sb-sidenav-menu-heading-pro">Navegación General</div>
+                            <div class="sb-sidenav-menu-heading">Navegación General</div>
                             <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/inicio.php')">
                                 <div class="sb-nav-link-icon"><i class="fas fa-house-chimney fa-fw"></i></div>
                                 Dashboard
                             </a>
 
-                            <div class="sb-sidenav-menu-heading-pro">Mi Cuenta</div>
+                            <div class="sb-sidenav-menu-heading">Mi Cuenta</div>
                             <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#collapseUsuario" aria-expanded="false" aria-controls="collapseUsuario">
                                 <div class="sb-nav-link-icon"><i class="fas fa-user-shield fa-fw"></i></div>
                                 Perfil & Seguridad
@@ -909,7 +904,7 @@ endif; ?>
                             </div>
 
                             <?php if ($_SESSION["tipo"] == "inv" || $_SESSION["tipo"] == "admin" || $_SESSION["tipo"] == "upu") { ?>
-                            <div class="sb-sidenav-menu-heading-pro">Operaciones y Registros</div>
+                            <div class="sb-sidenav-menu-heading">Operaciones y Registros</div>
                             <?php
 }?>
 
@@ -939,7 +934,7 @@ endif; ?>
 }?>
                             
                             <?php if ($_SESSION["tipo"] == "admin") { ?>
-                            <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#collapseMarketing" aria-expanded="false" aria-controls="collapseBienes">
+                            <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#collapseMarketing" aria-expanded="false" aria-controls="collapseMarketing">
                                 <div class="sb-nav-link-icon"><i class="fas fa-bullhorn fa-fw"></i></div>
                                 Marketing
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
@@ -953,6 +948,10 @@ endif; ?>
                                     <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/productos.php')">
                                         <div class="sb-nav-link-icon"><i class="fas fa-store-alt"></i></div>
                                         Ver Productos
+                                    </a>
+                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/aprobar_marketing.php')">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-check-circle"></i></div>
+                                        Aprobar Pagos Marketing
                                     </a>
                                 </nav>
                             </div>
@@ -981,7 +980,7 @@ endif; ?>
 }?>
                             
                             <?php if ($_SESSION["tipo"] == "cont" || $_SESSION["tipo"] == "admin" || $_SESSION["tipo"] == "upu") { ?>
-                            <div class="sb-sidenav-menu-heading-pro">Tesorería y Finanzas</div>
+                            <div class="sb-sidenav-menu-heading">Tesorería y Finanzas</div>
                             <?php
 }?>
 
@@ -1054,9 +1053,9 @@ endif; ?>
 }?>
                         </div>
                     </div>
-                    <div class="sb-sidenav-footer small text-center py-3">
-                        <div class="small text-white-50">Sesión Activa:</div>
-                        <span class="fw-bold text-primary"><?php echo ucfirst($tipo_usuario); ?></span>
+                    <div class="sb-sidenav-footer">
+                        <div class="small">Sesión Activa:</div>
+                        <span class="fw-bold"><?php echo ucfirst($tipo_usuario); ?></span>
                     </div>
                 </nav>
             </div>
@@ -1108,5 +1107,29 @@ include("../models/sweetalert.php");
                 document.addEventListener('DOMContentLoaded', () => {
                    const currentTheme = document.documentElement.getAttribute('data-theme');
                    updateDarkModeIcon(currentTheme);
+                });
+
+                // Inicialización Global de Select2 para todo el sistema
+                $(document).ready(function() {
+                    function initSelect2() {
+                        $('select:not(.no-select2):not(.select2-hidden-accessible):not(.swal2-select)').each(function() {
+                            // No inicializar si está dentro de un contenedor de SweetAlert
+                            if ($(this).closest('.swal2-container').length) return;
+
+                            $(this).select2({
+                                theme: 'bootstrap-5',
+                                width: '100%',
+                                placeholder: $(this).attr('placeholder') || $(this).data('placeholder') || 'Seleccione una opción',
+                                dropdownParent: $(this).closest('.modal').length ? $(this).closest('.modal') : $(document.body)
+                            });
+                        });
+                    }
+                    
+                    initSelect2();
+                    
+                    // Soporte para elementos cargados dinámicamente
+                    $(document).ajaxComplete(function() {
+                        initSelect2();
+                    });
                 });
             </script>

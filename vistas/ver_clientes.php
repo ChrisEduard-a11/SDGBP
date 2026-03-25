@@ -51,10 +51,9 @@ $result = $stmt->get_result();
     }
 
     .card-premium {
-        background: #ffffff;
+        background: transparent;
         border: none !important;
         border-radius: var(--radius-premium) !important;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
         overflow: hidden;
     }
 
@@ -89,13 +88,10 @@ $result = $stmt->get_result();
     }
 
     #datatablesSimple tbody tr {
-        background: white !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important;
         transition: all 0.2s ease;
     }
 
     #datatablesSimple tbody tr:hover {
-        background: #f8fafc !important;
         transform: scale(1.002);
     }
 
@@ -179,23 +175,21 @@ $result = $stmt->get_result();
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
             <div>
-                <h1 class="mt-2 mb-1 fw-bold text-dark">Mis Clientes</h1>
-                <p class="text-muted mb-0">Listado de clientes registrados en el sistema</p>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-users me-2"></i>Mis Clientes</h1>
+                <p class="text-muted">Listado de clientes registrados en el sistema</p>
             </div>
-            
             <a onclick="navigateTo('agregar_cliente.php')" class="btn btn-add-premium">
                 <i class="fas fa-user-plus me-2"></i> Nuevo Cliente
             </a>
-        </div>
-        
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-premium p-3 mb-4">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-primary fw-600 text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item active text-muted"><i class="fas fa-users me-1"></i> Clientes</li>
-            </ol>
-        </nav>
+            <nav aria-label="breadcrumb" class="d-none d-lg-block">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Clientes</li>
+                </ol>
+            </nav>
+        </header>
 
         <div class="card card-premium shadow mb-5">
             <div class="card-premium-header">

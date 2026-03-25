@@ -149,32 +149,22 @@ $archivos = array_diff(scandir($rutaCarpeta), array('.', '..'));
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
             <div>
-                <h3 class="page-title fw-bold mb-1">
-                    <i class="fas fa-file-excel me-2 page-title-icon"></i> 
-                    Comprobantes de Egreso
-                </h3>
-                <p class="text-muted mb-0">Gestión de archivos de comprobantes generados en sistema</p>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-file-excel me-2"></i>Comprobantes de Egreso</h1>
+                <p class="text-muted">Gestión y administración de archivos de comprobantes generados</p>
             </div>
-            
             <button id="btnEliminarSeleccionados" class="btn btn-danger btn-premium d-none">
                 <i class="fas fa-trash-alt"></i> Eliminar Selección (<span id="contadorSeleccionados">0</span>)
             </button>
-        </div>
+            <nav aria-label="breadcrumb" class="d-none d-lg-block">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Comprobantes</li>
+                </ol>
+            </nav>
+        </header>
         
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-premium border-0">
-                <li class="breadcrumb-item">
-                    <a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none text-primary fw-600">
-                        <i class="fas fa-home me-1"></i> Inicio
-                    </a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page text-secondary">
-                    <i class="fas fa-file-excel me-1"></i> Comprobantes
-                </li>
-            </ol>
-        </nav>
 
         <div class="card glass-card border-0">
             <div class="card-header card-header-main">

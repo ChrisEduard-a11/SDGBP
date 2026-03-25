@@ -41,16 +41,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cedula = $data['cedula'] ?? null;
     $numeroCuenta = $data['numeroCuenta'] ?? null;
     $referencia = $data['referencia'] ?? null;
-    $montoTotalUSD = floatval($data['monto'] ?? 0);
-    $montoTotalBS = floatval($data['montoBs'] ?? 0);
+    $montoTotalUSD = number_format($data['monto'] ?? 0, 2, '.', '');
+    $montoTotalBS = number_format($data['montoBs'] ?? 0, 2, '.', '');
     $carrito = $data['carrito'] ?? []; // Productos comprados
     $banco = $data['banco'] ?? null; // Capturar el banco enviado desde el frontend
-    $montoBsPago = floatval($data['montoBsPago'] ?? 0); // Capturar el monto en bolívares (pago)
+    $montoBsPago_raw = $data['montoBsPago'] ?? 0;
+    // Inteligente: Solo quitar puntos si hay comas (formato 1.234,56)
+    if (strpos($montoBsPago_raw, ',') !== false) {
+        $montoBsPago_clean = str_replace('.', '', $montoBsPago_raw);
+        $montoBsPago_clean = str_replace(',', '.', $montoBsPago_clean);
+    } else {
+        $montoBsPago_clean = $montoBsPago_raw;
+    }
+    $montoBsPago = number_format((float)$montoBsPago_clean, 2, '.', ''); 
     
     // Extraer datos de Logística
     $tipoEntrega = $data['tipoEntrega'] ?? 'No especificado';
     $agenciaEnvio = $data['agenciaEnvio'] ?? 'N/A';
     $direccionEnvio = $data['direccionEnvio'] ?? 'N/A';
+    $idempotencyToken = $data['idempotencyToken'] ?? '';
+
+    // Verificar token de idempotencia
+    if (empty($idempotencyToken) || !isset($_SESSION['form_tokens'][$idempotencyToken])) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Error: Esta transacción ya ha sido procesada o el token es inválido.'
+        ]);
+        exit;
+    }
+    // Eliminar el token de la sesión
+    unset($_SESSION['form_tokens'][$idempotencyToken]);
     
     // Validar los datos requeridos
     if (!$nombreComprador || !$correoComprador || !$telefonoComprador || !$metodoPago || !$fechaPago || !$referencia || !$banco || $montoTotalUSD <= 0 || $montoBsPago <= 0) {
@@ -65,14 +85,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conexion->begin_transaction();
 
     try {
-        // Insertar los datos del pago en la tabla `pagos_productos`
-        $query = "INSERT INTO pagos_productos (nombre_comprador, correo_comprador, telefono_comprador, monto, metodo_pago, fecha_pago, telefono, cedula, numero_cuenta, referencia, monto_bs_pago, banco) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Convertir el array del carrito de compras a un JSON string
+        $carrito_json = json_encode($carrito);
+
+        // Insertar los datos del pago en la tabla `pagos_productos` incluyendo el carrito real
+        $query = "INSERT INTO pagos_productos (nombre_comprador, correo_comprador, telefono_comprador, monto, metodo_pago, fecha_pago, telefono, cedula, numero_cuenta, referencia, monto_bs_pago, banco, carrito_json, estado) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pendiente')";
         $stmt = $conexion->prepare($query);
         if (!$stmt) {
             throw new Exception('Error al preparar la consulta: ' . $conexion->error);
         }
-        $stmt->bind_param("sdssssssssds", 
+        
+        // Usar "s" para monto y monto_bs_pago para preservar la precisión decimal
+        $stmt->bind_param("sssssssssssss", 
             $nombreComprador, 
             $correoComprador, 
             $telefonoComprador, 
@@ -84,28 +109,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $numeroCuenta, 
             $referencia, 
             $montoBsPago, 
-            $banco
+            $banco,
+            $carrito_json
         );
         if (!$stmt->execute()) {
             throw new Exception('Error al ejecutar la consulta: ' . $stmt->error);
         }
 
-        // Reducir el stock de los productos comprados
-        foreach ($carrito as $producto) {
-            $productoId = $producto['productoId'];
-            $cantidad = $producto['cantidad'];
-
-            $sqlStock = "UPDATE productos SET stock = stock - ? WHERE id = ? AND stock >= ?";
-            $stmtStock = $conexion->prepare($sqlStock);
-            if (!$stmtStock) {
-                throw new Exception('Error al preparar la consulta de stock: ' . $conexion->error);
-            }
-
-            $stmtStock->bind_param("iii", $cantidad, $productoId, $cantidad);
-            if (!$stmtStock->execute() || $stmtStock->affected_rows <= 0) {
-                throw new Exception("No se pudo reducir el stock para el producto ID: $productoId. Verifica el stock disponible.");
-            }
-        }
+        // --- LA REDUCCIÓN DE STOCK HA SIDO ELIMINADA DE ESTA ETAPA ---
+        // Ahora el descuento de inventario se procesa EXCLUSIVAMENTE mediante el panel de 
+        // Administración "Aprobar Marketing" una vez validado humanamente el pago bancario.
+        // Esto prevé vaciados de stock masivos por compras falsas no verificadas.
 
         // Confirmar la transacción
         $conexion->commit();

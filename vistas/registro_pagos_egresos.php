@@ -14,6 +14,20 @@ if (isset($_SESSION['id'])) {
     $stmtSaldo->fetch();
     $stmtSaldo->close();
 }
+
+// Generar token de seguridad (idempotencia)
+if (!isset($_SESSION['form_tokens'])) {
+    $_SESSION['form_tokens'] = [];
+}
+$idempotency_token = bin2hex(random_bytes(16));
+$_SESSION['form_tokens'][$idempotency_token] = time();
+
+// Limpiar tokens viejos (más de 1 hora)
+foreach ($_SESSION['form_tokens'] as $token => $time) {
+    if (time() - $time > 3600) {
+        unset($_SESSION['form_tokens'][$token]);
+    }
+}
 ?>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -117,17 +131,17 @@ if (isset($_SESSION['id'])) {
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <header class="d-flex justify-content-between align-items-center mb-4 animate-up">
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
             <div>
-                <h1 class="fw-bold mb-0 text-danger">Registrar Egreso</h1>
-                <p class="text-muted small">Reporta tus salidas de dinero para control administrativo</p>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-minus-circle me-2"></i>Registrar Egreso</h1>
+                <p class="text-muted">Reporta tus salidas de dinero para control administrativo y balance</p>
             </div>
-            <div class="breadcrumb-container d-none d-md-block">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none text-muted"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                    <li class="breadcrumb-item active fw-bold text-danger">Nuevo Egreso</li>
+            <nav aria-label="breadcrumb" class="d-none d-lg-block">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Nuevo Egreso</li>
                 </ol>
-            </div>
+            </nav>
         </header>
 
         <div class="row g-4">
@@ -169,7 +183,8 @@ if (isset($_SESSION['id'])) {
             <!-- Main Form -->
             <div class="col-lg-8 animate-up" style="animation-delay: 0.2s;">
                 <div class="glass-card p-4 p-md-5">
-                    <form method="post" action="../acciones/controlador_pago_egreso.php" onsubmit="return validateFormRegistroEgreso()" enctype="multipart/form-data">
+                    <form method="post" id="formRegistroEgreso" action="../acciones/controlador_pago_egreso.php" onsubmit="return validateFormRegistroEgreso()" enctype="multipart/form-data">
+                        <input type="hidden" name="idempotency_token" value="<?php echo $idempotency_token; ?>">
                         
                         <div class="form-section-title">
                             <i class="fas fa-minus-circle"></i> Detalles del Egreso
@@ -234,11 +249,48 @@ if (isset($_SESSION['id'])) {
                             </div>
 
                             <div class="col-md-6 mb-3">
+                                <label class="small fw-bold mb-2">Banco de Destino / Método</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-university"></i></span>
+                                    <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                                        <option value="">Seleccione el banco...</option>
+                                        <optgroup label="Bancos Públicos">
+                                            <option value="Banco de Venezuela">Banco de Venezuela (BDV)</option>
+                                            <option value="Banco del Tesoro">Banco del Tesoro</option>
+                                            <option value="BDT - Banco Digital de los Trabajadores">BDT - Banco Digital de los Trabajadores</option>
+                                            <option value="Banco Agrícola de Venezuela">Banco Agrícola de Venezuela</option>
+                                            <option value="BANFANB">BANFANB</option>
+                                        </optgroup>
+                                        <optgroup label="Bancos Privados">
+                                            <option value="Banesco">Banesco</option>
+                                            <option value="Banco Mercantil">Banco Mercantil</option>
+                                            <option value="Provincial">Provincial (BBVA)</option>
+                                            <option value="BNC - Banco Nacional de Crédito">BNC - Banco Nacional de Crédito</option>
+                                            <option value="Bancamiga">Bancamiga</option>
+                                            <option value="Banplus">Banplus</option>
+                                            <option value="Banco Exterior">Banco Exterior</option>
+                                            <option value="BFC Banco Fondo Común">BFC Banco Fondo Común</option>
+                                            <option value="Banco Caroní">Banco Caroní</option>
+                                            <option value="Banco Activo">Banco Activo</option>
+                                            <option value="Banco Plaza">Banco Plaza</option>
+                                            <option value="100% Banco">100% Banco</option>
+                                            <option value="DelSur">DelSur</option>
+                                            <option value="Bancentro">Bancentro</option>
+                                            <option value="Mi Banco">Mi Banco</option>
+                                            <option value="Banco Venezolano de Crédito">Banco Venezolano de Crédito</option>
+                                            <option value="Otro/Efectivo">Otro / Efectivo / Divisa</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
                                 <label class="small fw-bold mb-2">Monto del Egreso (Bs)</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-money-bill-wave"></i></span>
-                                    <input type="text" class="form-control campo-monto" id="monto" name="monto" placeholder="0,00" maxlength="15" required>
+                                    <input type="text" class="form-control campo-monto" id="monto" name="monto" placeholder="1.234,56" maxlength="15" required>
                                 </div>
+                                <div class="form-text small opacity-70"><i class="fas fa-info-circle me-1"></i> Formato sugerido: 1.500,00 (Punto para miles, coma para decimales).</div>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -280,7 +332,6 @@ if (isset($_SESSION['id'])) {
             </div>
         </div>
     </div>
-
 <?php
 require_once("../models/footer.php");
 ?>

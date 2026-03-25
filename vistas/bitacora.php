@@ -37,14 +37,12 @@ include('../conexion.php');
         backdrop-filter: blur(10px);
         border: 1px solid var(--glass-border) !important;
         border-radius: 12px !important;
-        box-shadow: var(--shadow-premium);
     }
 
     .card-premium {
-        background: #ffffff;
+        background: transparent;
         border: none !important;
         border-radius: var(--radius-premium) !important;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
         overflow: hidden;
     }
 
@@ -101,12 +99,10 @@ include('../conexion.php');
     }
 
     #datatablesSimple tbody tr {
-        background: white !important;
         transition: all 0.2s ease;
     }
 
     #datatablesSimple tbody tr:hover {
-        background: #f1f5f9 !important;
         transform: scale(1.001);
     }
 
@@ -161,22 +157,18 @@ include('../conexion.php');
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
             <div>
-                <h1 class="mt-2 mb-1 fw-bold text-dark">Bitácora Global</h1>
-                <p class="text-muted mb-0">Seguimiento detallado de todas las operaciones del sistema</p>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-history me-2"></i>Bitácora Global</h1>
+                <p class="text-muted">Seguimiento detallado de todas las operaciones y eventos del sistema</p>
             </div>
-            <div class="d-none d-md-block">
-                <img src="../img/Logo-OP2_V4.webp" alt="Logo" style="height: 35px;">
-            </div>
-        </div>
-
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-premium p-3 mb-4">
-                <li class="breadcrumb-item"><a href="inicio.php" class="text-primary fw-600 text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item active text-muted">Bitácora</li>
-            </ol>
-        </nav>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Bitácora</li>
+                </ol>
+            </nav>
+        </header>
 
         <div class="card card-premium shadow mb-5">
             <div class="card-premium-header d-flex justify-content-between align-items-center">

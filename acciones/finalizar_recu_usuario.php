@@ -54,6 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->CharSet = 'UTF-8';
             $mail->Subject = 'Entrega de Credenciales - Nombre de Usuario';
 
+            // Obtener la URL base dinámica para el enlace del correo
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'];
+            $script_dirname = dirname($_SERVER['SCRIPT_NAME']);
+            $base_dir = preg_replace('/\/acciones$/i', '', $script_dirname);
+            $login_url = rtrim($protocol . '://' . $host . $base_dir, '/') . '/vistas/login.php';
+
             $mail->Body = "
 <!DOCTYPE html>
 <html lang='es'>
@@ -92,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </p>
                             <!-- Action Button -->
                             <div style='text-align: center;'>
-                                <a href='https://sdgbp.wuaze.com/vistas/login.php' style='display: inline-block; padding: 14px 28px; background-color: #10b981; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Ir al Acceso del Sistema</a>
+                                <a href='{$login_url}' style='display: inline-block; padding: 14px 28px; background-color: #10b981; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Ir al Acceso del Sistema</a>
                             </div>
                         </td>
                     </tr>

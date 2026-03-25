@@ -27,6 +27,10 @@ session_start();
     <link rel="stylesheet" href="../sweetalert/sweetalert2.min.css">
     <script src="../sweetalert/sweetalert2.js"></script>
 
+    <!-- Select2 - Global Standard -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -174,6 +178,40 @@ session_start();
         /* Two columns grid for inputs */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
         @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+        /* Select2 Premium Theme Overrides for Tailwind Design */
+        .select2-container--default .select2-selection--single {
+            background-color: #f8fafc !important;
+            border: 1.5px solid #e2e8f0 !important;
+            border-radius: 10px !important;
+            height: 48px !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: all 0.3s !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #1e293b !important;
+            font-size: 0.95rem !important;
+            font-weight: 500 !important;
+            padding-left: 0 !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 46px !important;
+        }
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #f18000 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(241, 128, 0, 0.1) !important;
+        }
+        .select2-dropdown {
+            border-radius: 12px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+            overflow: hidden !important;
+        }
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: #f18000 !important;
+        }
     </style>
 </head>
 <body>
@@ -393,8 +431,24 @@ session_start();
 
     <!-- Scripts -->
     <script src="../js/vali_login.js"></script>
-    
-    <!-- Tawk.to Script -->
+    <script>
+        $(document).ready(function() {
+            $('.inst-select').select2({
+                width: '100%',
+                placeholder: "Seleccione una opción",
+                allowClear: false
+            });
+        });
+
+        function previewProfilePic(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('profilePicPreview');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     (function(){

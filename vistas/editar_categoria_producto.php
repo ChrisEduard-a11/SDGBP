@@ -117,13 +117,19 @@ if (!$categoria) {
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-5">
         
-        <nav aria-label="breadcrumb" class="mb-5">
-            <ol class="breadcrumb bg-white p-3 rounded-4 shadow-sm justify-content-center">
-                <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none text-primary"><i class="fas fa-home me-1"></i> Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="agregar_categoria_producto.php" class="text-decoration-none text-primary"><i class="fas fa-tags me-1"></i> Categorías</a></li>
-                <li class="breadcrumb-item active text-secondary fw-bold"><i class="fas fa-pen-nib me-1"></i> Editar Etiqueta</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-tags me-2"></i>Actualizar Categoría</h1>
+                <p class="text-muted">Modificación de nombre y clasificación de categoría de producto</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('agregar_categoria_producto.php')" class="text-decoration-none">Categorías</a></li>
+                    <li class="breadcrumb-item active">Editar</li>
+                </ol>
+            </nav>
+        </header>
 
         <div class="form-container">
             <div class="card glass-card border-0 animate__animated animate__zoomIn">

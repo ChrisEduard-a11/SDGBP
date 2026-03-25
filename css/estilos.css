@@ -1,12 +1,6 @@
 #layoutSidenav_content {
     position: relative;
-    /* Técnica de fondo múltiple: Capa de color (overlay) + Imagen de fondo */
-    background: linear-gradient(var(--content-overlay), var(--content-overlay)), 
-                url('../img/fondo_sistema_premium.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-color: var(--bg-app);
     min-height: 100vh;
     color: var(--text-main);
 }
@@ -14,93 +8,19 @@
 .rounded-circle {
     border-radius: 50%;
 }
-/*Iconos y cajas*/
 
 .btn:hover {
     background-color: #f18000;
     color: #ffffff;
 }
 
-
 body, html {
     font-family: 'Roboto', sans-serif;
 }
-/*footer*/
-#footer {
-    background-color: #606060;
-    color: #ffffff;
-    box-shadow: #606060 0px 0px 10px;
-    padding: 2rem 0;
-}
 
-#footer a {
-    color: #adb5bd;
-    transition: color 0.3s;
-}
-
-#footer a:hover {
-    color: #ffffff;
-}
-/*narvar*/
-.bg-color {
-    background-color: #f18000;
-    color: #4d4a4a;
-    box-shadow: #f18000 0px 0px 10px;
-}
-/*Sidebar*/
-.sb-sidenav {
-    background-color: #606060;
-    color: #000000;
-    box-shadow: #606060 0px 0px 10px;
-}
-
-.sb-sidenav .nav-link {
-    color: #606060;
-    transition: color 0.3s, background-color 0.3s;
-}
-
-.sb-sidenav .nav-link:hover {
-    color: #ffffff;
-    background-color: #495057;
-}
-
-.sb-sidenav .sb-sidenav-menu-heading {
-    color: #ced4da;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    margin-top: 1rem;
-}
-
-.sb-sidenav .sb-sidenav-menu .nav-link.active {
-    color: #ffffff;
-    background-color: #495057;
-}
-
-.sb-sidenav .sb-sidenav-collapse-arrow {
-    color: #adb5bd;
-}
-
-.sb-sidenav .sb-sidenav-collapse-arrow:hover {
-    color: #ffffff;
-}
-
-.sb-sidenav .sb-sidenav-menu .nav-link i {
-    margin-right: 0.5rem;
-}
-
-.sb-sidenav .sb-sidenav-menu .nav-link.collapsed .sb-sidenav-collapse-arrow {
-    transform: rotate(0deg);
-    transition: transform 0.3s;
-}
-
-.sb-sidenav .sb-sidenav-menu .nav-link:not(.collapsed) .sb-sidenav-collapse-arrow {
-    transform: rotate(90deg);
-    transition: transform 0.3s;
-}
-/*fotos ciercular*/
 .img-circular {
-    width: 40px; /* Ajusta el tamaño según sea necesario */
-    height: 40px; /* Ajusta el tamaño según sea necesario */
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
 }

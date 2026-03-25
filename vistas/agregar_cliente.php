@@ -120,18 +120,19 @@ require_once("../conexion.php");
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="text-center mb-5">
-            <h1 class="mt-2 mb-1 fw-bold text-dark">Registrar Cliente</h1>
-            <p class="text-muted">Añade un nuevo miembro a tu directorio de gestión</p>
-        </div>
-
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-premium p-3 mb-5 mx-auto" style="max-width: 600px;">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-primary fw-600 text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('ver_clientes.php')" class="text-primary fw-600 text-decoration-none"><i class="fas fa-users me-1"></i> Clientes</a></li>
-                <li class="breadcrumb-item active text-muted">Nuevo Registro</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-user-plus me-2"></i>Registrar Cliente</h1>
+                <p class="text-muted">Añade un nuevo miembro a tu directorio de gestión y seguimiento</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('ver_clientes.php')" class="text-decoration-none">Clientes</a></li>
+                    <li class="breadcrumb-item active">Nuevo</li>
+                </ol>
+            </nav>
+        </header>
         
         <div class="card card-premium shadow-lg mx-auto" style="max-width: 600px;">
             <div class="card-premium-header text-center">

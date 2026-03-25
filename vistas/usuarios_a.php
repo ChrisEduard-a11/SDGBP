@@ -100,19 +100,19 @@ $totalPendientes = count($usuarios_no_aprobados);
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
 
-        <div class="mb-4">
-            <h3 class="fw-bold mb-1">
-                <i class="fas fa-user-clock me-2" style="color: var(--premium-violet, #8b5cf6);"></i>
-                Usuarios Pendientes de Aprobación
-            </h3>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-user-clock me-2"></i>Aprobar Usuarios</h1>
+                <p class="text-muted">Gestión de solicitudes de acceso y validación de nuevos miembros del sistema</p>
+            </div>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('usuario.php')" class="text-decoration-none">Usuarios</a></li>
-                    <li class="breadcrumb-item active">Aprobar</li>
+                    <li class="breadcrumb-item active">Aprobaciones</li>
                 </ol>
             </nav>
-        </div>
+        </header>
 
         <!-- Counter badge -->
         <div class="d-flex align-items-center gap-3 mb-4">

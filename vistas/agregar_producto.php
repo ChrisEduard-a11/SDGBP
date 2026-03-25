@@ -120,20 +120,19 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="mb-4 text-center">
-            <h3 class="page-title fw-bold">
-                <i class="fas fa-plus-circle page-title-icon me-2"></i> 
-                Agregar Nuevo Producto
-            </h3>
-        </div>
-        
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-white p-3 rounded-4 shadow-sm mb-4">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('productos.php')" class="text-decoration-none"><i class="fas fa-boxes me-1"></i> Inventario</a></li>
-                <li class="breadcrumb-item active text-secondary"><i class="fas fa-plus me-1"></i> Nueva Ficha</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-plus-circle me-2"></i>Agregar Producto</h1>
+                <p class="text-muted">Incorpore nuevos productos al catálogo de ventas e inventario</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('productos.php')" class="text-decoration-none">Productos</a></li>
+                    <li class="breadcrumb-item active">Nuevo</li>
+                </ol>
+            </nav>
+        </header>
 
         <div class="card glass-card border-0 animate__animated animate__fadeIn">
             <div class="card-header card-header-main">

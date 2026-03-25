@@ -253,17 +253,17 @@ $metrics_act = $stmt_a->get_result()->fetch_assoc();
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <header class="d-flex justify-content-between align-items-center mb-4 animate-up">
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
             <div>
-                <h1 class="fw-bold mb-0">Gestión de Mis Pagos</h1>
-                <p class="text-muted small">Control total de tus transacciones y saldo disponible</p>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-history me-2"></i>Historial de Pagos</h1>
+                <p class="text-muted">Consulta y seguimiento de tus transacciones, ingresos y egresos registrados</p>
             </div>
-            <div class="breadcrumb-container d-none d-md-block">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                    <li class="breadcrumb-item active">Mis Pagos</li>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Historial</li>
                 </ol>
-            </div>
+            </nav>
         </header>
 
         <!-- Dynamic Metrics Dashboard -->

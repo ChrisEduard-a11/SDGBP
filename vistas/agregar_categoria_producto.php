@@ -132,17 +132,19 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="mb-4 text-center">
-            <h3 class="fw-bold"><i class="fas fa-tags page-title-icon me-2"></i> Gestión de Categorías</h3>
-        </div>
-        
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-white p-3 rounded-4 shadow-sm mb-4">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none text-primary"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('productos.php')" class="text-decoration-none text-primary"><i class="fas fa-boxes me-1"></i> Inventario</a></li>
-                <li class="breadcrumb-item active text-secondary"><i class="fas fa-layer-group me-1"></i> Categorías</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-tags me-2"></i>Categorías de Productos</h1>
+                <p class="text-muted">Administración de categorías y clasificación del catálogo de ventas</p>
+            </div>
+            <nav aria-label="breadcrumb" class="d-none d-lg-block">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('productos.php')" class="text-decoration-none">Productos</a></li>
+                    <li class="breadcrumb-item active">Categorías</li>
+                </ol>
+            </nav>
+        </header>
 
         <?php if (isset($mensaje)): ?>
             <div class="alert alert-info border-0 shadow-sm rounded-4 animate__animated animate__fadeInDown mb-4" role="alert">

@@ -1,4 +1,19 @@
-<?php session_start(); ?>
+<?php 
+session_start(); 
+// Generar token de seguridad (idempotencia)
+if (!isset($_SESSION['form_tokens'])) {
+    $_SESSION['form_tokens'] = [];
+}
+$idempotency_token = bin2hex(random_bytes(16));
+$_SESSION['form_tokens'][$idempotency_token] = time();
+
+// Limpiar tokens viejos (más de 1 hora)
+foreach ($_SESSION['form_tokens'] as $token => $time) {
+    if (time() - $time > 3600) {
+        unset($_SESSION['form_tokens'][$token]);
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
 <head>
@@ -251,6 +266,7 @@
                 <!-- Data Form -->
                 <div class="lg:col-span-7">
                     <form id="formCheckout" class="space-y-8">
+                        <input type="hidden" id="coIdempotencyToken" value="<?php echo $idempotency_token; ?>">
                         
                         <!-- Block 1: Info -->
                         <div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
@@ -401,7 +417,7 @@
                             <label class="block text-sm text-slate-300 mb-2 font-medium">Monto Exacto Vislumbrado en tu Recibo (Bs)</label>
                             <div class="relative mb-6">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 font-bold fs-5">Bs.</span>
-                                <input type="number" step="0.01" id="coMontoPagado" class="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white text-2xl font-bold focus:ring-2 focus:ring-brand-400 focus:bg-white/20 transition-all outline-none" placeholder="0.00">
+                                <input type="text" id="coMontoPagado" class="campo-monto w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white text-2xl font-bold focus:ring-2 focus:ring-brand-400 focus:bg-white/20 transition-all outline-none" placeholder="1.234,56">
                             </div>
                             <button type="submit" id="btnConfirmarPedido" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all hover:scale-[1.01] flex justify-center items-center text-lg">
                                 Someter Auditoría a Pago <i class="fas fa-arrow-circle-up ml-2"></i>

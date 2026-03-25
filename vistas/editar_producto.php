@@ -144,21 +144,20 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="mb-4 text-center">
-            <h3 class="fw-bold">
-                <i class="fas fa-edit page-title-icon me-2"></i> 
-                Editar Producto
-            </h3>
-            <p class="text-secondary small mt-1">ID Producto: <span class="badge bg-light text-dark fw-bold border">#<?php echo $producto['id']; ?></span></p>
-        </div>
-        
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-white p-3 rounded-4 shadow-sm mb-4">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none text-primary"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('productos.php')" class="text-decoration-none text-primary"><i class="fas fa-boxes me-1"></i> Inventario</a></li>
-                <li class="breadcrumb-item active text-secondary"><i class="fas fa-pen me-1"></i> Actualizar Registro</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-edit me-2"></i>Editar Producto</h1>
+                <p class="text-muted">Actualización de información, precios y existencias del producto</p>
+                <div class="mt-1"><span class="badge bg-light text-dark fw-bold border">ID: #<?php echo $producto['id']; ?></span></div>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('productos.php')" class="text-decoration-none">Productos</a></li>
+                    <li class="breadcrumb-item active">Editar</li>
+                </ol>
+            </nav>
+        </header>
 
         <div class="card glass-card border-0 animate__animated animate__fadeIn">
             <div class="card-header card-header-main">

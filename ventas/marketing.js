@@ -436,9 +436,10 @@ function ConfigurarFlujoCheckout() {
                 telefonoComprador: telf,
                 monto: totalU.toFixed(2),
                 montoBs: (totalU * TASA_BCV).toFixed(2),
-                montoBsPago: pmonto,
+                montoBsPago: pmonto.replace(/\./g, "").replace(",", "."), // Limpiar 1.234,56 -> 1234.56
                 metodoPago: m,
                 banco: document.getElementById('coBanco').value,
+                idempotencyToken: document.getElementById('idempotencyToken')?.value,
                 fechaPago: fecha,
                 referencia: ref,
                 telefono: document.getElementById('coTelefonoOrigen')?.value,
@@ -448,7 +449,8 @@ function ConfigurarFlujoCheckout() {
                 // NUEVOS CAMPOS DE LOGÍSTICA
                 tipoEntrega: tipoEntrega,
                 agenciaEnvio: agenciaEnvio,
-                direccionEnvio: direccionEnvio
+                direccionEnvio: direccionEnvio,
+                idempotencyToken: document.getElementById('coIdempotencyToken')?.value
             };
 
             try {
@@ -489,6 +491,21 @@ function ConfigurarFlujoCheckout() {
                 MostrarToast('danger', error.message || 'Interrupción de servidor durante guardado.');
                 b.disabled = false; b.innerHTML = 'Someter Auditoría a Pago <i class="fas fa-arrow-circle-up ml-2"></i>';
             } 
+        });
+    }
+
+    // Máscara de moneda para el campo de monto (Estilo Bancario: 1.500,00)
+    const coMontoPagado = document.getElementById('coMontoPagado');
+    if (coMontoPagado) {
+        coMontoPagado.addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, "");
+            if (value === "") return;
+            let numericValue = (parseInt(value) / 100).toFixed(2);
+            let parts = numericValue.split(".");
+            let integerPart = parts[0];
+            let decimalPart = parts[1];
+            integerPart = parseInt(integerPart).toLocaleString('de-DE'); 
+            this.value = integerPart + "," + decimalPart;
         });
     }
 }

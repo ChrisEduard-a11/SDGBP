@@ -133,6 +133,18 @@ if ($tipo_usuario == "admin") {
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
+        <header class="page-header-standard d-flex justify-content-between align-items-center animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-home me-2"></i>Panel de Control</h1>
+                <p class="text-muted">Resumen de actividades y accesos rápidos del sistema</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item active">Dashboard</li>
+                </ol>
+            </nav>
+        </header>
+
         <div class="card shadow-lg mb-5 animate__animated animate__fadeInDown welcome-card border-0">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">

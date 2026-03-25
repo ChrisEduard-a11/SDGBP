@@ -34,7 +34,7 @@ try {
             LEFT JOIN usuario ON usuario_pagos.usuario_id = usuario.id_usuario
             WHERE pagos.estado = 'aprobado'
             $filtro_fecha
-            ORDER BY pagos.id DESC
+            ORDER BY pagos.id ASC
         ";
     } else {
         $sql = "
@@ -78,93 +78,131 @@ try {
         }
     }
 
-    // Banner superior corporativo
+    // Banner superior corporativo y estilos
     $html = '
-    <div style="width:100%; background:#f18000; padding:15px; color:#fff; font-family:sans-serif; display:flex; align-items:center; justify-content:space-between; border-bottom:5px solid #c75b00;">
-        <div style="flex:0 0 auto; margin-left:20px;">
-            <img src="https://lh5.googleusercontent.com/p/AF1QipMIuz9nSKZaDup5Zr7LIVwhyDKheMsfdeD_55hd=w408-h408-k-no" alt="Logo" style="height:80px;">
-        </div>
-        <div style="flex:1; text-align:right; margin-right:20px;">
-            <h1 style="margin:0; font-size:2em; font-weight:bold;">EURIPYS 2024 C.A.</h1>
-            <p style="margin:0; font-size:1.1em; font-weight:500;">REGISTRO DE INGRESO Y EGRESO DE UPU</p>
-        </div>
+    <style>
+        body { font-family: "Helvetica", "Arial", sans-serif; font-size: 10pt; color: #333; }
+        .header-table { width: 100%; border-bottom: 3px solid #f18000; padding-bottom: 10px; margin-bottom: 20px; }
+        .logo-cell { width: 30%; vertical-align: middle; }
+        .title-cell { width: 70%; text-align: right; vertical-align: middle; }
+        .company-name { font-size: 22pt; font-weight: bold; color: #0f172a; margin: 0; letter-spacing: 1px; }
+        .report-title { font-size: 12pt; color: #f18000; font-weight: bold; margin: 5px 0 0 0; text-transform: uppercase; }
+        
+        .info-panel { background-color: #f8fafc; border-left: 4px solid #0f172a; padding: 10px 15px; margin-bottom: 25px; border-radius: 0 4px 4px 0; }
+        .info-panel p { margin: 5px 0; font-size: 9.5pt; color: #475569; }
+        .info-panel strong { color: #0f172a; }
+
+        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9pt; }
+        .data-table th { background-color: #0f172a; color: #ffffff; padding: 10px; text-align: left; text-transform: uppercase; font-size: 8pt; letter-spacing: 0.5px; border: 1px solid #0f172a; }
+        .data-table td { padding: 8px 10px; border: 1px solid #e2e8f0; vertical-align: middle; }
+        .row-even { background-color: #f8fafc; }
+        .row-odd { background-color: #ffffff; }
+        .row-egreso { background-color: #fef2f2; }
+        
+        .text-success { color: #16a34a; font-weight: bold; }
+        .text-danger { color: #dc2626; font-weight: bold; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        .totals-row td { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; border-top: 2px solid #cbd5e1; }
+        .saldo-final { background-color: #0f172a !important; color: #ffffff !important; }
+        
+        .footer-signatures { width: 100%; margin-top: 50px; page-break-inside: avoid; }
+        .sig-line { width: 250px; border-top: 1px solid #475569; margin: 0 auto; margin-bottom: 5px; }
+        .sig-name { font-weight: bold; color: #0f172a; font-size: 10pt; margin: 0; }
+        .sig-title { color: #64748b; font-size: 8.5pt; margin: 0; }
+        
+        .page-footer { position: fixed; bottom: -30px; left: 0; right: 0; height: 30px; text-align: center; font-size: 8pt; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    </style>
+
+    <div class="page-footer">
+        Generado por SDGBP - Sistema de Gestión de Bienes y Pagos el ' . date('d/m/Y h:i A') . '
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <div style="width:100%; padding:0 20px; box-sizing:border-box;">
-        <div style="margin-top:20px; font-family:sans-serif; font-size:0.9em;">
-            <strong>Filtros aplicados:</strong><br>
-            Fecha Inicio: ' . htmlspecialchars($fecha_inicio) . ' | Fecha Fin: ' . htmlspecialchars($fecha_fin) . ' | UPU: ' . htmlspecialchars($nombre_upu) . '
-    ';
+    <table class="header-table">
+        <tr>
+            <td class="logo-cell">
+                <img src="https://lh5.googleusercontent.com/p/AF1QipMIuz9nSKZaDup5Zr7LIVwhyDKheMsfdeD_55hd=w408-h408-k-no" alt="Logo" style="height: 60px;">
+            </td>
+            <td class="title-cell">
+                <h1 class="company-name">EURIPYS 2024 C.A.</h1>
+                <p class="report-title">Registro de Ingreso y Egreso de UPU</p>
+            </td>
+        </tr>
+    </table>
 
-    // Tabla con bordes visibles y estilo profesional
-    $html .= '<table style="width:100%; border-collapse:collapse; margin-top:20px; font-family:sans-serif; font-size:0.9em;">';
-    $html .= '<thead>'; 
-    $html .= '<tr style="background-color:#f18000; color:#fff;">';
-    $html .= '<th style="padding:8px; border:1px solid #ccc;">Nombre de la UPU</th>';
-    $html .= '<th style="border:1px solid #ccc;">Descripción</th>';
-    $html .= '<th style="border:1px solid #ccc;">Fecha</th>';
-    $html .= '<th style="border:1px solid #ccc;">Referencia</th>';
-    $html .= '<th style="border:1px solid #ccc;">Entrada</th>';
-    $html .= '<th style="border:1px solid #ccc;">Salida</th>';
-    $html .= '<th style="border:1px solid #ccc;">Saldo</th>';
-    $html .= '<th style="border:1px solid #ccc;">Cliente/Proveedor</th>';
-    $html .= '</tr>';
-    $html .= '</thead>';
-    $html .= '<tbody>';
+    <div class="info-panel">
+        <p><strong>Filtros aplicados:</strong></p>
+        <p><strong>Unidad de Producción (UPU):</strong> ' . htmlspecialchars($nombre_upu) . '</p>
+        <p><strong>Período:</strong> ' . (empty($fecha_inicio) ? 'Todos los registros' : htmlspecialchars($fecha_inicio) . ' al ' . htmlspecialchars($fecha_fin)) . '</p>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Nombre de la UPU</th>
+                <th>Tipo</th>
+                <th>Fecha</th>
+                <th>Referencia</th>
+                <th class="text-right">Entrada</th>
+                <th class="text-right">Salida</th>
+                <th class="text-right">Saldo</th>
+                <th>Cliente/Proveedor</th>
+            </tr>
+        </thead>
+        <tbody>
+    ';
 
     // Variables acumuladoras
     $total_entrada = 0;
     $total_salida = 0;
     $saldo_total = 0;
+    $max_id = -1;
+    $saldo_ultimo_pago = 0;
 
     $i = 0;
     while ($row = $resultado->fetch_assoc()) {
-        $ultimo_pago = $row; // Guardar el último pago iterado (último según ORDER BY)
-        $row_color = ($i % 2 == 0) ? '#f9f9f9' : '#ffffff';
-        $color_fondo = ($row['tipo'] === 'Egreso') ? 'background-color:#f8d7da;' : 'background-color:' . $row_color . ';';
-        $html .= '<tr style="' . $color_fondo . '">';
-        $html .= '<td style="border:1px solid #ccc;">' . htmlspecialchars($row['nombre_cliente']) . '</td>';
-        $html .= '<td style="border:1px solid #ccc;">' . htmlspecialchars($row['tipo'] === 'Ingreso' ? 'Ingreso' : 'Egreso') . '</td>';
-        $html .= '<td style="border:1px solid #ccc;">' . htmlspecialchars($row['fecha_pago']) . '</td>';
-        $html .= '<td style="border:1px solid #ccc;">' . htmlspecialchars($row['referencia']) . '</td>';
+        // Obtenemos el saldo del pago más reciente (el de mayor ID en la BD)
+        if ($row['id'] > $max_id) {
+            $max_id = $row['id'];
+            $saldo_ultimo_pago = $row['saldo_resultante'];
+        }
+        
+        $row_class = ($i % 2 == 0) ? 'row-even' : 'row-odd';
+        if ($row['tipo'] === 'Egreso') $row_class = 'row-egreso';
+
+        $html .= '<tr class="' . $row_class . '">';
+        $html .= '<td>' . htmlspecialchars($row['nombre_cliente']) . '</td>';
+        $html .= '<td>' . htmlspecialchars($row['tipo'] === 'Ingreso' ? 'Ingreso' : 'Egreso') . '</td>';
+        $html .= '<td>' . htmlspecialchars($row['fecha_pago']) . '</td>';
+        $html .= '<td>' . htmlspecialchars($row['referencia']) . '</td>';
 
         if ($row['tipo'] === 'Ingreso') {
-            $html .= '<td style="color:green; border:1px solid #ccc;">Bs +' . htmlspecialchars($row['monto']) . '</td>';
-            $html .= '<td style="border:1px solid #ccc;"></td>';
+            $html .= '<td class="text-right text-success">Bs +' . htmlspecialchars($row['monto']) . '</td>';
+            $html .= '<td></td>';
             $total_entrada += $row['monto']; 
             $saldo_total += $row['monto'];
         } else {
-            $html .= '<td style="border:1px solid #ccc;"></td>';
-            $html .= '<td style="color:red; border:1px solid #ccc;">Bs -' . htmlspecialchars($row['monto']) . '</td>';
+            $html .= '<td></td>';
+            $html .= '<td class="text-right text-danger">Bs -' . htmlspecialchars($row['monto']) . '</td>';
             $total_salida += $row['monto']; 
             $saldo_total += $row['monto'];
         }
 
-        $html .= '<td style="border:1px solid #ccc;">Bs ' . htmlspecialchars($row['saldo_resultante']) . '</td>';
-        $html .= '<td style="border:1px solid #ccc;">' . htmlspecialchars($row['cliente']) . '</td>';
+        $html .= '<td class="text-right">Bs ' . htmlspecialchars($row['saldo_resultante']) . '</td>';
+        $html .= '<td>' . htmlspecialchars($row['cliente']) . '</td>';
         $html .= '</tr>';
         $i++;
     }
     // Fila de totales
-    // Calculamos la diferencia real para el Saldo Final
-    $saldo_calculado = $total_entrada - $total_salida; 
+    // Usamos el saldo del último pago registrado encontrado (mayor ID)
+    $saldo_periodo = number_format((float)$saldo_ultimo_pago, 2, ',', '.');
 
-    // Obtener el saldo_resultante del último pago filtrado
-    if (isset($ultimo_pago) && isset($ultimo_pago['saldo_resultante'])) {
-        $saldo_periodo = number_format((float)$ultimo_pago['saldo_resultante'], 2, ',', '.');
-    } else {
-        $saldo_periodo = number_format(0, 2, ',', '.');
-    }
-
-    $html .= '<tr style="background-color:#eaeaea; font-weight:bold;">';
-    $html .= '<td colspan="4" style="text-align:right; border:1px solid #ccc;">TOTAL</td>';
-    // Aquí se muestra la suma de todos los ingresos
-    $html .= '<td style="color:green; border:1px solid #ccc;">Bs +' . number_format($total_entrada, 2, ',', '.') . '</td>';
-    // Aquí se muestra la suma de todos los egresos (lo que salió)
-    $html .= '<td style="color:red; border:1px solid #ccc;">Bs -' . number_format($total_salida, 2, ',', '.') . '</td>';
-    // Mostrar el saldo_resultante del último pago filtrado como "Saldo del periodo"
-    $html .= '<td colspan="2" style="border:1px solid #ccc; font-weight:bold;">Saldo del periodo: Bs ' . $saldo_periodo . '</td>';
+    $html .= '<tr class="totals-row">';
+    $html .= '<td colspan="4" class="text-right">TOTAL DEL PERÍODO</td>';
+    $html .= '<td class="text-right text-success">Bs +' . number_format($total_entrada, 2, ',', '.') . '</td>';
+    $html .= '<td class="text-right text-danger">Bs -' . number_format($total_salida, 2, ',', '.') . '</td>';
+    $html .= '<td colspan="2" class="text-center saldo-final">SALDO TOTAL: Bs ' . $saldo_periodo . '</td>';
     $html .= '</tr>';
 
     $html .= '</tbody>';
@@ -175,32 +213,21 @@ try {
         $html .= '<div style="height:250px;"></div>';
     }
 
-    // Pie de página profesional
-    date_default_timezone_set('America/Caracas'); // Hora venezolana
-    $fecha_fecha = date('d/m/Y');
-    $fecha_hora = date('h:i A');
-
     $html .= '
-    <div style="margin-top:50px; font-family:sans-serif; font-size:0.9em; text-align:center; border-top:2px solid #ccc; padding-top:20px;">
-        <table style="width:100%;">
-            <tr>
-                <td style="width:50%; text-align:center;">
-                    <p style="margin-bottom:40px;">___________________________</p>
-                    <p>Coordinador de la UPU</p>
-                </td>
-                <td style="width:50%; text-align:center;">
-                    <p style="margin-bottom:40px;">___________________________</p>
-                    <p>Responsable por EURIPYS 2024 C.A.</p>
-                </td>
-            </tr>
-        </table>
-        <p style="margin-top:30px; font-size:0.8em; color:#555; font-style:italic;">
-            Generado por el SDGBP - Sistema de Gestión de Bienes y Pagos<br>
-            Fecha: ' . $fecha_fecha . ' | Hora: ' . $fecha_hora . '
-        </p>
-    </div>
-    </div>
-    </div>
+    <table class="footer-signatures">
+        <tr>
+            <td class="text-center">
+                <div class="sig-line"></div>
+                <p class="sig-name">Firma del Coordinador</p>
+                <p class="sig-title">Representante de la UPU</p>
+            </td>
+            <td class="text-center">
+                <div class="sig-line"></div>
+                <p class="sig-name">Sello / Conforme</p>
+                <p class="sig-title">EURIPYS 2024 C.A.</p>
+            </td>
+        </tr>
+    </table>
     ';
 
     // Configuración de Dompdf

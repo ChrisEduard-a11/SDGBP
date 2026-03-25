@@ -76,7 +76,7 @@ if (isset($_SESSION['user'])) {
 
     <!-- Script to prevent FOUC for Dark Mode -->
     <script>
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark')
         } else {
             document.documentElement.classList.remove('dark')
@@ -122,7 +122,7 @@ if (isset($_SESSION['user'])) {
             <div class="flex justify-between items-center h-full">
                 <!-- Logo -->
                 <a href="#" class="flex-shrink-0 flex items-center group">
-                    <img src="img/Logo-OP2_V4.webp" alt="Logo" class="h-10 w-auto opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-sm filter dark:invert dark:contrast-150">
+                    <img src="img/Logo-OP2_V4.webp" alt="Logo" class="h-10 w-auto opacity-90 group-hover:opacity-100 transition-opacity drop-shadow-sm">
                     <span class="ml-3 font-display font-black text-2xl tracking-tighter text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-500 transition-colors">EURIPYS</span>
                 </a>
 
@@ -205,9 +205,8 @@ if (isset($_SESSION['user'])) {
                 </div>
                 
                 <div class="hidden lg:block relative">
-                    <!-- Decorational visual block for the right -->
                     <div class="absolute inset-0 bg-gradient-to-tr from-brand-600/20 to-transparent rounded-[3rem] transform rotate-3 scale-105 filter blur-xl"></div>
-                    <img src="img/Logo-OP2_V4.webp" alt="3D Presentation" class="relative z-10 w-full max-w-lg mx-auto drop-shadow-2xl dark:invert dark:contrast-150 animate-fade-in-up">
+                    <img src="img/Logo-OP2_V4.webp" alt="3D Presentation" class="relative z-10 w-full max-w-lg mx-auto drop-shadow-2xl animate-fade-in-up">
                 </div>
             </div>
         </div>
@@ -323,7 +322,7 @@ if (isset($_SESSION['user'])) {
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 <div class="order-2 lg:order-1 relative">
                     <div class="absolute inset-0 bg-brand-500 rounded-3xl transform -rotate-3 scale-105 opacity-20 dark:opacity-40"></div>
-                    <img src="img/Logo-OP2_V4.webp" alt="Historia" class="relative z-10 w-full rounded-3xl bg-slate-100 dark:bg-slate-800 shadow-2xl p-10 filter dark:invert dark:contrast-150">
+                    <img src="img/Logo-OP2_V4.webp" alt="Historia" class="relative z-10 w-full rounded-3xl bg-slate-100 dark:bg-slate-800 shadow-2xl p-10">
                 </div>
                 <div class="order-1 lg:order-2">
                     <h2 class="text-4xl md:text-5xl font-display font-extrabold text-slate-900 dark:text-white mb-8">Nuestra Historia</h2>
@@ -462,7 +461,7 @@ if (isset($_SESSION['user'])) {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center mb-10">
                 <div class="flex items-center mb-6 md:mb-0">
-                    <img src="img/Logo-OP2_V4.webp" alt="Logo" class="h-10 w-auto opacity-50 grayscale">
+                    <img src="img/Logo-OP2_V4.webp" alt="Logo" class="h-10 w-auto opacity-50">
                     <span class="ml-3 font-display font-bold text-xl text-slate-400">EURIPYS</span>
                 </div>
                 <div class="flex space-x-6">
@@ -504,7 +503,7 @@ if (isset($_SESSION['user'])) {
                 <!-- Left Banner -->
                 <div class="hidden md:flex md:w-5/12 bg-slate-50 dark:bg-slate-950 border-r border-slate-100 dark:border-slate-800 items-center justify-center p-8 relative overflow-hidden">
                     <div class="absolute inset-0 bg-brand-500 opacity-5 dark:opacity-10 blur-2xl"></div>
-                    <img src="img/Logo-OP2_V4.webp" alt="Logo" class="w-48 filter dark:invert dark:contrast-150 drop-shadow-xl animate-pulse">
+                    <img src="img/Logo-OP2_V4.webp" alt="Logo" class="w-48 drop-shadow-xl animate-pulse">
                 </div>
                 
                 <!-- Right Content -->

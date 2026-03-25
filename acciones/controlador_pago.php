@@ -10,10 +10,29 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Verificar token de idempotencia
+    $token = $_POST['idempotency_token'] ?? '';
+    if (empty($token) || !isset($_SESSION['form_tokens'][$token])) {
+        $_SESSION["mensaje"] = "Error: Esta transacción ya ha sido procesada o el token es inválido.";
+        $_SESSION["estatus"] = "error";
+        header("Location: ../vistas/ver_pagos.php");
+        exit();
+    }
+    // Eliminar el token de la sesión para evitar re-procesamiento
+    unset($_SESSION['form_tokens'][$token]);
+
     // Validar campos obligatorios
     $usuario_id = $_POST["usuario_id"]; // ID del usuario relacionado
     $nombre_usuario = $_SESSION["nombre"]; // Nombre del usuario desde la sesión
-    $monto = mysqli_real_escape_string($conexion, $_POST["monto"]);
+    $monto_raw = $_POST["monto"] ?? "0";
+    // Inteligente: Solo quitar puntos si hay comas (formato 1.234,56)
+    if (strpos($monto_raw, ',') !== false) {
+        $monto_clean = str_replace('.', '', $monto_raw);
+        $monto_clean = str_replace(',', '.', $monto_clean);
+    } else {
+        $monto_clean = $monto_raw;
+    }
+    $monto = number_format((float)$monto_clean, 2, '.', '');
     $metodo_pago = mysqli_real_escape_string($conexion, $_POST["metodo_pago"]);
     $descripcion = mysqli_real_escape_string($conexion, $_POST["descripcion"] ?? null);
     $referencia = mysqli_real_escape_string($conexion, $_POST["referencia"]);
@@ -112,6 +131,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($result_cont && $result_cont->num_rows > 0) {
             $asunto = "Nuevo pago registrado";
+            
+            // Obtener la URL base dinámica para el enlace del correo
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'];
+            $script_dirname = dirname($_SERVER['SCRIPT_NAME']);
+            $base_dir = preg_replace('/\/acciones$/i', '', $script_dirname);
+            $login_url = rtrim($protocol . '://' . $host . $base_dir, '/') . '/vistas/login.php';
+
             $mensaje = "
 <!DOCTYPE html>
 <html lang='es'>
@@ -155,7 +182,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                             <!-- Action Button -->
                             <div style='text-align: center;'>
-                                <a href='https://sdgbp.wuaze.com/vistas/login.php' style='display: inline-block; padding: 14px 28px; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Entrar al Sistema y Aprobar</a>
+                                <a href='{$login_url}' style='display: inline-block; padding: 14px 28px; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Entrar al Sistema y Aprobar</a>
                             </div>
                         </td>
                     </tr>

@@ -1,38 +1,24 @@
-    <footer class="py-4 mt-auto border-top shadow-lg" id="footer" style="background-color: var(--footer-bg); border-color: var(--sidebar-border) !important; transition: all 0.3s ease;">
+    <footer class="py-4 bg-light mt-auto border-top" id="footer">
         <div class="container-fluid px-4">
-            
-            <div class="row align-items-center justify-content-between flex-column flex-md-row">
-                
-                <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-                    <p class="mb-0 small opacity-75" style="color: var(--footer-text);">
-                        <i class="fas fa-code-branch me-1" style="color: var(--accent-color);"></i> 
-                        <span class="fw-bold me-2" style="color: var(--text-main);">SDGBP v1.1</span>
-                        | Desarrollado por Cristian Arcaya, Pedro Rivera y Daniel Espinoza | <span class="fw-bold me-2" style="color: var(--text-main);"> PNF Informatica </span>
-                    </p>
+            <div class="d-flex align-items-center justify-content-between small">
+                <div class="text-muted">
+                    <span class="fw-bold">SDGBP v1.1</span> &middot; 
+                    Desarrollado por Cristian Arcaya, Pedro Rivera y Daniel Espinoza &middot; 
+                    <span class="fw-bold">PNF Informática</span>
                 </div>
-                
-                <div class="col-md-6 text-center text-md-end">
-                    <p class="mb-0 small opacity-75" style="color: var(--footer-text);">
-                        <i class="fas fa-copyright me-1"></i> &copy; <?php echo date("Y"); ?> Todos los derechos reservados.
-                    </p>
+                <div>
+                    <div class="text-muted">
+                        &copy; <?php echo date("Y"); ?> Todos los derechos reservados.
+                    </div>
                 </div>
-                
             </div>
-            
-            <hr class="my-2" style="border-color: var(--sidebar-border);">
-
-            <div class="row">
-                 <div class="col-12 text-center pt-1">
-                    <p class="mb-0 small opacity-75" style="color: var(--footer-text);">
-                        <span class="me-2">Licencia:</span>
-                        <a href="https://creativecommons.org/licenses/by-nc/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" class="text-decoration-none fw-semibold" style="color: var(--accent-color); transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                            Creative Commons BY-NC 4.0
-                            <img style="height:18px!important;margin-left:3px;vertical-align:text-bottom; filter: brightness(1.1) contrast(0.9);" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="CC">
-                            <img style="height:18px!important;margin-left:3px;vertical-align:text-bottom; filter: brightness(1.1) contrast(0.9);" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="BY">
-                            <img style="height:18px!important;margin-left:3px;vertical-align:text-bottom; filter: brightness(1.1) contrast(0.9);" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt="NC">
-                        </a>
-                    </p>
-                 </div>
+            <div class="text-center mt-3">
+                <p class="mb-0 text-muted" style="font-size: 0.75rem;">
+                    <span class="badge bg-secondary text-uppercase py-1 px-2 me-2">Licencia</span>
+                    <a href="https://creativecommons.org/licenses/by-nc/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" class="text-decoration-none text-primary fw-bold">
+                        Creative Commons BY-NC 4.0
+                    </a>
+                </p>
             </div>
         </div>
     </footer>
@@ -159,15 +145,6 @@ include("../models/funciones.php");
                 }
             });
 
-            // Global initialization for Select2 (Dropdowns)
-            $('.form-select-select2').each(function() {
-                $(this).select2({
-                    theme: 'bootstrap-5',
-                    placeholder: $(this).data('placeholder') || 'Seleccione una opción',
-                    dropdownParent: $(this).parent(),
-                    width: '100%'
-                });
-            });
 
             // Specific fix for existing fecha_pago if any
             const fechaPagoElement = document.getElementById("fecha_pago");
@@ -223,18 +200,18 @@ include("../models/funciones.php");
                 element.value = integerPart + "," + decimalPart;
             }
 
-            // Limpieza global antes de enviar cualquier formulario
-            document.addEventListener('submit', function(e) {
-                const amounts = e.target.querySelectorAll('.campo-monto');
-                amounts.forEach(input => {
-                    if (input.value) {
-                        // Limpiar: quitar miles (.) y cambiar decimal (,) por (.)
-                        // Esto asegura que PHP maneje números estándar (1500.50)
-                        let cleanValue = input.value.replace(/\./g, "").replace(",", ".");
-                        input.value = cleanValue;
-                    }
-                });
-            }, true); // useCapture para que ocurra ANTES de las validaciones individuales
+            // --- REFUERZO DE SEGURIDAD PARA VALIDACIONES ---
+            // Sobrescribimos las funciones de validaciones.js para que acepten el formato 1.234,56
+            window.validateFormRegistroP = function() {
+                const monto = document.getElementById("monto").value.trim();
+                // Regex permisivo que acepta números, puntos y comas
+                if (!monto || !/^[0-9.,]+$/.test(monto)) {
+                    toastr.error("El monto debe ser un número válido", "Error de Formato");
+                    return false;
+                }
+                return true;
+            };
+            window.validateFormRegistroEgreso = window.validateFormRegistroP;
         });
     </script>
 

@@ -17,9 +17,9 @@ require_once("../conexion.php");
     }
 
     [data-theme="dark"] {
-        --glass-bg: rgba(30, 41, 59, 0.8);
-        --glass-border: rgba(255, 255, 255, 0.1);
-        --section-header-border: rgba(255, 255, 255, 0.1);
+        --glass-bg: #000000;
+        --glass-border: #333;
+        --section-header-border: #222;
     }
 
     .page-title-icon { 
@@ -90,9 +90,7 @@ require_once("../conexion.php");
     }
 
     .premium-alert {
-        background: linear-gradient(to right, #f0f9ff, #e0f2fe);
         border: none;
-        border-left: 6px solid var(--premium-blue);
         border-radius: 1rem;
         padding: 1.5rem;
     }
@@ -115,10 +113,9 @@ require_once("../conexion.php");
     }
 
     .info-group {
-        background: #f8fafc;
         padding: 1.5rem;
         border-radius: 1.25rem;
-        border: 1px solid #f1f5f9;
+        border: 1px solid #e2e8f0;
     }
 
     [data-theme="dark"] .info-group {
@@ -130,19 +127,18 @@ require_once("../conexion.php");
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="mb-4 text-center">
-            <h3 class="page-title fw-bold">
-                <i class="fa-solid fa-file-excel page-title-icon me-2"></i> 
-                Generar Comprobante de Egreso
-            </h3>
-        </div>
-        
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-white p-3 rounded-4 shadow-sm mb-4">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item active text-secondary"><i class="fas fa-plus-circle me-1"></i> Generar Comprobante</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fa-solid fa-file-excel me-2"></i>Generar Comprobante</h1>
+                <p class="text-muted">Generación de documentos oficiales de egreso en formato Excel</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Comprobantes</li>
+                </ol>
+            </nav>
+        </header>
         
         <div class="alert premium-alert alert-dismissible fade show shadow-sm mb-4" role="alert">
             <div class="d-flex gap-3 align-items-center mb-2">
@@ -231,19 +227,29 @@ require_once("../conexion.php");
                             <select class="form-select form-control-premium form-select-select2" id="banco" name="banco" required>
                                 <option value="">Seleccione una entidad...</option>
                                 <optgroup label="Bancos Públicos">
-                                    <option value="Banco de Venezuela">Banco de Venezuela</option>
+                                    <option value="Banco de Venezuela">Banco de Venezuela (BDV)</option>
                                     <option value="Banco del Tesoro">Banco del Tesoro</option>
-                                    <option value="Banco Digital de los Trabajadores">Banco Digital de los Trabajadores</option>
+                                    <option value="BDT - Banco Digital de los Trabajadores">BDT - Banco Digital de los Trabajadores</option>
                                     <option value="Banco Agrícola de Venezuela">Banco Agrícola de Venezuela</option>
-                                    <option value="Banco de la Fuerza Armada Nacional Bolivariana (BANFANB)">BANFANB</option>
+                                    <option value="BANFANB">BANFANB</option>
                                 </optgroup>
                                 <optgroup label="Bancos Privados">
                                     <option value="Banesco">Banesco</option>
                                     <option value="Banco Mercantil">Banco Mercantil</option>
-                                    <option value="Banco Provincial">Banco Provincial</option>
-                                    <option value="Banco Nacional de Crédito (BNC)">Banco Nacional de Crédito (BNC)</option>
-                                    <option value="Bancamiga Banco Universal">Bancamiga Banco Universal</option>
-                                    <option value="Banplus Banco Universal">Banplus Banco Universal</option>
+                                    <option value="Provincial">Provincial (BBVA)</option>
+                                    <option value="BNC - Banco Nacional de Crédito">BNC - Banco Nacional de Crédito</option>
+                                    <option value="Bancamiga">Bancamiga</option>
+                                    <option value="Banplus">Banplus</option>
+                                    <option value="Banco Exterior">Banco Exterior</option>
+                                    <option value="BFC Banco Fondo Común">BFC Banco Fondo Común</option>
+                                    <option value="Banco Caroní">Banco Caroní</option>
+                                    <option value="Banco Activo">Banco Activo</option>
+                                    <option value="Banco Plaza">Banco Plaza</option>
+                                    <option value="100% Banco">100% Banco</option>
+                                    <option value="DelSur">DelSur</option>
+                                    <option value="Bancentro">Bancentro</option>
+                                    <option value="Mi Banco">Mi Banco</option>
+                                    <option value="Banco Venezolano de Crédito">Banco Venezolano de Crédito</option>
                                 </optgroup>
                             </select>
                         </div>

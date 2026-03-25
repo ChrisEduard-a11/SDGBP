@@ -1,11 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Validar el formulario antes de enviarlo
     const formulario = document.querySelector("form");
-    formulario.addEventListener("submit", (event) => {
-        if (!validateFormRegistroP()) {
-            event.preventDefault(); // Evitar el envío del formulario si hay errores
-        }
-    });
+    if (formulario && formulario.action.includes("controlador_pago.php")) {
+        formulario.addEventListener("submit", (event) => {
+            if (!validateFormRegistroP()) {
+                event.preventDefault();
+            }
+        });
+    }
 });
 
 function validateFormRegistroP() {
@@ -88,6 +89,13 @@ function validateFormRegistroP() {
         }
     }
 
+    // Deshabilitar el botón de envío para evitar múltiples clics
+    const btnSubmit = document.querySelector("#formRegistroPago button[type='submit']");
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i> Procesando...';
+    }
+
     return true; // Permitir el envío del formulario si todo está correcto
 }
 
@@ -117,14 +125,16 @@ toastr.options = {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Registro Egreso
+// Registro Egreso
 document.addEventListener("DOMContentLoaded", () => {
-    // Validar el formulario antes de enviarlo
     const formulario = document.querySelector("form");
-    formulario.addEventListener("submit", (event) => {
-        if (!validateFormRegistroEgreso()) {
-            event.preventDefault(); // Evitar el envío del formulario si hay errores
-        }
-    });
+    if (formulario && formulario.action.includes("controlador_pago_egreso.php")) {
+        formulario.addEventListener("submit", (event) => {
+            if (!validateFormRegistroEgreso()) {
+                event.preventDefault();
+            }
+        });
+    }
 });
 
 function validateFormRegistroEgreso() {
@@ -220,6 +230,13 @@ function validateFormRegistroEgreso() {
         }
     }
 
+    // Deshabilitar el botón de envío para evitar múltiples clics
+    const btnSubmit = document.querySelector("#formRegistroEgreso button[type='submit']");
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i> Procesando...';
+    }
+
     return true; // Permitir el envío del formulario si todo está correcto
 }
 
@@ -244,14 +261,16 @@ toastr.options = {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Agregar Producto
+// Agregar Producto
 document.addEventListener("DOMContentLoaded", () => {
-    // Validar el formulario antes de enviarlo
     const formulario = document.querySelector("form");
-    formulario.addEventListener("submit", (event) => {
-        if (!validateFormAgregarProducto()) {
-            event.preventDefault(); // Evitar el envío del formulario si hay errores
-        }
-    });
+    if (formulario && formulario.action.includes("guardar_bien.php")) {
+        formulario.addEventListener("submit", (event) => {
+            if (!validateFormAgregarProducto()) {
+                event.preventDefault();
+            }
+        });
+    }
 });
 
 function validateFormAgregarProducto() {
@@ -335,14 +354,16 @@ toastr.options = {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Agregar Categoria Producto
+// Agregar Categoria Producto
 document.addEventListener("DOMContentLoaded", () => {
-    // Validar el formulario antes de enviarlo
     const formulario = document.querySelector("form");
-    formulario.addEventListener("submit", (event) => {
-        if (!validateFormAgregarCategoria()) {
-            event.preventDefault(); // Evitar el envío del formulario si hay errores
-        }
-    });
+    if (formulario && formulario.action.includes("guardar_categoria.php")) {
+        formulario.addEventListener("submit", (event) => {
+            if (!validateFormAgregarCategoria()) {
+                event.preventDefault();
+            }
+        });
+    }
 });
 
 function validateFormAgregarCategoria() {

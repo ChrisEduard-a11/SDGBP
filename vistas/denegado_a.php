@@ -7,195 +7,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Acceso Denegado</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Acceso Denegado - SDGBP</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#f18000',
+                        'primary-dark': '#d67100',
+                        'brand-blue': '#0f172a',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body {
-            font-family: 'Roboto', Arial, sans-serif;
-            background: linear-gradient(135deg, #f8d7da 0%, #fff3cd 100%);
-            min-height: 100vh;
-            color: #842029;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .container-denegado {
-            min-height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .card-denegado {
-            border: none;
-            border-radius: 18px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.18), 0 1.5px 6px rgba(220,53,69,0.08);
-            background: #fff;
-            padding: 3rem 2rem 2.5rem 2rem;
-            max-width: 470px;
-            margin: auto;
-            animation: fadeInDown 1s;
+        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .denied-card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -10px rgba(220, 38, 38, 0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(220, 38, 38, 0.1);
             position: relative;
+            overflow: hidden;
         }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-40px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-        .logo-empresa {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 0.5rem;
-            margin-top: -2.5rem;
-            border-radius: 50%;
-            box-shadow: 0 2px 10px rgba(241,129,0,0.13);
-            background: #fff;
-            border: 2px solid #f18100;
-        }
-        .nombre-sistema {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: #f18100;
-            margin-bottom: 1.2rem;
-            letter-spacing: 1px;
-            text-shadow: 0 1px 0 #fff, 0 2px 6px #f1810033;
-        }
-        .icono-denegado {
-            font-size: 4rem;
-            color: #dc3545;
-            margin-bottom: 1rem;
-            animation: shake 0.7s;
-        }
-        @keyframes shake {
-            10%, 90% { transform: translateX(-2px);}
-            20%, 80% { transform: translateX(4px);}
-            30%, 50%, 70% { transform: translateX(-8px);}
-            40%, 60% { transform: translateX(8px);}
-        }
-        .btn-volver, .btn-contacto {
-            border: none;
-            font-weight: bold;
-            transition: background 0.2s, color 0.2s;
-        }
-        .btn-volver {
-            background-color: #f18000;
-            color: #fff;
-        }
-        .btn-volver:hover {
-            background-color: #d26900;
-            color: #fff;
-        }
-        .btn-contacto {
-            background-color: #fff;
-            color: #dc3545;
-            border: 2px solid #dc3545;
-            margin-top: 10px;
-        }
-        .btn-contacto:hover {
-            background-color: #dc3545;
-            color: #fff;
-        }
-        .ayuda-box {
-            background: #f8d7da;
-            border-left: 4px solid #dc3545;
-            border-radius: 8px;
-            padding: 1rem 1.2rem;
-            margin-bottom: 1.2rem;
-            color: #842029;
-            font-size: 1rem;
-            text-align: left;
-            box-shadow: 0 2px 8px rgba(220,53,69,0.07);
-        }
-        .footer_licencia {
-            font-size: 0.9rem;
-            color: #fff;
-            text-align: center;
-            background-color: #606060;
-            padding: 1.5rem 1rem 0.5rem 1rem;
-            border-top: 3px solid #f18100;
-            width: 100%;
-            margin-top: auto;
-        }
-        .footer_licencia a {
-            color: #f18100;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .footer_licencia a:hover {
-            text-decoration: underline;
-        }
-        .footer_licencia img {
-            height: 22px !important;
-            margin-left: 3px;
-            vertical-align: text-bottom;
-        }
-        .watermark {
+        .denied-card::before {
+            content: '';
             position: absolute;
-            bottom: 12px;
-            right: 18px;
-            opacity: 0.09;
-            font-size: 2.5rem;
-            pointer-events: none;
-            user-select: none;
-            font-weight: bold;
-            letter-spacing: 2px;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+        .icon-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #f18000 0%, #d67100 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(241, 128, 0, 0.5);
         }
     </style>
 </head>
-<body>
-    <div class="container-denegado">
-        <div class="card-denegado text-center">
-            <!-- LOGO DE LA EMPRESA -->
-            <img src="../img/Logo-OP2_V4.webp" alt="Logo Empresa" class="logo-empresa">
-            <!-- NOMBRE DEL SISTEMA -->
-            <div class="nombre-sistema">Sistema de Gestión de Bienes y Pagos</div>
-            <div>
-                <i class="fas fa-ban icono-denegado"></i>
+<body class="min-h-screen flex flex-col items-center justify-center relative">
+    
+    <!-- Background Accents -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-red-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        <div class="absolute top-40 -left-40 w-96 h-96 bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="w-full max-w-md px-6 py-12 mt-4">
+        <div class="denied-card p-10 text-center relative z-10">
+            
+            <!-- Logo area -->
+            <div class="flex justify-center mb-6">
+                <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
+                    <img src="../img/Logo-OP2_V4.webp" alt="SDGBP" class="w-20 h-20 object-contain">
+                </div>
             </div>
-            <h2 class="mb-3">Acceso Denegado</h2>
-            <div class="ayuda-box mb-4">
-                <i class="fas fa-info-circle"></i>
-                <span>
-                    No tienes permisos para acceder a esta página.<br>
-                    Si crees que esto es un error, contacta al administrador o intenta iniciar sesión nuevamente.
-                </span>
+
+            <!-- Icon -->
+            <div class="mb-8 flex justify-center">
+                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center icon-pulse">
+                    <i class="fa-solid fa-shield-cat text-4xl text-red-500 hidden"></i>
+                    <i class="fa-solid fa-lock text-4xl text-red-500"></i>
+                </div>
             </div>
-            <!-- Botón principal grande centrado -->
-            <div class="mb-3 d-grid gap-2">
-                <a href="login.php" class="btn btn-volver btn-lg py-3">
-                    <i class="fas fa-sign-in-alt fa-lg me-2"></i> Iniciar Sesión
+
+            <h1 class="text-3xl font-bold text-brand-blue mb-2 tracking-tight">Acceso Denegado</h1>
+            <p class="text-slate-500 font-medium mb-8 text-sm uppercase tracking-widest">Error de Autorización</p>
+            
+            <div class="bg-slate-50 rounded-xl p-5 mb-8 border border-slate-100 text-left">
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-circle-info text-red-500 mt-1"></i>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        <strong>No tienes permisos</strong> para acceder a este módulo del sistema. Tu sesión ha sido cerrada preventivamente por seguridad. Si consideras que esto es un error, contacta inmediatamente al administrador central.
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <a href="login.php" class="btn-primary-custom w-full flex items-center justify-center gap-2 text-white font-semibold py-3.5 px-6 rounded-xl">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    Volver al Inicio de Sesión
+                </a>
+                
+                <a href="https://wa.me/584129796940?text=Hola%2C%20soy%20usuario%20del%20Sistema%20de%20Gesti%C3%B3n%20de%20Bienes%20y%20Pagos.%20Tengo%20acceso%20denegado%20y%20necesito%20ayuda%20para%20ingresar.%20Por%20favor%2C%20ind%C3%ADqueme%20los%20pasos%20a%20seguir." target="_blank" class="w-full flex items-center justify-center gap-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors font-semibold py-3.5 px-6 rounded-xl border border-emerald-100">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    Contactar Soporte
                 </a>
             </div>
-            <!-- Botón de soporte como link de ayuda debajo -->
-            <div class="mb-4">
-                <a href="https://wa.me/584129796940?text=Hola%2C%20soy%20usuario%20del%20Sistema%20de%20Gesti%C3%B3n%20de%20Bienes%20y%20Pagos.%20Tengo%20acceso%20denegado%20y%20necesito%20ayuda%20para%20ingresar.%20Por%20favor%2C%20ind%C3%ADqueme%20los%20pasos%20a%20seguir." 
-                target="_blank" 
-                class="btn btn-link text-success fw-bold" 
-                style="text-decoration: none;">
-                    <i class="fab fa-whatsapp fa-lg me-1"></i>
-                    ¿Necesitas ayuda? Contactar Soporte por WhatsApp
-                </a>
-            </div>
-            <div class="watermark">SDGBP</div>
+            
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-12 text-center pb-8">
+            <p class="text-sm text-slate-500 mb-2 font-medium">SDGBP - Sistema de Gestión de Bienes y Pagos</p>
+            <p class="text-xs text-slate-400 font-medium tracking-wide">
+                &copy; <?php echo date("Y"); ?> Todos los derechos reservados.
+            </p>
         </div>
     </div>
-    <footer class="footer_licencia mt-4">
-        <p class="mb-0 text-center">
-            Este trabajo está licenciado bajo 
-            <a href="https://creativecommons.org/licenses/by-nc/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer">
-                Creative Commons BY-NC 4.0
-                <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="CC">
-                <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="BY">
-                <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt="NC">
-            </a>
-        </p>
-        <div class="row mt-3">
-            <div class="col text-center">
-                <small style="color: #000;">&copy; <?php echo date("Y"); ?> Sistema de Gestión de Bienes y Pagos. Todos los derechos reservados.</small>
-            </div>
-        </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

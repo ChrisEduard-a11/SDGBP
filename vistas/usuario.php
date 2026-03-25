@@ -23,19 +23,19 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_saldo') {
             if(mysqli_stmt_execute($stmt)){
                 $_SESSION['estatus'] = 'success';
                 $_SESSION['mensaje'] = 'Saldo actualizado correctamente.';
-                header("Location: usuario.php");
             } else {
                 $_SESSION['estatus'] = 'error';
                 $_SESSION['mensaje'] = 'Error al actualizar: ' . mysqli_error($conexion) ;
-                header("Location: usuario.php");
-          
             }
             mysqli_stmt_close($stmt);
+            echo "<script>window.location.href='usuario.php';</script>";
+            exit();
         }
     } else {
             $_SESSION['estatus'] = 'error';
             $_SESSION['mensaje'] = 'No tienes permisos para realizar esta acción.';
-            header("Location: usuario.php");
+            echo "<script>window.location.href='usuario.php';</script>";
+            exit();
     }
 }
 ?>
@@ -50,10 +50,10 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_saldo') {
     }
 
     [data-theme="dark"] {
-        --glass-bg: rgba(30, 41, 59, 0.7);
-        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-bg: #000000;
+        --glass-border: #333;
         --premium-violet: #a78bfa;
-        --card-header-bg: rgba(139, 92, 246, 0.2);
+        --card-header-bg: #111;
     }
 
     .page-title-icon { 
@@ -88,11 +88,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_saldo') {
         object-fit: cover;
         border: 2px solid var(--premium-violet);
         padding: 2px;
-        background: white;
+        background: transparent;
     }
 
     [data-theme="dark"] .img-circular {
-        background: #1e293b;
+        background: transparent;
     }
 
     .table thead th { 
@@ -104,12 +104,14 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_saldo') {
         letter-spacing: 0.05em;
         padding: 1.25rem 1rem;
         border: none;
+        white-space: nowrap;
     }
 
     .table tbody td { 
         padding: 1rem;
         vertical-align: middle;
         border-color: var(--glass-border);
+        white-space: nowrap;
     }
 
     .status-badge {
@@ -201,11 +203,77 @@ const superAdminId = <?php echo $superAdminId; ?>;
 const loggedUserId = <?php echo $loggedUserId; ?>;
 
 function openSaldoModal(id, nombre, saldoActual) {
-    document.getElementById('modal_id_usuario').value = id;
-    document.getElementById('modal_nombre_usuario').textContent = nombre;
-    document.getElementById('modal_nuevo_saldo').value = saldoActual;
-    var myModal = new bootstrap.Modal(document.getElementById('saldoModal'));
-    myModal.show();
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Modificar Saldo',
+            html: `Usuario: <strong class="text-primary">${nombre}</strong>`,
+            input: 'number',
+            inputLabel: 'Nuevo Saldo Disponible ($):',
+            inputValue: saldoActual,
+            inputAttributes: {
+                step: '0.01',
+                min: '0'
+            },
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-save me-1"></i> Guardar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            customClass: {
+                popup: 'rounded-4 shadow-lg',
+                input: 'text-center text-success fw-bold text-lg'
+            },
+            preConfirm: (nuevoSaldo) => {
+                if (!nuevoSaldo || nuevoSaldo === "") {
+                    Swal.showValidationMessage('Ingresa un monto válido');
+                    return false;
+                }
+                return nuevoSaldo;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Envío dinámico del formulario
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'usuario.php';
+
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'update_saldo';
+                form.appendChild(actionInput);
+
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id_usuario_saldo';
+                idInput.value = id;
+                form.appendChild(idInput);
+
+                const saldoInput = document.createElement('input');
+                saldoInput.type = 'hidden';
+                saldoInput.name = 'nuevo_saldo';
+                saldoInput.value = result.value;
+                form.appendChild(saldoInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    } else {
+        // Fallback básico si SweetAlert falla por carga
+        let val = prompt(`Nuevo Saldo Disponible para ${nombre} ($):`, saldoActual);
+        if(val !== null && val !== "") {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'usuario.php';
+            
+            form.innerHTML = `<input type="hidden" name="action" value="update_saldo">
+                              <input type="hidden" name="id_usuario_saldo" value="${id}">
+                              <input type="hidden" name="nuevo_saldo" value="${val}">`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
 }
 
 function navigateTo(url) {
@@ -222,52 +290,41 @@ function confirmDelete(url) {
 </script>
 
 <div id="layoutSidenav_content">
-      <div class="modal fade" id="saldoModal" tabindex="-1" aria-labelledby="saldoModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <form method="POST" action=""> 
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title" id="saldoModalLabel"><i class="fas fa-coins me-2"></i>Modificar Saldo UPU</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="text-center fs-5">Usuario: <strong id="modal_nombre_usuario" class="text-primary"></strong></p>
-                        <input type="hidden" name="action" value="update_saldo">
-                        <input type="hidden" name="id_usuario_saldo" id="modal_id_usuario">
-                        <div class="mb-3">
-                            <label for="modal_nuevo_saldo" class="form-label fw-bold">Nuevo Saldo Disponible:</label>
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light">$</span>
-                                <input type="number" step="0.01" class="form-control fw-bold text-success" name="nuevo_saldo" id="modal_nuevo_saldo" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success px-4">Guardar Nuevo Saldo</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- Modal de Saldo de Bootstrap ha sido completamente remplazado por SweetAlert Native UI en openSaldoModal() -->
     <div class="container-fluid px-4 py-4">
         
-        <div class="mb-4 text-center">
-            <h3 class="fw-bold"><i class="fas fa-users-cog me-2 page-title-icon"></i> Gestión de Usuarios</h3>
-        </div>
-        
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-section-inner p-3 rounded-4 shadow-sm mb-4">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item active text-secondary"><i class="fas fa-user-friends me-1"></i> Usuarios</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-users-cog me-2"></i>Gestión de Usuarios</h1>
+                <p class="text-muted">Administración de roles, accesos y saldos del personal</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Usuarios</li>
+                </ol>
+            </nav>
+        </header>
 
         <?php if (isset($_SESSION['estatus']) && isset($_SESSION['mensaje'])): ?>
-            <div class="alert alert-<?php echo $_SESSION['estatus'] === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($_SESSION['mensaje']); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: '<?php echo $_SESSION['estatus']; ?>',
+                            title: '<?php echo $_SESSION['estatus'] === 'success' ? '¡Éxito!' : 'Error'; ?>',
+                            text: '<?php echo htmlspecialchars($_SESSION['mensaje'], ENT_QUOTES); ?>',
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#8b5cf6',
+                            customClass: {
+                                popup: 'rounded-4 shadow-lg'
+                            }
+                        });
+                    } else {
+                        alert('<?php echo htmlspecialchars($_SESSION['mensaje'], ENT_QUOTES); ?>');
+                    }
+                });
+            </script>
             <?php unset($_SESSION['estatus'], $_SESSION['mensaje']); ?>
         <?php endif; ?>
 
@@ -344,11 +401,11 @@ function confirmDelete(url) {
             </div>
         </div>
 
-        <div class="mb-5 d-flex gap-3 animate__animated animate__fadeIn">
-            <button class="btn btn-premium-violet px-4 py-2 rounded-4 shadow-sm fw-bold" onclick="navigateTo('registro_u.php')">
+        <div class="mb-5 d-flex flex-wrap flex-column flex-sm-row gap-3 animate__animated animate__fadeIn">
+            <button class="btn btn-premium-violet px-4 py-2 rounded-4 shadow-sm fw-bold flex-grow-1 flex-sm-grow-0" onclick="navigateTo('registro_u.php')">
                 <i class="fa fa-user-plus me-2"></i> Nuevo Usuario
             </button>
-            <button class="btn btn-premium-amber px-4 py-2 rounded-4 shadow-sm fw-bold" onclick="navigateTo('usuarios_a.php')">
+            <button class="btn btn-premium-amber px-4 py-2 rounded-4 shadow-sm fw-bold flex-grow-1 flex-sm-grow-0" onclick="navigateTo('usuarios_a.php')">
                 <i class="fa fa-user-check me-2"></i> Aprobar Pendientes
                 <span class="badge rounded-pill bg-danger ms-2"><?php echo $totalPendientes; ?></span>
             </button>
@@ -388,20 +445,20 @@ function confirmDelete(url) {
             }
             $bloqueado_intentos_sa = intval($superAdmin['intentos'] ?? 0) >= 3;
             ?>
-            <div class="glass-card mb-5 p-4 d-flex align-items-center justify-content-between border-start border-4 border-primary">
-                <div class="d-flex align-items-center gap-4">
-                    <div class="position-relative">
+            <div class="glass-card mb-5 p-4 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-4 border-start border-4 border-primary">
+                <div class="d-flex align-items-center gap-3 w-100">
+                    <div class="position-relative flex-shrink-0">
                         <img src="<?php echo htmlspecialchars($superAdmin['foto']); ?>" class="img-circular" alt="foto" width="60" height="60">
                         <span class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-1 border border-2 border-white" style="font-size: 0.6rem;">
                             <i class="fas fa-crown"></i>
                         </span>
                     </div>
-                    <div>
-                        <h5 class="mb-1 fw-bold"><?php echo htmlspecialchars($superAdmin['nombre']); ?> <span class="badge bg-primary ms-2 small">Super Usuario</span></h5>
-                        <p class="text-muted small mb-0"><i class="fas fa-envelope me-1"></i> <?php echo htmlspecialchars($superAdmin['correo']); ?></p>
+                    <div class="overflow-hidden">
+                        <h5 class="mb-1 fw-bold d-flex flex-wrap align-items-center gap-2"><?php echo htmlspecialchars($superAdmin['nombre']); ?> <span class="badge bg-primary small">Super Usuario</span></h5>
+                        <p class="text-muted small mb-0 text-truncate d-block" style="max-width: 100%;"><i class="fas fa-envelope me-1"></i> <?php echo htmlspecialchars($superAdmin['correo']); ?></p>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-wrap align-items-center gap-3 justify-content-start justify-content-md-end w-100 w-md-auto mt-2 mt-md-0">
                     <?php if ($superAdmin['aprobado'] == 0): ?>
                         <span class="status-badge bg-secondary text-white"><i class="fas fa-clock"></i> Pendiente</span>
                     <?php elseif ($superAdmin['bloqueado']): ?>

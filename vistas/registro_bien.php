@@ -53,10 +53,9 @@ if (isset($_POST['categoria'])) {
     }
 
     .card-premium {
-        background: #ffffff;
+        background: transparent;
         border: none !important;
         border-radius: var(--radius-premium) !important;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
         overflow: hidden;
     }
 
@@ -116,27 +115,25 @@ if (isset($_POST['categoria'])) {
 
     .instruction-alert {
         border: none !important;
-        background: #eff6ff !important;
         border-radius: 15px !important;
-        color: #1e40af !important;
-        box-shadow: var(--shadow-premium);
     }
 </style>
 
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="text-center mb-4">
-            <h1 class="fw-bold text-dark">Registrar Nuevo Bien</h1>
-            <p class="text-muted">Incorpore activos al inventario institucional</p>
-        </div>
-
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-premium p-3 mb-4">
-                <li class="breadcrumb-item"><a href="inicio.php" class="text-primary fw-600 text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item active text-muted"><i class="fas fa-plus-circle me-1"></i> Registro de Activos</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-plus-circle me-2"></i>Registrar Nuevo Bien</h1>
+                <p class="text-muted">Incorpore activos al inventario institucional con detalles técnicos</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Registro de Activos</li>
+                </ol>
+            </nav>
+        </header>
 
         <div class="row justify-content-center">
             <div class="col-xl-8">

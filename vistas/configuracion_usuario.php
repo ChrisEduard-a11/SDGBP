@@ -176,8 +176,13 @@ $opciones_preguntas = [
         height: 100%;
         border-radius: 50%;
         overflow: hidden;
-        background: white;
+        background: transparent;
         border: 4px solid white;
+    }
+
+    [data-theme="dark"] .profile-pic-container {
+        background: transparent;
+        border-color: #333;
     }
 
     .profile-pic {
@@ -262,22 +267,18 @@ $opciones_preguntas = [
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
             <div>
-                <h1 class="mt-2 mb-1 text-dark fw-bold">Mi Perfil</h1>
-                <p class="text-muted mb-0">Gestiona tu información personal y configuración de seguridad</p>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-user-cog me-2"></i>Configuración de Perfil</h1>
+                <p class="text-muted">Gestión de información personal, preferencias de seguridad y credenciales de acceso</p>
             </div>
-            <div class="d-none d-md-block">
-                <img src="../img/Logo-OP2_V4.webp" alt="Logo" style="height: 40px;">
-            </div>
-        </div>
-
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-premium p-3 mb-4">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-primary fw-600 text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item active text-muted"><i class="fas fa-cog me-1"></i> Configuración</li>
-            </ol>
-        </nav>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Configuración de Perfil</li>
+                </ol>
+            </nav>
+        </header>
 
         <?php if (isset($mensaje)) { ?>
             <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4" role="alert">

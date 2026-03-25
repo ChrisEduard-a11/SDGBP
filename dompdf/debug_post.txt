@@ -1,6 +1,6 @@
 Array
 (
     [filtro_fecha_inicio] => 2026-03-01
-    [filtro_fecha_fin] => 2026-03-12
-    [usuario_upu] => 80
+    [filtro_fecha_fin] => 2026-03-22
+    [usuario_upu] => 85
 )

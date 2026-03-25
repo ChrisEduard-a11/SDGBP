@@ -155,21 +155,19 @@ $datos = [
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="mb-4 text-center">
-            <h3 class="page-title fw-bold">
-                <i class="fa-solid fa-file-excel page-title-icon me-2"></i> 
-                Editar Comprobante de Egreso
-            </h3>
-            <p class="text-muted small">Modificando: <strong><?php echo htmlspecialchars($archivo); ?></strong></p>
-        </div>
-        
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-white p-3 rounded-4 shadow-sm mb-4">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('listar_comprobantes.php')" class="text-decoration-none">Comprobantes</a></li>
-                <li class="breadcrumb-item active text-secondary"><i class="fas fa-edit me-1"></i> Editar</li>
-            </ol>
-        </nav>
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+            <div>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-file-excel me-2"></i>Editar Comprobante</h1>
+                <p class="text-muted">Modificación de datos del comprobante de egreso y actualización del archivo fuente</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('listar_comprobantes.php')" class="text-decoration-none">Comprobantes</a></li>
+                    <li class="breadcrumb-item active">Editar</li>
+                </ol>
+            </nav>
+        </header>
         
         <div class="card glass-card border-0 animate__animated animate__fadeIn">
             <div class="card-header card-header-main">

@@ -136,12 +136,10 @@ $total_sin_stock = $row['total_sin_stock'];
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
             <div>
-                <h3 class="fw-bold mb-0">
-                    <i class="fas fa-cubes page-title-icon me-2"></i> 
-                    Gestión de Inventario
-                </h3>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-cubes me-2"></i>Gestión de Inventario</h1>
+                <p class="text-muted">Control de productos, stock y categorías de venta</p>
             </div>
             <div class="d-flex gap-2">
                 <a class="btn btn-emerald-premium px-4 py-2" href="javascript:void(0);" onclick="navigateTo('agregar_producto.php')">
@@ -151,14 +149,13 @@ $total_sin_stock = $row['total_sin_stock'];
                     <i class="fa fa-tags me-2"></i> Categorías
                 </a>
             </div>
-        </div>
-        
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb bg-white p-3 rounded-4 shadow-sm">
-                <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none text-primary"><i class="fas fa-home me-1"></i> Inicio</a></li>
-                <li class="breadcrumb-item active text-secondary fw-medium"><i class="fas fa-box me-1"></i> Productos</li>
-            </ol>
-        </nav>
+            <nav aria-label="breadcrumb" class="d-none d-lg-block">
+                <ol class="breadcrumb bg-transparent p-0 m-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Productos</li>
+                </ol>
+            </nav>
+        </header>
         
         <div class="row mb-5">
             <div class="col-xl-4 col-md-6 mb-4">
