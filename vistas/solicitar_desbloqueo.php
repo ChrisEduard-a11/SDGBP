@@ -18,7 +18,7 @@ session_start();
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Icons -->
-    <script src="../js/all.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Toastr -->
@@ -85,7 +85,7 @@ session_start();
         }
 
         .login-image-title { font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px; }
-        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .login-image-desc { font-size: 1.1rem; color: rgba(255,255,255,0.8); line-height: 1.6; font-weight: 300; }
 
         .login-form-side {
@@ -151,6 +151,38 @@ session_start();
     </style>
 </head>
 <body>
+<!-- GLOBAL PRELOADER -->
+<style>.swal2-container { z-index: 9999999 !important; }</style>
+<div id="global-preloader" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease;">
+    <div style="color: #f18000; text-align: center; padding: 20px;">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); margin-bottom: 20px;"></i>
+        <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px; margin: 0;">Cargando...</h5>
+    </div>
+</div>
+<script>
+    window.addEventListener('load', function() {
+        const preloader = document.getElementById('global-preloader');
+        if (preloader) {
+            preloader.style.opacity = '0';
+            preloader.style.visibility = 'hidden';
+            setTimeout(() => preloader.remove(), 400);
+        }
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('a:not([target="_blank"]):not([href^="#"]):not([href^="javascript:"])').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (!e.ctrlKey && !e.shiftKey && !e.metaKey && this.href) {
+                    const preloader = document.getElementById('global-preloader');
+                    if (preloader) {
+                        preloader.style.visibility = 'visible';
+                        preloader.style.opacity = '1';
+                    }
+                }
+            });
+        });
+    });
+</script>
+<!-- END GLOBAL PRELOADER -->
 
     <div class="login-layout">
 
@@ -224,17 +256,5 @@ session_start();
     <!-- Scripts -->
     <script src="../js/vali_login.js"></script>
     
-    <!-- Tawk.to Script -->
-    <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/69222aed34679319611b35ee/1jamnfbva';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-    </script>
 </body>
 </html>

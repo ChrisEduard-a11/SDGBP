@@ -9,15 +9,33 @@ require '../PHPMailer/src/Exception.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+function respond($status, $message, $redirect) {
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        if ($status === 'success') {
+            $_SESSION["mensaje"] = $message;
+            $_SESSION["estatus"] = $status;
+        }
+        header('Content-Type: application/json');
+        echo json_encode(["status" => $status, "message" => $message, "redirect" => $redirect]);
+        exit();
+    }
+    $_SESSION["mensaje"] = $message;
+    $_SESSION["estatus"] = $status;
+    header("Location: " . $redirect);
+    exit();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Verificar token de idempotencia
     $token = $_POST['idempotency_token'] ?? '';
+    
     if (empty($token) || !isset($_SESSION['form_tokens'][$token])) {
-        $_SESSION["mensaje"] = "Error: Esta transacción ya ha sido procesada o el token es inválido.";
-        $_SESSION["estatus"] = "error";
+        // Redirigir de manera *SILENCIOSA* (sin tocar $_SESSION["mensaje"])
+        // Para evitar que un doble clic rápido sobreescriba el mensaje de "éxito" del primer clic.
         header("Location: ../vistas/ver_pagos.php");
         exit();
     }
+    
     // Eliminar el token de la sesión para evitar re-procesamiento
     unset($_SESSION['form_tokens'][$token]);
 
@@ -47,10 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result_cliente_usuario = $stmt_cliente_usuario->get_result();
 
     if ($result_cliente_usuario->num_rows === 0) {
-        $_SESSION["mensaje"] = "Error: El cliente seleccionado no está asociado a tu cuenta.";
-        $_SESSION["estatus"] = "warning";
-        header("Location: ../vistas/registro_pagos.php");
-        exit();
+        respond("warning", "Error: El cliente seleccionado no está asociado a tu cuenta.", "../vistas/registro_pagos.php");
     }
 
     // Verificar si la referencia ya existe en la base de datos
@@ -63,10 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $result_verificar = $stmt_verificar->get_result();
 
         if ($result_verificar->num_rows > 0) {
-            $_SESSION["mensaje"] = "Error: La referencia numérica ya está registrada en el sistema.";
-            $_SESSION["estatus"] = "warning";
-            header("Location: ../vistas/registro_pagos.php");
-            exit();
+            respond("warning", "Error: La referencia numérica ya está registrada en el sistema.", "../vistas/registro_pagos.php");
         }
     }*/
 
@@ -235,16 +247,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Confirmar la transacción
         mysqli_commit($conexion);
 
-        $_SESSION["mensaje"] = "Ingreso registrado correctamente.";
-        $_SESSION["estatus"] = "success";
+        $final_status = "success";
+        $final_message = "Ingreso registrado correctamente.";
+        
         // Registrar en bitácora
         if (isset($_SESSION['id'])) {
             registrarAccion($conexion, 'Registrar Ingreso', $_SESSION['id']);
         }
     } catch (Exception $e) {
         mysqli_rollback($conexion);
-        $_SESSION["mensaje"] = "Error al registrar el pago: " . $e->getMessage();
-        $_SESSION["estatus"] = "error";
+        $final_status = "error";
+        $final_message = "Error al registrar el pago: " . $e->getMessage();
     } finally {
         // Cerrar los statements
         if (isset($stmt_cliente_usuario)) $stmt_cliente_usuario->close();
@@ -256,7 +269,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Cerrar la conexión
     mysqli_close($conexion);
 
-    header("Location: ../vistas/ver_pagos.php");
-    exit();
+    respond($final_status, $final_message, "../vistas/ver_pagos.php");
 }
 ?>

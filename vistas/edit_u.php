@@ -110,14 +110,14 @@ require_once("../models/header.php");
                             <label class="form-label fw-semibold">Usuario (*)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
-                                <input class="form-control" type="text" name="usuario" maxlength="255" value="<?php echo htmlspecialchars($row['usuario']); ?>">
+                                <input class="form-control" type="text" id="inputUsuario" name="usuario" maxlength="255" value="<?php echo htmlspecialchars($row['usuario']); ?>">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label fw-semibold">Nac. (*)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-flag"></i></span>
-                                <select name="nacionalidad" class="form-select" style="border-radius: 0 0.75rem 0.75rem 0;">
+                                <select id="inputNacionalidad" name="nacionalidad" class="form-select" style="border-radius: 0 0.75rem 0.75rem 0;">
                                     <option value="V-" <?php if ($row['nacionalidad'] == 'V-') echo 'selected'; ?>>V</option>
                                     <option value="E-" <?php if ($row['nacionalidad'] == 'E-') echo 'selected'; ?>>E</option>
                                     <option value="G-" <?php if ($row['nacionalidad'] == 'G-') echo 'selected'; ?>>G</option>
@@ -129,14 +129,14 @@ require_once("../models/header.php");
                             <label class="form-label fw-semibold">Cédula (*)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-id-card"></i></span>
-                                <input class="form-control" type="number" name="cedula" value="<?php echo htmlspecialchars($row['cedula']); ?>">
+                                <input class="form-control" type="number" id="inputCedula" name="cedula" value="<?php echo htmlspecialchars($row['cedula']); ?>">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Nombre Completo (*)</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                <input class="form-control" type="text" name="nombre" maxlength="255" value="<?php echo htmlspecialchars($row['nombre']); ?>">
+                                <input class="form-control" type="text" id="inputNombre" name="nombre" maxlength="255" value="<?php echo htmlspecialchars($row['nombre']); ?>">
                             </div>
                         </div>
                         <div class="col-md-5">

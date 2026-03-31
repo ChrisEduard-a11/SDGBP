@@ -9,20 +9,33 @@ require '../PHPMailer/src/Exception.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+function respond($status, $message, $redirect) {
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        if ($status === 'success') {
+            $_SESSION["mensaje"] = $message;
+            $_SESSION["estatus"] = $status;
+        }
+        header('Content-Type: application/json');
+        echo json_encode(["status" => $status, "message" => $message, "redirect" => $redirect]);
+        exit();
+    }
+    $_SESSION["mensaje"] = $message;
+    $_SESSION["estatus"] = $status;
+    header("Location: " . $redirect);
+    exit();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Verificar token de idempotencia
     $token = $_POST['idempotency_token'] ?? '';
+    
     if (empty($token) || !isset($_SESSION['form_tokens'][$token])) {
-        $_SESSION["mensaje"] = "Error: Esta transacción ya ha sido procesada o el token es inválido.";
-        $_SESSION["estatus"] = "error";
-        // Redirección dinámica según el rol
-        if ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') {
-            header("Location: ../vistas/ver_pagos_cont.php");
-        } else {
-            header("Location: ../vistas/ver_pagos.php");
-        }
+        // Redirección de manera *SILENCIOSA* para evitar sobreescribir un "success" en caso de doble clic
+        $redirect = ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') ? "../vistas/ver_pagos_cont.php" : "../vistas/ver_pagos.php";
+        header("Location: " . $redirect);
         exit();
     }
+    
     // Eliminar el token de la sesión para evitar re-procesamiento
     unset($_SESSION['form_tokens'][$token]);
 
@@ -57,10 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $result_cliente_usuario = $stmt_cliente_usuario->get_result();
 
         if ($result_cliente_usuario->num_rows === 0) {
-            $_SESSION["mensaje"] = "Error: El cliente seleccionado no está asociado a tu cuenta.";
-            $_SESSION["estatus"] = "warning";
-            header("Location: ../vistas/registro_pagos_egresos.php");
-            exit();
+            respond("warning", "Error: El cliente seleccionado no está asociado a tu cuenta.", "../vistas/registro_pagos_egresos.php");
         }
     } else {
         $cliente_id = null; // Para la tabla usuario_pagos guardaremos NULL
@@ -76,16 +86,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result_saldo->num_rows > 0) {
         $saldo_actual = $result_saldo->fetch_assoc()['saldo'];
         if ($saldo_actual < $monto) {
-            $_SESSION["mensaje"] = "Error: El saldo del usuario es insuficiente para registrar este egreso.";
-            $_SESSION["estatus"] = "warning";
-            header("Location: ../vistas/registro_pagos_egresos.php");
-            exit();
+            respond("warning", "Error: El saldo del usuario es insuficiente para registrar este egreso.", "../vistas/registro_pagos_egresos.php");
         }
     } else {
-        $_SESSION["mensaje"] = "Error: No se pudo obtener el saldo del usuario.";
-        $_SESSION["estatus"] = "error";
-        header("Location: ../vistas/registro_pagos_egresos.php");
-        exit();
+        respond("error", "Error: No se pudo obtener el saldo del usuario.", "../vistas/registro_pagos_egresos.php");
     }
 
     // Iniciar una transacción
@@ -283,15 +287,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Confirmar la transacción
         mysqli_commit($conexion);
 
-        $_SESSION["mensaje"] = "Egreso registrado correctamente.";
-        $_SESSION["estatus"] = "success";
+        $final_status = "success";
+        
+        if ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') {
+            $final_message = "Comisión bancaria registrada correctamente.";
+            $accion_bitacora = 'Registrar Comisión Bancaria';
+        } else {
+            $final_message = "Egreso registrado correctamente.";
+            $accion_bitacora = 'Registrar Egreso';
+        }
+        
         if (isset($_SESSION['id'])) {
-            registrarAccion($conexion, 'Registrar Egreso', $_SESSION['id']);
+            registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
         }
     } catch (Exception $e) {
         mysqli_rollback($conexion);
-        $_SESSION["mensaje"] = "Error al registrar el egreso: " . $e->getMessage();
-        $_SESSION["estatus"] = "error";
+        $final_status = "error";
+        $final_message = "Error al registrar el egreso: " . $e->getMessage();
     } finally {
         if (isset($stmt_cliente_usuario)) $stmt_cliente_usuario->close();
         if (isset($stmt_nombre_cliente)) $stmt_nombre_cliente->close();
@@ -300,15 +312,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (isset($stmt_saldo)) $stmt_saldo->close();
     }
 
-mysqli_close($conexion);
+    mysqli_close($conexion);
 
-    // Redirección dinámica según el rol
-    if ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') {
-        header("Location: ../vistas/ver_pagos_cont.php");
-    } else {
-        header("Location: ../vistas/ver_pagos.php");
-    }
-    
-    exit();
+    $redirect = ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') ? "../vistas/ver_pagos_cont.php" : "../vistas/ver_pagos.php";
+    respond($final_status, $final_message, $redirect);
 }
 ?>

@@ -3,11 +3,16 @@ require '../vendor/autoload.php'; // Ajusta la ruta si es necesario
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+session_start();
+
 // Validar que los datos del formulario existan y no estén vacíos
 if (!isset($_POST['num_comprobante'], $_POST['nombre'], $_POST['monto'], $_POST['fecha'], $_POST['descripcion'], $_POST['rif'], $_POST['telefono'], $_POST['direccion'], $_POST['ciudad'], $_POST['correo'], 
           $_POST['tipo_pago'], $_POST['banco'], $_POST['cuenta'], $_POST['referencia']) || 
     empty($_POST['num_comprobante']) || empty($_POST['nombre']) || empty($_POST['monto']) || empty($_POST['fecha']) || empty($_POST['tipo_pago']) || empty($_POST['banco']) || empty($_POST['cuenta']) || empty($_POST['referencia'])) {
-    die("Error: Todos los campos obligatorios deben ser completados.");
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "Todos los campos obligatorios deben ser completados correctamente.";
+    header("Location: ../vistas/formulario_comprobante.php");
+    exit();
 }
 
 // Obtener datos del formulario
@@ -29,7 +34,10 @@ $referencia = htmlspecialchars($_POST['referencia']);
 // Verificar que la plantilla exista
 $plantilla = "plantillas/comprobante_egreso.xlsm"; // Ruta de la plantilla
 if (!file_exists($plantilla)) {
-    die("Error: La plantilla Excel no se encuentra en la ruta especificada.");
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "La plantilla Excel no se encuentra en el servidor.";
+    header("Location: ../vistas/formulario_comprobante.php");
+    exit();
 }
 
 // Cargar plantilla

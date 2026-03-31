@@ -28,18 +28,38 @@ if ($clave !== $confirmar_clave) {
     exit();
 }
 
+if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/', $clave)) {
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "La contraseña no cumple con los requisitos de seguridad.";
+    header("Location: ../vistas/registro_u.php");
+    exit();
+}
+
 // Encriptar la contraseña
 $clave_encrip = sha1($clave);
 
-// Procesar la imagen
+// Verificar duplicado de Usuario o Cédula
+$sql_check = "SELECT id_usuario FROM usuario WHERE cedula = '$cedula' OR usuario = '$usuario'";
+$res_check = mysqli_query($conexion, $sql_check);
+if (mysqli_num_rows($res_check) > 0) {
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "El Nombre de Usuario o la Cédula ya se encuentran registrados.";
+    header("Location: ../vistas/registro_u.php");
+    exit();
+}
+
+// Ruta por defecto de la foto si no se sube ninguna
+$rutaDestino = '../img/fotos/default_profile.png';
+
+// Si se subió imagen, procesarla
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     $imagen = $_FILES['imagen'];
-    $nombreImagen = time() . '_' . $imagen['name'];
-    $rutaDestino = '../img/fotos/' . $nombreImagen;
+    $nombreImagen = time() . '_' . basename($imagen['name']);
+    $rutaUpload = '../img/fotos/' . $nombreImagen;
     $tipoArchivo = strtolower(pathinfo($nombreImagen, PATHINFO_EXTENSION));
     $tamañoArchivo = $imagen['size'];
 
-    // Validar el tamaño del archivo (10 MB = 10 * 1024 * 1024 bytes)
+    // Validar el tamaño del archivo (10 MB)
     if ($tamañoArchivo > 10 * 1024 * 1024) {
         $_SESSION["estatus"] = "error";
         $_SESSION["mensaje"] = "El tamaño del archivo no debe exceder los 10 MB.";
@@ -56,34 +76,32 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
         exit();
     }
 
-    // Mover la imagen a la carpeta de destino
-    if (move_uploaded_file($imagen['tmp_name'], $rutaDestino)) {
-        // Insertar los datos en la base de datos
-        $sql = "INSERT INTO usuario (nombre, nacionalidad, cedula, usuario, correo, clave, pregunta, respuesta, pregunta2, respuesta2, foto, tipos) 
-                VALUES ('$nombre', '$nacionalidad', '$cedula', '$usuario', '$correo', '$clave_encrip', '$pregunta', '$respuesta_encrip', '$pregunta2', '$respuesta_encrip2','$rutaDestino', '$tipo')";
-        $result = mysqli_query($conexion, $sql);
-
-        if ($result) {
-            $id_usuario = $_SESSION['id'];
-            $_SESSION["estatus"] = "success";
-            $_SESSION["mensaje"] = "Enhorabuena...! Registro Exitoso!";
-
-
-            registrarAccion($conexion, 'Registro de Usuario', $id_usuario);
-            header("Location: ../vistas/usuario.php");
-        } else {
-            $_SESSION["estatus"] = "error";
-            $_SESSION["mensaje"] = "Registro Fallido...!";
-            header("Location: ../vistas/registro_u.php");
-        }
+    // Mover archivo
+    if (move_uploaded_file($imagen['tmp_name'], $rutaUpload)) {
+        $rutaDestino = $rutaUpload;
     } else {
         $_SESSION["estatus"] = "error";
-        $_SESSION["mensaje"] = "Error al subir la imagen";
+        $_SESSION["mensaje"] = "Error crítico al guardar la imagen en el servidor.";
         header("Location: ../vistas/registro_u.php");
+        exit();
     }
+}
+
+// Insertar los datos en la base de datos
+$sql = "INSERT INTO usuario (nombre, nacionalidad, cedula, usuario, correo, clave, pregunta, respuesta, pregunta2, respuesta2, foto, tipos) 
+        VALUES ('$nombre', '$nacionalidad', '$cedula', '$usuario', '$correo', '$clave_encrip', '$pregunta', '$respuesta_encrip', '$pregunta2', '$respuesta_encrip2', '$rutaDestino', '$tipo')";
+$result = mysqli_query($conexion, $sql);
+
+if ($result) {
+    $id_usuario = $_SESSION['id'];
+    $_SESSION["estatus"] = "success";
+    $_SESSION["mensaje"] = "Enhorabuena...! Registro Exitoso!";
+
+    registrarAccion($conexion, 'Registro de Usuario', $id_usuario);
+    header("Location: ../vistas/usuario.php");
 } else {
     $_SESSION["estatus"] = "error";
-    $_SESSION["mensaje"] = "No se ha seleccionado ninguna imagen o ha ocurrido un error. Error: " . $_FILES['imagen']['error'];
+    $_SESSION["mensaje"] = "Registro Fallido...! " . mysqli_error($conexion);
     header("Location: ../vistas/registro_u.php");
 }
 exit();

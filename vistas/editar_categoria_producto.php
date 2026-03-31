@@ -140,12 +140,12 @@ if (!$categoria) {
                     <h3 class="mb-0">Actualizar Categoría</h3>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <form action="../acciones/editar_categoria_producto.php" method="POST" class="row g-4 text-center">
+                    <form action="../acciones/editar_categoria_producto.php" method="POST" class="row g-4 text-center" onsubmit="return validateFormCategoria()">
                         <input type="hidden" name="id" value="<?= $categoria['id'] ?>">
                         <div class="col-12 text-start">
                             <div class="mb-4">
                                 <label for="nombre" class="form-label-premium"><i class="fas fa-edit"></i> Nuevo Nombre de Categoría</label>
-                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" value="<?= htmlspecialchars($categoria['nombre']) ?>" required placeholder="Nombre de la categoría">
+                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" value="<?= htmlspecialchars($categoria['nombre']) ?>" placeholder="Nombre de la categoría">
                             </div>
                         </div>
                         <div class="col-12">

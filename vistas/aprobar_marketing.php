@@ -207,7 +207,7 @@ $metrics = ($metricRes) ? $metricRes->fetch_assoc() : ['pending_count' => 0, 'pe
                                                 <form action="../acciones/aprobar_marketing_pago.php" method="POST" id="form-rechazar-<?php echo $row['id']; ?>">
                                                     <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
                                                     <input type="hidden" name="accion" value="rechazar">
-                                                    <button type="button" class="btn btn-danger rounded-circle shadow-sm" style="width: 40px; height:40px;" onclick="confirmarRechazo('<?php echo $row['id']; ?>')" title="Rechazar y Cerrar">
+                                                    <button type="button" class="btn btn-danger rounded-circle shadow-sm" style="width: 40px; height:40px;" onclick="confirmarRechazoMarketing('<?php echo $row['id']; ?>')" title="Rechazar y Cerrar">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </form>
@@ -279,7 +279,7 @@ $metrics = ($metricRes) ? $metricRes->fetch_assoc() : ['pending_count' => 0, 'pe
             })
         }
 
-        function confirmarRechazo(id) {
+        function confirmarRechazoMarketing(id) {
             Swal.fire({
                 title: '¿Rechazar esta orden?',
                 text: "El pago será rechazado. El stock físico del sistema no será alterado en absoluto.",

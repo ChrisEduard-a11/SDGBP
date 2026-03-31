@@ -346,26 +346,26 @@ $opciones_preguntas = [
                     <h5 class="section-title"><i class="fas fa-shield-alt"></i> Seguridad y Recuperación</h5>
                     <div class="row g-4 mb-5">
                         <div class="col-md-6">
-                            <label class="form-label fw-600">Pregunta de Seguridad 1</label>
-                            <select class="form-select form-select-premium" id="pregunta1" name="pregunta1" required>
+                            <label class="form-label fw-600">Pregunta de Seguridad 1 <span class="text-muted fw-normal">(Opcional)</span></label>
+                            <select class="form-select form-select-premium" id="pregunta1" name="pregunta1">
                                 <option value="<?php echo $pregunta1; ?>" selected><?php echo htmlspecialchars($pregunta1); ?></option>
                                 <?php foreach ($opciones_preguntas as $opcion) { if ($opcion !== $pregunta1) echo "<option>$opcion</option>"; } ?>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-600">Respuesta Secreta 1</label>
-                            <input type="text" class="form-control form-control-premium" id="respuesta1" name="respuesta1" placeholder="Solo si deseas cambiarla">
+                            <input type="text" class="form-control form-control-premium" id="respuesta1" name="respuesta1" placeholder="Solo si deseas cambiar tus preguntas">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-600">Pregunta de Seguridad 2</label>
-                            <select class="form-select form-select-premium" id="pregunta2" name="pregunta2" required>
+                            <label class="form-label fw-600">Pregunta de Seguridad 2 <span class="text-muted fw-normal">(Opcional)</span></label>
+                            <select class="form-select form-select-premium" id="pregunta2" name="pregunta2">
                                 <option value="<?php echo $pregunta2; ?>" selected><?php echo htmlspecialchars($pregunta2); ?></option>
                                 <?php foreach ($opciones_preguntas as $opcion) { if ($opcion !== $pregunta2) echo "<option>$opcion</option>"; } ?>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-600">Respuesta Secreta 2</label>
-                            <input type="text" class="form-control form-control-premium" id="respuesta2" name="respuesta2" placeholder="Solo si deseas cambiarla">
+                            <input type="text" class="form-control form-control-premium" id="respuesta2" name="respuesta2" placeholder="Solo si deseas cambiar tus preguntas">
                         </div>
                     </div>
 

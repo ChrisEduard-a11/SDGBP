@@ -228,6 +228,15 @@ $result_upu_saldos = $conexion->query($query_upu_saldos);
         border-color: var(--accent-primary);
         box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
     }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .metric-value { font-size: 1.4rem; }
+        .metric-card { padding: 1.2rem; }
+        .custom-table thead { display: none; }
+        .custom-table td { font-size: 0.85rem; padding: 1rem 0.75rem; }
+        .page-header-standard { flex-direction: column; align-items: flex-start !important; gap: 1rem; }
+    }
 </style>
 
 <div id="layoutSidenav_content">
@@ -287,7 +296,7 @@ $result_upu_saldos = $conexion->query($query_upu_saldos);
                 <h5 class="mb-0 fw-bold">Filtros Inteligentes</h5>
             </div>
             <form method="get" class="row g-3">
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label class="form-label small fw-bold text-muted uppercase">Estado</label>
                     <select name="estado" class="form-select border-0 bg-light rounded-3">
                         <option value="">Todos los Estados</option>
@@ -296,15 +305,15 @@ $result_upu_saldos = $conexion->query($query_upu_saldos);
                         <option value="rechazado" <?php echo $estado == 'rechazado' ? 'selected' : ''; ?>>❌ Rechazados</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label class="form-label small fw-bold text-muted uppercase">Desde</label>
-                    <input type="date" name="fecha_inicio" class="form-control border-0 bg-light rounded-3" value="<?php echo $fecha_inicio; ?>">
+                    <input type="text" name="fecha_inicio" class="form-control border-0 bg-light rounded-3 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio; ?>">
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label class="form-label small fw-bold text-muted uppercase">Hasta</label>
-                    <input type="date" name="fecha_fin" class="form-control border-0 bg-light rounded-3" value="<?php echo $fecha_fin; ?>">
+                    <input type="text" name="fecha_fin" class="form-control border-0 bg-light rounded-3 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_fin; ?>">
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label class="form-label small fw-bold text-muted uppercase">Usuario UPU</label>
                     <select name="usuario_upu" class="form-select border-0 bg-light rounded-3">
                         <option value="">Todas las UPU</option>
@@ -337,15 +346,15 @@ if ($result_usuarios_upu_filter->num_rows > 0) {
                 </div>
                 <h5 class="mb-0 fw-bold">Exportación de Reportes</h5>
             </div>
-            <form method="POST" action="../dompdf/exportar_pdf_I-E.php" class="row g-3">
-                <div class="col-md-3">
-                    <input type="date" name="filtro_fecha_inicio" class="form-control border-0 bg-light rounded-3" value="<?php echo $fecha_inicio; ?>" required>
+            <form method="POST" action="../dompdf/exportar_pdf_I-E.php" class="row g-3 w-100" onsubmit="return validateFormExportPDF()">
+                <div class="col-6 col-md-3">
+                    <input type="text" name="filtro_fecha_inicio" class="form-control border-0 bg-light rounded-3 datepicker-flat w-100" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio; ?>">
                 </div>
-                <div class="col-md-3">
-                    <input type="date" name="filtro_fecha_fin" class="form-control border-0 bg-light rounded-3" value="<?php echo $fecha_fin; ?>" required>
+                <div class="col-6 col-md-3">
+                    <input type="text" name="filtro_fecha_fin" class="form-control border-0 bg-light rounded-3 datepicker-flat w-100" placeholder="YYYY-MM-DD" value="<?php echo $fecha_fin; ?>">
                 </div>
-                <div class="col-md-4">
-                    <select name="usuario_upu" class="form-select border-0 bg-light rounded-3" required>
+                <div class="col-12 col-md-4">
+                    <select name="usuario_upu" class="form-select border-0 bg-light rounded-3 w-100">
                         <option value="">Seleccionar UPU...</option>
                         <option value="all">Todas las UPU</option>
                         <?php
@@ -358,7 +367,7 @@ if ($result_usuarios_upu_export->num_rows > 0) {
 }?>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <button type="submit" class="btn btn-success w-100 rounded-pill shadow-sm fw-bold">
                         <i class="fas fa-download me-2"></i> Reporte PDF
                     </button>

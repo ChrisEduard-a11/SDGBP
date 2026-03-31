@@ -191,10 +191,10 @@ if ($categoria_seleccionada) {
                 <h5><i class="fas fa-filter me-2"></i> Opciones de Búsqueda</h5>
             </div>
             <div class="card-body p-4">
-                <form id="form-filtros" method="POST" action="lista_bienes.php" class="row g-3 align-items-end">
+                <form id="form-filtros" method="POST" action="lista_bienes.php" class="row g-3 align-items-end" onsubmit="return validateFormFiltroBienes()">
                     <div class="col-md-5">
                         <label for="categoria" class="form-label small fw-bold text-muted mb-1"><i class="fas fa-tags me-1"></i> Categoría del Bien</label>
-                        <select class="form-select form-select-premium" id="categoria" name="categoria" required onchange="this.form.submit()">
+                        <select class="form-select form-select-premium" id="categoria" name="categoria" onchange="this.form.submit()">
                             <option value="">Seleccione una categoría</option>
                             <?php foreach ($categorias as $categoria) { ?>
                                 <option 
@@ -209,7 +209,7 @@ if ($categoria_seleccionada) {
                     
                     <div class="col-md-5">
                         <label for="nombre_bien" class="form-label small fw-bold text-muted mb-1"><i class="fas fa-box me-1"></i> Nombre Específico</label>
-                        <select class="form-select form-select-premium" id="nombre_bien" name="nombre_bien" <?php echo empty($categoria_seleccionada) ? 'disabled' : ''; ?> required onchange="this.form.submit()">
+                        <select class="form-select form-select-premium" id="nombre_bien" name="nombre_bien" <?php echo empty($categoria_seleccionada) ? 'disabled' : ''; ?> onchange="this.form.submit()">
                             <option value="">Seleccione un nombre</option>
                             <?php foreach ($nombres_bienes as $nombre_bien_opcion) { ?>
                                 <option 

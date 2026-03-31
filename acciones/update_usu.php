@@ -27,6 +27,16 @@ if ($nuevo_usuario !== $usuario_actual) {
     $sql_usuario = ""; // No actualizar el campo `usuario`
 }
 
+// Verificar duplicado de Usuario o Cédula (excluyendo al usuario actual)
+$sql_check = "SELECT id_usuario FROM usuario WHERE (cedula = '$cedula' OR usuario = '$nuevo_usuario') AND id_usuario != '$id_usuario'";
+$res_check = mysqli_query($conexion, $sql_check);
+if (mysqli_num_rows($res_check) > 0) {
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "El Nombre de Usuario o la Cédula ya se encuentran vinculados a otra cuenta.";
+    header("Location: ../vistas/edit_u.php?id=$id_usuario");
+    exit();
+}
+
 // Verificar que las contraseñas coincidan
 if (!empty($clave) && $clave !== $confirmar_clave) {
     $_SESSION["estatus"] = "error";
@@ -35,10 +45,17 @@ if (!empty($clave) && $clave !== $confirmar_clave) {
     exit();
 }
 
+if (!empty($clave) && !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/', $clave)) {
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "La nueva contraseña no cumple con los requisitos de seguridad.";
+    header("Location: ../vistas/edit_u.php?id=$id_usuario");
+    exit();
+}
+
 // Encriptar la contraseña si se ha proporcionado una nueva
 if (!empty($clave)) {
     $clave_encrip = sha1($clave);
-    $sql_clave = ", clave='$clave_encrip'";
+    $sql_clave = ", clave='$clave_encrip', fecha_cambio_clave=CURRENT_DATE";
 } else {
     $sql_clave = "";
 }
@@ -76,8 +93,8 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
         $usuario = mysqli_fetch_assoc($result);
         $rutaFotoAnterior = $usuario['foto'];
 
-        // Eliminar la imagen anterior si existe
-        if (file_exists($rutaFotoAnterior)) {
+        // Eliminar la imagen anterior si existe y no es la por defecto
+        if (file_exists($rutaFotoAnterior) && strpos($rutaFotoAnterior, 'default_profile.png') === false) {
             unlink($rutaFotoAnterior);
         }
 

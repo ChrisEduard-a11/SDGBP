@@ -148,12 +148,12 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
                             
                             <div class="mb-4">
                                 <label for="nombre" class="form-label-premium"><i class="fas fa-signature"></i> Nombre del Producto</label>
-                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" placeholder="Ej: Laptop Gamer X9" required>
+                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" placeholder="Ej: Laptop Gamer X9">
                             </div>
                             
                             <div class="mb-4">
                                 <label for="categoria" class="form-label-premium"><i class="fas fa-tags"></i> Categoría Principal</label>
-                                <select class="form-select form-control-premium form-select-select2" id="categoria" name="categoria_id" required>
+                                <select class="form-select form-control-premium form-select-select2" id="categoria" name="categoria_id">
                                     <option value="">Seleccione una categoría</option>
                                     <?php foreach ($categorias as $categoria): ?>
                                         <option value="<?= $categoria['id'] ?>"><?= htmlspecialchars($categoria['nombre']) ?></option>
@@ -175,12 +175,12 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
                             <div class="row g-3 mb-4">
                                 <div class="col-6">
                                     <label for="precio" class="form-label-premium"><i class="fas fa-dollar-sign"></i> Precio Venta</label>
-                                    <input type="number" step="0.01" class="form-control form-control-premium" id="precio" name="precio" placeholder="0.00" min="0" required>
+                                    <input type="number" step="0.01" class="form-control form-control-premium" id="precio" name="precio" placeholder="0.00" min="0">
                                 </div>
                                 
                                 <div class="col-6">
                                     <label for="stock" class="form-label-premium"><i class="fas fa-warehouse"></i> Stock Inicial</label>
-                                    <input type="number" class="form-control form-control-premium" id="stock" name="stock" placeholder="0" min="0" required>
+                                    <input type="number" class="form-control form-control-premium" id="stock" name="stock" placeholder="0" min="0">
                                 </div>
                             </div>
 

@@ -25,7 +25,7 @@ $sql = "SELECT pagos.*, usuario_pagos.usuario_id AS usuario_id, usuario.nombre A
     LEFT JOIN usuario_pagos ON pagos.id = usuario_pagos.pago_id
     LEFT JOIN usuario ON usuario_pagos.usuario_id = usuario.id_usuario
     WHERE pagos.estado = 'pendiente'
-    ORDER BY usuario.nombre ASC, pagos.fecha_pago ASC, pagos.referencia ASC";
+    ORDER BY usuario.nombre ASC, pagos.id ASC";
 $result = $conexion->query($sql);
 
 // Inicializar tokens en sesión
@@ -187,6 +187,30 @@ if (!isset($_SESSION['form_tokens'])) {
         box-shadow: 0 4px 12px rgba(197, 48, 48, 0.3);
     }
 
+    /* UPU Group Header */
+    .upu-group-header td {
+        background: rgba(66, 153, 225, 0.05) !important;
+        border-left: 5px solid #4299e1;
+        text-align: left !important;
+        padding: 1.5rem 2rem !important;
+    }
+    [data-theme="dark"] .upu-group-header td {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-left: 5px solid #60a5fa;
+    }
+    .bg-soft-primary {
+        background-color: rgba(66, 153, 225, 0.1);
+        color: #2b6cb0;
+    }
+    [data-theme="dark"] .bg-soft-primary {
+        background-color: rgba(96, 165, 250, 0.1);
+        color: #93c5fd;
+    }
+    .avatar-sm.bg-primary-premium {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 10px rgba(118, 75, 162, 0.3);
+    }
+
     /* Modal Styling */
     .modal-content-glass {
         background: #ffffff;
@@ -201,7 +225,7 @@ if (!isset($_SESSION['form_tokens'])) {
         box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     }
     .modal-header-premium {
-        background: var(--primary-gradient);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-radius: 2rem 2rem 0 0;
         padding: 1.5rem;
@@ -274,13 +298,19 @@ if (!isset($_SESSION['form_tokens'])) {
         <div class="card glass-card fade-in-up" style="animation-delay: 0.2s;">
             <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold mb-0"><i class="fas fa-tasks me-3 text-primary"></i> Cola de Procesamiento</h4>
+                <div class="ms-auto me-4" style="width: 300px;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="upuSearchInput" class="form-control bg-light border-start-0" placeholder="Buscar pagos...">
+                    </div>
+                </div>
                 <div class="badge bg-soft-primary px-3 py-2 text-primary rounded-pill">
                     Monitor en Tiempo Real
                 </div>
             </div>
             <div class="card-body table-container">
                 <div class="table-responsive">
-                    <table id="datatablesSimple" class="table custom-table w-100">
+                    <table id="tbl-aprobaciones" class="table custom-table w-100">
                         <thead class="text-center">
                             <tr>
                                 <th>Origen (UPU)</th>
@@ -295,15 +325,40 @@ if (!isset($_SESSION['form_tokens'])) {
                         </thead>
                         <tbody>
                             <?php if ($result->num_rows > 0): ?>
-                                <?php $result->data_seek(0); ?>
+                                <?php 
+                                    $result->data_seek(0); 
+                                    $current_upu = null;
+                                ?>
                                 <?php while ($row = $result->fetch_assoc()): ?>
+                                    <?php 
+                                        $upu_name = htmlspecialchars($row['nombre_cliente'] ?? 'Sin UPU'); 
+                                        if ($current_upu !== $upu_name):
+                                            $current_upu = $upu_name;
+                                    ?>
+                                        <tr class="upu-group-header">
+                                            <td colspan="8">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-sm bg-primary-premium text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-university"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="mb-0 fw-bold text-primary">Unidad: <?php echo $upu_name; ?></h5>
+                                                        <small class="text-muted text-uppercase tracking-wider">Cola de aprobación por entidad</small>
+                                                    </div>
+                                                    <span class="ms-auto badge bg-soft-primary px-3 py-2 rounded-pill fw-bold">
+                                                        <i class="fas fa-layer-group me-1"></i> Agrupado por UPU
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
                                     <tr class="text-center">
                                         <td>
                                             <div class="d-flex align-items-center justify-content-center">
                                                 <div class="avatar-sm bg-light text-primary rounded-circle p-2 me-2">
                                                     <i class="fas fa-user"></i>
                                                 </div>
-                                                <span class="fw-bold"><?php echo htmlspecialchars($row['nombre_cliente'] ?? 'Sin UPU'); ?></span>
+                                                <span class="fw-bold"><?php echo $upu_name; ?></span>
                                             </div>
                                         </td>
                                         <td>
@@ -336,14 +391,14 @@ if (!isset($_SESSION['form_tokens'])) {
                                             <div class="d-flex justify-content-center">
                                                 <button type="button"
                                                     class="btn-action btn-approve"
-                                                    onclick="abrirModalAprobar(<?php echo $row['id']; ?>, '<?php echo $row['monto']; ?>', '<?php echo $row['referencia']; ?>')"
+                                                    onclick="abrirModalAprobar(<?php echo $row['id']; ?>, '<?php echo $row['monto']; ?>', '<?php echo $row['referencia']; ?>', '<?php echo $row['tipo']; ?>', '<?php echo $upu_name; ?>', '<?php echo date('d/m/Y', strtotime($row['fecha_pago'])); ?>', '<?php echo htmlspecialchars($row['cliente']); ?>')"
                                                     data-bs-toggle="tooltip" title="Aprobar Pago">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                                 
                                                 <button type="button"
                                                     class="btn-action btn-reject"
-                                                    onclick="rechazarPago(<?php echo $row['id']; ?>)"
+                                                    onclick="rechazarPago(<?php echo $row['id']; ?>, '<?php echo $row['monto']; ?>', '<?php echo $row['referencia']; ?>', '<?php echo $upu_name; ?>', '<?php echo date('d/m/Y', strtotime($row['fecha_pago'])); ?>', '<?php echo htmlspecialchars($row['cliente']); ?>')"
                                                     data-bs-toggle="tooltip" title="Rechazar Pago">
                                                     <i class="fas fa-times"></i>
                                                 </button>
@@ -391,6 +446,19 @@ endif; ?>
                     
                     <div class="p-4 rounded-4 mb-4 border border-info" style="background: rgba(0, 158, 253, 0.05);">
                         <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Unidad / UPU:</span>
+                            <span id="modal-upu" class="fw-bold text-dark"></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Entidad / Cliente:</span>
+                            <span id="modal-entidad" class="fw-bold text-dark"></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Fecha del Pago:</span>
+                            <span id="modal-fecha" class="fw-bold text-dark"></span>
+                        </div>
+                        <hr class="my-3 opacity-10">
+                        <div class="d-flex justify-content-between mb-2">
                             <span>Monto a Procesar:</span>
                             <span id="modal-monto" class="fw-bold fs-5"></span>
                         </div>
@@ -413,6 +481,56 @@ endif; ?>
                     <button type="button" class="btn btn-link text-muted text-decoration-none me-auto" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow" id="btn-confirmar-aprobar">
                         Liberar Pago <i class="fas fa-paper-plane ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Rechazar -->
+    <div class="modal fade" id="modalRechazarPago" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-glass shadow-lg">
+                <div class="modal-header border-0" style="background: linear-gradient(135deg, #e71d36 0%, #ff6b6b 100%); color: white; border-radius: 2rem 2rem 0 0; padding: 1.5rem;">
+                    <h5 class="modal-title fw-bold text-white"><i class="fas fa-times-circle me-2"></i> Declinar Transacción</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted">Estás a punto de rechazar este movimiento. Por favor, detalla la razón técnica para el registro de auditoría:</p>
+                    
+                    <div class="p-4 rounded-4 mb-4 border border-danger" style="background: rgba(231, 29, 54, 0.05);">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Unidad / UPU:</span>
+                            <span id="modal-upu-rechazo" class="fw-bold text-dark"></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Entidad / Cliente:</span>
+                            <span id="modal-entidad-rechazo" class="fw-bold text-dark"></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Fecha del Pago:</span>
+                            <span id="modal-fecha-rechazo" class="fw-bold text-dark"></span>
+                        </div>
+                        <hr class="my-3 opacity-10">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Monto de Operación:</span>
+                            <span id="modal-monto-rechazo" class="fw-bold fs-5 text-dark"></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Referencia bancaria:</span>
+                            <span id="modal-referencia-rechazo" class="fw-bold text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modal-motivo-rechazo" class="form-label fw-bold">Motivo del Rechazo <span class="text-danger">*</span></label>
+                        <textarea class="form-control bg-light" id="modal-motivo-rechazo" rows="3" placeholder="Ej. Comprobante ilegible, referencia duplicada o monto incorrecto..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-link text-muted text-decoration-none me-auto" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger px-5 py-3 rounded-pill fw-bold shadow" id="btn-confirmar-rechazo">
+                        Revisar Rechazo <i class="fas fa-arrow-right ms-2"></i>
                     </button>
                 </div>
             </div>
@@ -515,105 +633,56 @@ endif; ?>
 </style>
 
 <script>
-    function abrirModalAprobar(id, monto, referencia) {
-        if (!modalAprobar) {
-            modalAprobar = new bootstrap.Modal(document.getElementById('modalAprobarPago'));
-        }
-        currentPagoId = id;
-        document.getElementById('modal-monto').innerText = `${parseFloat(monto).toLocaleString('es-VE', {minimumFractionDigits: 2})} Bs`;
-        document.getElementById('modal-referencia').innerText = referencia;
-        document.getElementById('modal-comision').value = '0,00';
-        modalAprobar.show();
-    }
+    // La función abrirModalAprobar y rechazarPago se manejan globalmente en models/funciones.php
 
-    document.getElementById('btn-confirmar-aprobar').addEventListener('click', function() {
-        if (currentPagoId) {
-            let comisionRaw = document.getElementById('modal-comision').value.trim();
-            
-            // Lógica robusta para parsear montos con comas o puntos
-            if (comisionRaw.includes(',') && comisionRaw.includes('.')) {
-                // Formato mixto: 1.000,50 -> elimina puntos y cambia coma a punto
-                comisionRaw = comisionRaw.replace(/\./g, "").replace(",", ".");
-            } else if (comisionRaw.includes(',')) {
-                // Formato solo con coma: 1,50 o 1000,50 -> cambia coma a punto
-                comisionRaw = comisionRaw.replace(",", ".");
-            } else if (comisionRaw.includes('.')) {
-                // Si tiene varios puntos (ej: 1.000.000), asumimos que son miles (eliminar)
-                if ((comisionRaw.match(/\./g) || []).length > 1) {
-                    comisionRaw = comisionRaw.replace(/\./g, "");
-                }
-                // Si tiene 1 solo punto (ej: 1.50) lo interpretamos como decimal y lo dejamos intacto.
-            }
-            
-            const comision = parseFloat(comisionRaw);
-            
-            if (isNaN(comision) || comision < 0) {
-                 Swal.fire({
-                    icon: 'error',
-                    title: 'Comisión No Válida',
-                    text: 'Por favor, ingrese un monto correcto.',
-                    confirmButtonColor: '#764ba2'
-                 });
-                 return;
-            }
-            
-            modalAprobar.hide();
-            document.getElementById(`comision-${currentPagoId}`).value = comision;
-            
-            Swal.fire({
-                title: '¿Confirmar Aprobación?',
-                text: 'El saldo del usuario será incrementado y este registro será marcado como procesado.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#2af598',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, Confirmar',
-                cancelButtonText: 'Cancelar',
-                background: '#fff',
-                backdrop: `rgba(0,0,123,0.1)`
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Procesando...',
-                        allowOutsideClick: false,
-                        didOpen: () => { Swal.showLoading() }
-                    });
-                    document.getElementById(`form-aprobar-${currentPagoId}`).submit();
-                }
-            });
-        }
-    });
+    // El evento click para btn-confirmar-aprobar es manejado globalmente en models/funciones.php
 
-    function rechazarPago(id) {
-        Swal.fire({
-            title: 'Motivo del Rechazo',
-            text: 'Indique la razón técnica del rechazo del comprobante:',
-            input: 'textarea',
-            inputPlaceholder: 'Ej: Comprobante ilegible o referencia duplicada...',
-            showCancelButton: true,
-            confirmButtonText: 'Ejecutar Rechazo',
-            cancelButtonText: 'Volver',
-            confirmButtonColor: '#ff0844',
-            preConfirm: (descripcion) => {
-                if (!descripcion || descripcion.trim() === '') {
-                    Swal.showValidationMessage('Es obligatorio proporcionar un motivo.');
-                    return false;
-                }
-                return descripcion;
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById(`descripcion-${id}`).value = result.value;
-                document.getElementById(`form-rechazar-${id}`).submit();
-            }
-        });
-    }
+    // La función rechazarPago(id) se maneja globalmente desde models/funciones.php
 
     document.addEventListener('DOMContentLoaded', function () {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
         });
+
+        // Búsqueda personalizada compatible con agrupamiento
+        const searchInput = document.getElementById('upuSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const value = this.value.toLowerCase();
+                const table = document.getElementById('tbl-aprobaciones');
+                const tbody = table.querySelector('tbody');
+                const rows = tbody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    if (row.classList.contains('upu-group-header')) return;
+                    
+                    const text = row.innerText.toLowerCase();
+                    if (text.includes(value)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Mostrar/Ocultar encabezados de grupo si no tienen hijos visibles
+                const groupHeaders = tbody.querySelectorAll('.upu-group-header');
+                groupHeaders.forEach(header => {
+                    let nextRow = header.nextElementSibling;
+                    let hasVisibleChildren = false;
+                    
+                    while (nextRow && !nextRow.classList.contains('upu-group-header')) {
+                        if (nextRow.style.display !== 'none') {
+                            hasVisibleChildren = true;
+                            break;
+                        }
+                        nextRow = nextRow.nextElementSibling;
+                    }
+                    
+                    header.style.display = hasVisibleChildren || value === '' ? '' : 'none';
+                });
+            });
+        }
     });
 </script>
 

@@ -28,6 +28,16 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
         unset($_SESSION['form_tokens'][$token]);
     }
 }
+// Variables dinámicas para el contexto de la UI (Admin/Cont vs UPU)
+$isAdminOrCont = ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont');
+$uiTituloPagina = $isAdminOrCont ? 'Registrar Comisión / Ajuste' : 'Registrar Egreso';
+$uiSubtitulo = $isAdminOrCont ? 'Registra cobros de comisiones bancarias o ajustes a cuentas UPU' : 'Reporta tus salidas de dinero para control administrativo y balance';
+$uiBreadcrumb = $isAdminOrCont ? 'Nueva Comisión' : 'Nuevo Egreso';
+$uiGuia = $isAdminOrCont ? 'Guía de Comisiones' : 'Guía de Egresos';
+$uiDetalles = $isAdminOrCont ? 'Detalles de la Comisión' : 'Detalles del Egreso';
+$uiMontoLabel = $isAdminOrCont ? 'Monto de la Comisión (Bs)' : 'Monto del Egreso (Bs)';
+$uiFechaLabel = $isAdminOrCont ? 'Fecha de la Comisión' : 'Fecha del Egreso';
+$uiBtnTexto = $isAdminOrCont ? 'Confirmar Comisión' : 'Confirmar Egreso';
 ?>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -133,19 +143,21 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
         
         <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
             <div>
-                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-minus-circle me-2"></i>Registrar Egreso</h1>
-                <p class="text-muted">Reporta tus salidas de dinero para control administrativo y balance</p>
+                <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-minus-circle me-2"></i><?php echo $uiTituloPagina; ?></h1>
+                <p class="text-muted"><?php echo $uiSubtitulo; ?></p>
             </div>
             <nav aria-label="breadcrumb" class="d-none d-lg-block">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
                     <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Nuevo Egreso</li>
+                    <li class="breadcrumb-item active"><?php echo $uiBreadcrumb; ?></li>
                 </ol>
             </nav>
         </header>
 
-        <div class="row g-4">
-            <!-- Sidebar Info -->
+        <div class="row g-4 <?php echo $isAdminOrCont ? 'justify-content-center' : ''; ?>">
+            
+            <?php if (!$isAdminOrCont): ?>
+            <!-- Sidebar Info (Solo UPU) -->
             <div class="col-lg-4 animate-up" style="animation-delay: 0.1s;">
                 <div class="glass-card p-4 mb-4">
                     <div class="form-section-title">
@@ -170,7 +182,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
 
                 <div class="glass-card p-4 border-start border-4 border-warning">
                     <div class="form-section-title">
-                        <i class="fas fa-exclamation-triangle text-warning"></i> Guía de Egresos
+                        <i class="fas fa-exclamation-triangle text-warning"></i> <?php echo $uiGuia; ?>
                     </div>
                     <ul class="small text-muted ps-3 mb-0">
                         <li class="mb-2">Confirma que el <b>monto</b> no exceda tu disponibilidad si eres UPU.</li>
@@ -179,15 +191,30 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                     </ul>
                 </div>
             </div>
+            <?php else: ?>
+            <!-- Header Informativo (Solo Admin/Cont) -->
+            <div class="col-lg-10 animate-up" style="animation-delay: 0.1s;">
+                <div class="glass-card p-4 d-flex align-items-center mb-1 border-start border-4 border-primary">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-4 d-none d-md-block">
+                        <i class="fas fa-university fs-3 text-primary"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-primary"><i class="fas fa-exclamation-triangle text-warning me-2 d-md-none"></i> <?php echo $uiGuia; ?> Administrativa</h5>
+                        <p class="text-muted small mb-0">Módulo exclusivo para afectar saldos y cargar comisiones bancarias a la red de UPUs. Todo movimiento requiere verificación de referencia y motivo técnico exacto para auditoría interna.</p>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <!-- Main Form -->
-            <div class="col-lg-8 animate-up" style="animation-delay: 0.2s;">
+            <div class="<?php echo $isAdminOrCont ? 'col-lg-10' : 'col-lg-8'; ?> animate-up" style="animation-delay: 0.2s;">
                 <div class="glass-card p-4 p-md-5">
                     <form method="post" id="formRegistroEgreso" action="../acciones/controlador_pago_egreso.php" onsubmit="return validateFormRegistroEgreso()" enctype="multipart/form-data">
-                        <input type="hidden" name="idempotency_token" value="<?php echo $idempotency_token; ?>">
+                        <input type="hidden" id="idempotency_token" name="idempotency_token" value="<?php echo $idempotency_token; ?>">
+                        <input type="hidden" id="user_role_global" value="<?php echo $_SESSION['tipo']; ?>">
                         
                         <div class="form-section-title">
-                            <i class="fas fa-minus-circle"></i> Detalles del Egreso
+                            <i class="fas fa-minus-circle"></i> <?php echo $uiDetalles; ?>
                         </div>
 
                         <div class="row g-3">
@@ -196,7 +223,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                     <?php if ($_SESSION["tipo"] == "admin" || $_SESSION["tipo"] == "cont") { ?>
-                                        <select class="form-select" id="nombre_cliente" name="nombre_cliente" onchange="actualizarUsuarioId(this)" required>
+                                        <select class="form-select" id="nombre_cliente" name="nombre_cliente" onchange="actualizarUsuarioId(this)">
                                             <option value="">Seleccione una UPU</option>
                                             <?php
                                             $sql = "SELECT id_usuario, nombre FROM usuario WHERE tipos = 'upu' AND aprobado = 1";
@@ -230,7 +257,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                                         <input type="hidden" name="cliente" id="cliente" value="No Aplica">
                                     <?php else: ?>
                                         <span class="input-group-text"><i class="fas fa-building"></i></span>
-                                        <select class="form-select" id="cliente" name="cliente" required>
+                                        <select class="form-select" id="cliente" name="cliente">
                                             <option value="">Seleccione...</option>
                                             <?php
                                             $sqlClientes = "SELECT DISTINCT c.id_cliente, c.nombre FROM cliente c INNER JOIN usuario_pagos up ON c.id_cliente = up.cliente_id WHERE up.usuario_id = ?";
@@ -252,7 +279,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                                 <label class="small fw-bold mb-2">Banco de Destino / Método</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-university"></i></span>
-                                    <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                                    <select class="form-select" id="metodo_pago" name="metodo_pago">
                                         <option value="">Seleccione el banco...</option>
                                         <optgroup label="Bancos Públicos">
                                             <option value="Banco de Venezuela">Banco de Venezuela (BDV)</option>
@@ -285,10 +312,10 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="small fw-bold mb-2">Monto del Egreso (Bs)</label>
+                                <label class="small fw-bold mb-2"><?php echo $uiMontoLabel; ?></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-money-bill-wave"></i></span>
-                                    <input type="text" class="form-control campo-monto" id="monto" name="monto" placeholder="1.234,56" maxlength="15" required>
+                                    <input type="text" class="form-control campo-monto" id="monto" name="monto" placeholder="1.234,56" maxlength="15">
                                 </div>
                                 <div class="form-text small opacity-70"><i class="fas fa-info-circle me-1"></i> Formato sugerido: 1.500,00 (Punto para miles, coma para decimales).</div>
                             </div>
@@ -297,15 +324,15 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                                 <label class="small fw-bold mb-2">Referencia / Cheque</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                                    <input type="text" class="form-control" id="codigo_pago" name="referencia" placeholder="Nro de Operación" required>
+                                    <input type="text" class="form-control" id="codigo_pago" name="referencia" placeholder="Nro de Operación">
                                 </div>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="small fw-bold mb-2">Fecha del Egreso</label>
+                                <label class="small fw-bold mb-2"><?php echo $uiFechaLabel; ?></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                                    <input type="text" class="form-control datepicker-flat" id="fecha_pago" name="fecha_pago" placeholder="YYYY-MM-DD">
+                                    <input type="text" class="form-control datepicker-flat" id="fecha_pago" name="fecha_pago" placeholder="YYYY-MM-DD" readonly>
                                 </div>
                             </div>
 
@@ -320,12 +347,12 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
 
                             <div class="col-12 mb-4">
                                 <label class="small fw-bold mb-2">Descripción / Motivo</label>
-                                <textarea class="form-control" id="descripcion" name="descripcion" maxlength="50" placeholder="Motivo detallado (máx 50 caracteres)" style="height: 100px;" required></textarea>
+                                <textarea class="form-control" id="descripcion" name="descripcion" maxlength="50" placeholder="Motivo detallado (máx 50 caracteres)" style="height: 100px;"></textarea>
                             </div>
                         </div>
 
                         <button type="submit" class="btn btn-register-egreso btn-lg w-100 shadow-sm mt-2">
-                            <i class="fas fa-check-circle me-2"></i> Confirmar Egreso
+                            <i class="fas fa-check-circle me-2"></i> <?php echo $uiBtnTexto; ?>
                         </button>
                     </form>
                 </div>

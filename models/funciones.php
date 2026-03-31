@@ -274,31 +274,25 @@ function establecerCodigoAleatorio() {
     function navigateTo(url) {
         window.location.href = url;
     }
-</script>
-<script>
-    function showProcessingAlert() {
-        Swal.fire({
-            title: 'Procesando',
-            text: 'Por favor, espere...',
-            icon: 'info',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+
+    // Mostrar el preloader global al hacer submit de cualquier form de navegación
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                // Solo si el form es válido (no ha sido prevenido por onsubmit)
+                // Usamos un pequeño delay para que la validación interna del form corra primero
+                setTimeout(function() {
+                    if (!e.defaultPrevented) {
+                        var preloader = document.getElementById('global-preloader');
+                        if (preloader) {
+                            preloader.style.visibility = 'visible';
+                            preloader.style.opacity = '1';
+                        }
+                    }
+                }, 0);
+            });
         });
-    }
-
-
-    function navigateTo(url) {
-        showProcessingAlert();
-        setTimeout(() => {
-            Swal.close(); // Cerrar el modal antes de redirigir
-            window.location.href = url;
-        }, 1000); // Espera 1 segundo antes de redirigir
-    }
+    });
 </script>
 <script>
         function confirmarRechazo(usuarioId) {
@@ -775,9 +769,10 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let idPagoSeleccionado = null;
+    let tipoTransaccionGlobal = 'Ingreso';
 
     // Hacer la función global para que el onclick del botón la encuentre
-    window.abrirModalAprobar = function(id, monto, referencia) {
+    window.abrirModalAprobar = function(id, monto, referencia, tipo, upu, fecha, entidad) {
         if (!puedeAprobarORechazar(id)) {
             Swal.fire({
                 icon: 'warning',
@@ -789,8 +784,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         idPagoSeleccionado = id;
+        tipoTransaccionGlobal = tipo || 'Ingreso';
         document.getElementById('modal-monto').textContent = parseFloat(monto).toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
         document.getElementById('modal-referencia').textContent = referencia;
+        
+        // Nuevos campos detallados
+        if(document.getElementById('modal-upu')) document.getElementById('modal-upu').textContent = upu || 'N/A';
+        if(document.getElementById('modal-fecha')) document.getElementById('modal-fecha').textContent = fecha || 'N/A';
+        if(document.getElementById('modal-entidad')) document.getElementById('modal-entidad').textContent = entidad || 'N/A';
+
         document.getElementById('modal-comision').value = "";
         let modal = new bootstrap.Modal(document.getElementById('modalAprobarPago'));
         modal.show();
@@ -798,8 +800,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Evento para el botón de aprobar dentro del modal
     document.getElementById('btn-confirmar-aprobar').onclick = function() {
-        const comision = document.getElementById('modal-comision').value;
-        if (comision && parseFloat(comision) < 0) {
+        let comisionRaw = document.getElementById('modal-comision').value.trim();
+        
+        // Lógica robusta para parsear montos con comas o puntos
+        if (comisionRaw.includes(',') && comisionRaw.includes('.')) {
+            comisionRaw = comisionRaw.replace(/\./g, "").replace(",", ".");
+        } else if (comisionRaw.includes(',')) {
+            comisionRaw = comisionRaw.replace(",", ".");
+        } else if (comisionRaw.includes('.')) {
+            if ((comisionRaw.match(/\./g) || []).length > 1) {
+                comisionRaw = comisionRaw.replace(/\./g, "");
+            }
+        }
+        
+        let comision = parseFloat(comisionRaw);
+        if (isNaN(comision)) comision = 0;
+
+        if (comision < 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'Comisión inválida',
@@ -808,28 +825,61 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             return;
         }
-        Swal.fire({
-            title: '¿Estás seguro de aprobar este pago?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, aprobar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById(`comision-${idPagoSeleccionado}`).value = comision ? comision : 0;
-                document.getElementById(`form-aprobar-${idPagoSeleccionado}`).submit();
-            }
-        });
-        // Cierra el modal Bootstrap
-        bootstrap.Modal.getInstance(document.getElementById('modalAprobarPago')).hide();
+
+        let accionTexto = (tipoTransaccionGlobal.toLowerCase() === 'egreso') ? 'descontado/reducido' : 'incrementado';
+        let confirmTitle = `¿Confirmar Aprobación de ${tipoTransaccionGlobal}?`;
+        let confirmHtml = '';
+
+        if (comision > 0) {
+            const comisionFormateada = comision.toLocaleString('es-VE', {minimumFractionDigits: 2});
+            confirmHtml = `<p>¿Estás seguro de registrar y aprobar este <strong>${tipoTransaccionGlobal.toLowerCase()}</strong> aplicando una comisión de <strong>Bs. ${comisionFormateada}</strong>?</p><p class="text-muted small">El saldo del usuario será <strong>${accionTexto}</strong> tomando en cuenta esta comisión.</p>`;
+        } else {
+            confirmHtml = `<p>¿Estás seguro de aprobar este <strong>${tipoTransaccionGlobal.toLowerCase()}</strong> <strong>sin ninguna comisión</strong>?</p><p class="text-muted small">El saldo del usuario será <strong>${accionTexto}</strong> por el monto total de la operación.</p>`;
+        }
+
+        // Cierra el modal Bootstrap ANTES de abrir SweetAlert
+        const bsModalEl = document.getElementById('modalAprobarPago');
+        let bsModal = bootstrap.Modal.getInstance(bsModalEl);
+        if(bsModal) bsModal.hide();
+
+        setTimeout(() => {
+            Swal.fire({
+                title: confirmTitle,
+                html: confirmHtml,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2af598',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-check"></i> Sí, Confirmar',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+                background: '#fff',
+                backdrop: `rgba(0,0,123,0.1)`
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        html: `
+                            <div style="color: #f18000; padding: 20px;">
+                                <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                                <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Cargando...</h5>
+                            </div>
+                        `,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        background: 'transparent',
+                        backdrop: 'rgba(15, 23, 42, 0.8)',
+                        customClass: { popup: 'border-0 shadow-none bg-transparent' }
+                    });
+                    document.getElementById(`comision-${idPagoSeleccionado}`).value = comision;
+                    document.getElementById(`form-aprobar-${idPagoSeleccionado}`).submit();
+                } else {
+                    if(bsModal) bsModal.show(); // Reabrir si cancelan
+                }
+            });
+        }, 300); // Dar tiempo al modal para cerrarse visualmente
     };
 
-    // Función para rechazar pago
-    window.rechazarPago = function(id) {
+    // Función para rechazar pago (Abre el Modal Bootstrap)
+    window.rechazarPago = function(id, monto, referencia, upu, fecha, entidad) {
         if (!puedeAprobarORechazar(id)) {
             Swal.fire({
                 icon: 'warning',
@@ -840,36 +890,90 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        Swal.fire({
-            title: 'Rechazar Pago',
-            input: 'textarea',
-            inputLabel: 'Motivo del rechazo',
-            inputPlaceholder: 'Escribe el motivo del rechazo aquí...',
-            inputAttributes: {
-                'aria-label': 'Motivo del rechazo'
-            },
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Rechazar',
-            cancelButtonText: 'Cancelar',
-            preConfirm: (descripcion) => {
-                if (!descripcion) {
-                    Swal.showValidationMessage('Debes ingresar un motivo para rechazar el pago');
-                }
-                return descripcion;
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById(`descripcion-${id}`).value = result.value;
-                document.getElementById(`form-rechazar-${id}`).submit();
-            }
-        });
+        idPagoSeleccionado = id;
+        document.getElementById('modal-monto-rechazo').textContent = parseFloat(monto).toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
+        document.getElementById('modal-referencia-rechazo').textContent = referencia;
+
+        // Nuevos campos detallados
+        if(document.getElementById('modal-upu-rechazo')) document.getElementById('modal-upu-rechazo').textContent = upu || 'N/A';
+        if(document.getElementById('modal-fecha-rechazo')) document.getElementById('modal-fecha-rechazo').textContent = fecha || 'N/A';
+        if(document.getElementById('modal-entidad-rechazo')) document.getElementById('modal-entidad-rechazo').textContent = entidad || 'N/A';
+
+        document.getElementById('modal-motivo-rechazo').value = ""; // Limpiar texto previo
+        
+        let modal = new bootstrap.Modal(document.getElementById('modalRechazarPago'));
+        modal.show();
     };
+
+    // Evento para el botón de rechazar dentro del modal Bootstrap
+    const btnRechazo = document.getElementById('btn-confirmar-rechazo');
+    if (btnRechazo) {
+        btnRechazo.onclick = function() {
+            const motivo = document.getElementById('modal-motivo-rechazo').value.trim();
+            
+            if (!motivo) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Motivo Requerido',
+                    text: 'Es rigurosamente obligatorio justificar el rechazo.',
+                    confirmButtonColor: '#e71d36',
+                    background: '#fff',
+                    customClass: { confirmButton: 'btn btn-danger px-4 rounded-pill fw-bold' },
+                    buttonsStyling: false
+                });
+                return;
+            }
+
+            // Cierra el modal Bootstrap ANTES de abrir SweetAlert
+            const bsModalEl = document.getElementById('modalRechazarPago');
+            let bsModal = bootstrap.Modal.getInstance(bsModalEl);
+            if(bsModal) bsModal.hide();
+
+            setTimeout(() => {
+                Swal.fire({
+                    title: '<i class="fas fa-exclamation-triangle text-danger me-2"></i> Confirmar Ejecución',
+                    html: `<p>¿Estás totalmente seguro de registrar la declinación de este pago?</p><p class="text-muted small">Esta acción registrará el error y no sumará balance al usuario.</p>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e71d36',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-ban"></i> Sí, Ejecutar Rechazo',
+                    cancelButtonText: '<i class="fas fa-arrow-left"></i> Volver a editar',
+                    background: '#ffffff',
+                    backdrop: `rgba(231,29,54,0.1)`,
+                    customClass: {
+                        confirmButton: 'btn btn-danger px-4 rounded-pill fw-bold shadow-sm mx-2',
+                        cancelButton: 'btn btn-secondary px-4 rounded-pill fw-bold mx-2'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            html: `
+                                <div style="color: #f18000; padding: 20px;">
+                                    <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                                    <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Cargando...</h5>
+                                </div>
+                            `,
+                            showConfirmButton: false,
+                            allowOutsideClick: false,
+                            background: 'transparent',
+                            backdrop: 'rgba(15, 23, 42, 0.8)',
+                            customClass: { popup: 'border-0 shadow-none bg-transparent' }
+                        });
+                        document.getElementById(`descripcion-${idPagoSeleccionado}`).value = motivo;
+                        document.getElementById(`form-rechazar-${idPagoSeleccionado}`).submit();
+                    } else {
+                        if(bsModal) bsModal.show(); // Volver a mostrar modal si cancela
+                    }
+                });
+            }, 300); // Dar tiempo al modal para cerrarse visualmente
+        };
+    }
 
     // Función para validar si se puede aprobar o rechazar
     window.puedeAprobarORechazar = function(idActual) {
-        var tabla = document.getElementById('datatablesSimple');
+        var tabla = document.getElementById('tbl-aprobaciones') || document.getElementById('datatablesSimple');
         if (!tabla) return true;
         var filas = tabla.querySelectorAll('tbody tr');
         for (var i = 0; i < filas.length; i++) {

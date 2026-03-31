@@ -11,6 +11,12 @@ $claveee = sha1($recu_clave02);
 
 // Verificar que las contraseñas coincidan
 if ($clavee === $claveee) {
+    if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/', $recu_clave01)) {
+        $_SESSION["estatus"] = "error";
+        $_SESSION["mensaje"] = "La contraseña no cumple con los requisitos de seguridad.";
+        header("Location: ../vistas/nueva_clave.php");
+        exit();
+    }
     $id_usuario = $_SESSION['id_usuario'];
     $sql = "UPDATE usuario SET clave='$claveee', fecha_cambio_clave=CURRENT_DATE WHERE id_usuario='$id_usuario'";
     $result = mysqli_query($conexion, $sql);

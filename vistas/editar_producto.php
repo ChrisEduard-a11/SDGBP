@@ -165,7 +165,7 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
             </div>
             <div class="card-body p-4 p-md-5">
                 
-                <form action="../acciones/editar_producto.php" method="POST" enctype="multipart/form-data" class="row g-4">
+                <form action="../acciones/editar_producto.php" method="POST" enctype="multipart/form-data" class="row g-4" onsubmit="return validateFormAgregarProducto()">
                     
                     <input type="hidden" name="id" value="<?php echo $producto['id']; ?>">
                     
@@ -175,23 +175,23 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
                             
                             <div class="mb-4">
                                 <label for="nombre" class="form-label-premium"><i class="fas fa-signature"></i> Nombre Comercial</label>
-                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" value="<?php echo htmlspecialchars($producto['nombre']); ?>" required>
+                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" value="<?php echo htmlspecialchars($producto['nombre']); ?>">
                             </div>
                             
                             <div class="row g-3">
                                 <div class="col-md-6 mb-4">
                                     <label for="precio" class="form-label-premium"><i class="fas fa-tag"></i> Precio de Venta ($)</label>
-                                    <input type="number" step="0.01" class="form-control form-control-premium" id="precio" name="precio" value="<?php echo htmlspecialchars($producto['precio']); ?>" required>
+                                    <input type="number" step="0.01" class="form-control form-control-premium" id="precio" name="precio" value="<?php echo htmlspecialchars($producto['precio']); ?>">
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <label for="stock" class="form-label-premium"><i class="fas fa-warehouse"></i> Existencias en Stock</label>
-                                    <input type="number" class="form-control form-control-premium" id="stock" name="stock" value="<?php echo htmlspecialchars($producto['stock']); ?>" required>
+                                    <input type="number" class="form-control form-control-premium" id="stock" name="stock" value="<?php echo htmlspecialchars($producto['stock']); ?>">
                                 </div>
                             </div>
 
                             <div class="mb-4">
                                 <label for="categoria" class="form-label-premium"><i class="fas fa-layer-group"></i> Clasificación</label>
-                                <select class="form-select form-control-premium form-select-select2" id="categoria" name="categoria_id" required>
+                                <select class="form-select form-control-premium form-select-select2" id="categoria" name="categoria_id">
                                     <option value="">Seleccione una categoría</option>
                                     <?php foreach ($categorias as $categoria): ?>
                                         <option 

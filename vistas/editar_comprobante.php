@@ -175,7 +175,7 @@ $datos = [
             </div>
             <div class="card-body p-4 p-md-5">
                 
-                <form action="../dompdf/editar_comprobante.php" method="post" class="row">
+                <form action="../dompdf/editar_comprobante.php" method="post" class="row" onsubmit="return validateFormEditarComprobante()">
                     
                     <input type="hidden" name="archivo" value="<?php echo htmlspecialchars($archivo); ?>">
                     
@@ -184,19 +184,19 @@ $datos = [
                         <div class="col-md-4">
                             <label for="num_comprobante" class="form-label-premium"><i class="fas fa-hashtag"></i> N° de Comprobante</label>
                             <input type="number" class="form-control form-control-premium" id="num_comprobante" name="num_comprobante" 
-                                   value="<?php echo $datos['num_comprobante']; ?>" required>
+                                   value="<?php echo $datos['num_comprobante']; ?>">
                         </div>
 
                         <div class="col-md-4">
                             <label for="fecha" class="form-label-premium"><i class="fas fa-calendar-day"></i> Fecha</label>
                             <input type="text" class="form-control form-control-premium datepicker-flat" id="fecha" name="fecha" 
-                                   value="<?php echo $datos['fecha']; ?>" required>
+                                   value="<?php echo $datos['fecha']; ?>">
                         </div>
                         
                         <div class="col-md-4">
                             <label for="monto" class="form-label-premium"><i class="fas fa-money-bill-wave"></i> Monto (Bs)</label>
                             <input type="text" class="form-control form-control-premium campo-monto" id="monto" name="monto" 
-                                   value="<?php echo $datos['monto']; ?>" required>
+                                   value="<?php echo $datos['monto']; ?>">
                         </div>
                     </div>
 
@@ -209,37 +209,37 @@ $datos = [
                             <div class="col-md-6">
                                 <label for="nombre" class="form-label-premium"><i class="fas fa-user-circle"></i> Nombre o Razón Social</label>
                                 <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" 
-                                       value="<?php echo $datos['nombre']; ?>" required>
+                                       value="<?php echo $datos['nombre']; ?>">
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="rif" class="form-label-premium"><i class="fas fa-id-card-clip"></i> RIF / C.I.</label>
                                 <input type="text" class="form-control form-control-premium" id="rif" name="rif" 
-                                       value="<?php echo $datos['rif']; ?>" required>
+                                       value="<?php echo $datos['rif']; ?>">
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="telefono" class="form-label-premium"><i class="fas fa-phone-volume"></i> Teléfono</label>
                                 <input type="text" class="form-control form-control-premium" id="telefono" name="telefono" 
-                                       value="<?php echo $datos['telefono']; ?>" required>
+                                       value="<?php echo $datos['telefono']; ?>">
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="correo" class="form-label-premium"><i class="fas fa-at"></i> Correo Electrónico</label>
                                 <input type="email" class="form-control form-control-premium" id="correo" name="correo" 
-                                       value="<?php echo $datos['correo']; ?>" required>
+                                       value="<?php echo $datos['correo']; ?>">
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="ciudad" class="form-label-premium"><i class="fas fa-location-dot"></i> Ciudad</label>
                                 <input type="text" class="form-control form-control-premium" id="ciudad" name="ciudad" 
-                                       value="<?php echo $datos['ciudad']; ?>" required>
+                                       value="<?php echo $datos['ciudad']; ?>">
                             </div>
 
                             <div class="col-md-6">
                                 <label for="direccion" class="form-label-premium"><i class="fas fa-map-location-dot"></i> Dirección Fiscal</label>
                                 <input type="text" class="form-control form-control-premium" id="direccion" name="direccion" 
-                                       value="<?php echo $datos['direccion']; ?>" required>
+                                       value="<?php echo $datos['direccion']; ?>">
                             </div>
                         </div>
                     </div>
@@ -251,7 +251,7 @@ $datos = [
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label for="banco" class="form-label-premium"><i class="fas fa-bank"></i> Banco</label>
-                            <select class="form-select form-control-premium form-select-select2" id="banco" name="banco" required>
+                            <select class="form-select form-control-premium form-select-select2" id="banco" name="banco">
                                 <option value="">Seleccione un banco</option>
                                 <optgroup label="Bancos Públicos">
                                     <option value="Banco de Venezuela" <?php if($datos['banco'] == 'Banco de Venezuela') echo 'selected'; ?>>Banco de Venezuela</option>
@@ -273,7 +273,7 @@ $datos = [
                         
                         <div class="col-md-6">
                             <label for="tipo_pago" class="form-label-premium"><i class="fas fa-wallet"></i> Tipo de Cuenta</label>
-                            <select class="form-select form-control-premium form-select-select2" id="tipo_pago" name="tipo_pago" required>
+                            <select class="form-select form-control-premium form-select-select2" id="tipo_pago" name="tipo_pago">
                                 <option value="">Seleccione...</option>
                                 <option value="Corriente" <?php if($datos['tipo_pago'] == 'Corriente') echo 'selected'; ?>>Corriente</option>
                                 <option value="Ahorro" <?php if($datos['tipo_pago'] == 'Ahorro') echo 'selected'; ?>>Ahorro</option>
@@ -283,18 +283,18 @@ $datos = [
                         <div class="col-md-6">
                             <label for="cuenta" class="form-label-premium"><i class="fas fa-credit-card"></i> Número de Cuenta</label>
                             <input type="text" class="form-control form-control-premium" id="cuenta" name="cuenta" 
-                                   value="<?php echo $datos['cuenta']; ?>" required>
+                                   value="<?php echo $datos['cuenta']; ?>">
                         </div>
                         
                         <div class="col-md-6">
                             <label for="referencia" class="form-label-premium"><i class="fas fa-receipt"></i> N° de Referencia</label>
                             <input type="number" class="form-control form-control-premium" id="referencia" name="referencia" 
-                                   value="<?php echo $datos['referencia']; ?>" required>
+                                   value="<?php echo $datos['referencia']; ?>">
                         </div>
 
                         <div class="col-12">
                             <label for="descripcion" class="form-label-premium"><i class="fas fa-align-left"></i> Concepto / Descripción</label>
-                            <textarea class="form-control form-control-premium" id="descripcion" name="descripcion" rows="4" required><?php echo $datos['descripcion']; ?></textarea>
+                            <textarea class="form-control form-control-premium" id="descripcion" name="descripcion" rows="4"><?php echo $datos['descripcion']; ?></textarea>
                         </div>
                     </div>
 

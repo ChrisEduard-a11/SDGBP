@@ -140,7 +140,7 @@ require_once("../conexion.php");
             </div>
             
             <div class="card-body p-4 p-md-5">
-                <form method="post" action="../acciones/agregar_cliente.php">
+                <form method="post" action="../acciones/agregar_cliente.php" onsubmit="return validateFormAgregarCliente()">
                     
                     <div class="mb-5">
                         <div class="d-flex align-items-center mb-3">
@@ -155,7 +155,6 @@ require_once("../conexion.php");
                             id="nombre" 
                             name="nombre" 
                             placeholder="Ej. Juan Pérez / Corporación Tech" 
-                            required
                         >
                         <div class="mt-3 py-2 px-3 rounded-3" style="background: #eff6ff; color: #1d4ed8; font-size: 0.85rem;">
                             <i class="fas fa-info-circle me-1"></i> Este cliente se vinculará a tu cuenta automáticamente.

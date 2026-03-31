@@ -160,7 +160,7 @@ if (isset($_POST['categoria'])) {
                         <form method="post" action="">
                             <div class="form-group">
                                 <label for="categoria" class="form-label small fw-bold text-muted mb-2">Categoría del Bien</label>
-                                <select class="form-select form-select-premium" id="categoria" name="categoria" required onchange="this.form.submit()">
+                                <select class="form-select form-select-premium" id="categoria" name="categoria" onchange="this.form.submit()">
                                     <option value="">Seleccione una categoría</option>
                                     <?php foreach ($categorias as $categoria) { ?>
                                         <option value="<?php echo $categoria['id']; ?>" <?php echo (isset($_POST['categoria']) && $_POST['categoria'] == $categoria['id']) ? 'selected' : ''; ?>>
@@ -225,7 +225,7 @@ if (isset($_POST['categoria'])) {
                                 <!-- Fecha de Adquisición -->
                                 <div class="col-md-12">
                                     <label for="fecha_adquisicion" class="form-label small fw-bold text-muted mb-2">Fecha de Ingreso</label>
-                                    <input type="date" class="form-control form-control-premium" id="fecha_adquisicion" name="fecha_adquisicion">
+                                    <input type="text" class="form-control form-control-premium datepicker-flat" id="fecha_adquisicion" name="fecha_adquisicion" placeholder="YYYY-MM-DD">
                                 </div>
 
                                 <!-- Botón Guardar -->

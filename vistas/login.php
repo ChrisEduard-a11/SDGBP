@@ -1,5 +1,28 @@
 <?php
 session_start();
+
+if (isset($_SESSION['id'])) {
+    header("Location: inicio.php");
+    exit();
+}
+
+// Obtener Configuración del Aviso de Bienvenida
+require_once("../conexion.php");
+$config = [];
+$res_config = mysqli_query($conexion, "SELECT clave, valor FROM config_sistema");
+if ($res_config) {
+    while($row_c = mysqli_fetch_assoc($res_config)) {
+        $config[$row_c['clave']] = $row_c['valor'];
+    }
+}
+
+$aviso_texto = $config['bienvenida_login_texto'] ?? '¡Bienvenido al nuevo portal institucional!';
+$aviso_fecha = $config['bienvenida_login_fecha_inicio'] ?? date('Y-m-d');
+$aviso_activo = ($config['bienvenida_login_status'] ?? '1') == '1';
+
+// Lógica de 90 días
+$dias_transcurridos = floor((time() - strtotime($aviso_fecha)) / 86400);
+$mostrar_aviso = ($aviso_activo && $dias_transcurridos <= 90);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -16,7 +39,7 @@ session_start();
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Icons -->
-    <script src="../js/all.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Toastr -->
@@ -67,7 +90,7 @@ session_start();
             display: none;
             position: relative;
             flex: 1;
-            background-color: var(--brand-blue);
+            background-color: #0f172a;
             overflow: hidden;
         }
 
@@ -112,7 +135,7 @@ session_start();
         }
 
         .login-image-title { font-size: 4rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px; }
-        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .login-image-desc { font-size: 1.15rem; color: rgba(255,255,255,0.8); line-height: 1.6; font-weight: 300; }
 
         .login-form-side {
@@ -226,6 +249,69 @@ session_start();
     </style>
 </head>
 <body>
+<!-- GLOBAL PRELOADER -->
+<style>.swal2-container { z-index: 9999999 !important; }</style>
+<div id="global-preloader" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease;">
+    <div style="color: #f18000; text-align: center; padding: 20px;">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); margin-bottom: 20px;"></i>
+        <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px; margin: 0;">Cargando...</h5>
+    </div>
+</div>
+<script>
+    window.addEventListener('load', function() {
+        const preloader = document.getElementById('global-preloader');
+        if (preloader) {
+            preloader.style.opacity = '0';
+            preloader.style.visibility = 'hidden';
+            setTimeout(() => preloader.remove(), 400);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('a:not([target="_blank"]):not([href^="#"]):not([href^="javascript:"])').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (!e.ctrlKey && !e.shiftKey && !e.metaKey && this.href) {
+                    const preloader = document.getElementById('global-preloader');
+                    if (preloader) {
+                        preloader.style.visibility = 'visible';
+                        preloader.style.opacity = '1';
+                    }
+                }
+            });
+        });
+
+        // Welcome Toast for Login Page
+        const mostrarAviso = <?php echo $mostrar_aviso ? 'true' : 'false'; ?>;
+        const avisoTexto = <?php echo json_encode($aviso_texto); ?>;
+
+        if (mostrarAviso && !sessionStorage.getItem('loginWelcomeShown')) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 8000,
+                timerProgressBar: true,
+                background: '#ffffff',
+                color: '#0f172a',
+                iconColor: '#f18000',
+                customClass: {
+                    popup: 'border border-slate-200 shadow-xl rounded-xl'
+                },
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: 'info',
+                title: avisoTexto
+            });
+            sessionStorage.setItem('loginWelcomeShown', 'true');
+        }
+    });
+</script>
+<!-- END GLOBAL PRELOADER -->
 
     <div class="login-layout">
 
@@ -253,6 +339,10 @@ session_start();
 
         <!-- Right: Form Side -->
         <div class="login-form-side">
+            <!-- Botón Volver a Euripys -->
+            <a href="../index.php" class="absolute top-6 right-6 lg:top-8 lg:right-8 flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-[#f18000] transition-colors bg-slate-50 hover:bg-orange-50 px-4 py-2 rounded-full border border-slate-200 z-50 shadow-sm hover:-translate-y-0.5">
+                <i class="fas fa-arrow-left"></i> Volver a Euripys
+            </a>
             <div class="login-form-container">
                 
                 <div class="text-center md:text-left">
@@ -271,7 +361,7 @@ session_start();
                     <div class="inst-input-wrapper">
                         <i class="fas fa-lock inst-icon"></i>
                         <input type="password" id="inputPassword" name="clave" class="inst-input" placeholder="Contraseña">
-                        <button type="button" class="inst-btn-eye" onclick="toggleWowPassword()">
+                        <button type="button" class="inst-btn-eye" onclick="togglePasswordVisibility('inputPassword', this)">
                             <i id="wowEyeIcon" class="fas fa-eye"></i>
                         </button>
                     </div>
@@ -290,7 +380,7 @@ session_start();
                             </div>
                             <div class="inst-input-wrapper mt-2 mb-0 w-full" style="max-width: 240px;">
                                 <i class="fas fa-shield-alt inst-icon"></i>
-                                <input type="text" id="captchaInput" autocomplete="off" class="inst-input text-center font-bold tracking-widest text-lg" placeholder="Escribe el código" maxlength="6" />
+                                <input type="text" id="captchaInput" autocomplete="off" autocapitalize="characters" inputmode="text" class="inst-input text-center font-bold tracking-widest text-lg" placeholder="Escribe el código" maxlength="6" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase();" />
                             </div>
                         </div>
                     </div>
@@ -305,12 +395,42 @@ session_start();
                     <a href="recuperar.php" class="inst-link"><i class="fas fa-unlock-alt"></i> Recuperar</a>
                     <a href="solicitar_desbloqueo.php" class="inst-link"><i class="fas fa-key"></i> Desbloquear</a>
                     <a href="register.php" class="inst-link"><i class="fas fa-user-plus"></i> Registrarse</a>
+                    
+                    <!-- Soporte Dropdown Integrado -->
+                    <div class="relative inline-block">
+                        <button onclick="event.stopPropagation(); toggleSupportDropdown()" class="inst-link font-bold text-primary flex items-center gap-1">
+                            <i class="fas fa-headset"></i> Soporte <i class="fas fa-chevron-up text-[10px]"></i>
+                        </button>
+                        <div id="supportDropdown" class="hidden absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] animate__animated animate__fadeInUp animate__faster">
+                            <div class="p-3 border-b border-slate-50 bg-slate-50 rounded-t-2xl">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ayuda en Línea</span>
+                            </div>
+                            <button onclick="abrirSoporte()" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-orange-50 hover:text-primary transition-colors rounded-b-2xl flex items-center gap-2">
+                                <i class="fas fa-comments text-primary"></i> Chat con Soporte
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
+                <script>
+                    function toggleSupportDropdown() {
+                        const dropdown = document.getElementById('supportDropdown');
+                        dropdown.classList.toggle('hidden');
+                    }
+
+                    // Cerrar al hacer clic fuera
+                    document.addEventListener('click', function(e) {
+                        const dropdown = document.getElementById('supportDropdown');
+                        if (dropdown && !dropdown.classList.contains('hidden')) {
+                            dropdown.classList.add('hidden');
+                        }
+                    });
+                </script>
 
             </div>
 
             <div class="inst-footer">
-                <p>&copy; <?php echo date("Y"); ?> SDGBP. Todos los derechos reservados.</p>
+                <p>&copy; <?php echo date("Y"); ?> SDGBP v2.0. Todos los derechos reservados.</p>
                 <p class="mt-1">Licencia <a href="https://creativecommons.org/licenses/by-nc/4.0/?ref=chooser-v1" target="_blank">Creative Commons BY-NC 4.0</a></p>
             </div>
         </div>
@@ -321,8 +441,16 @@ session_start();
     <script src="../js/vali_login.js?v=<?php echo time(); ?>"></script>
     
     <!-- Tawk.to Script -->
+    <style>
+        #tawk-chatwidget-container, .tawk-min-container { display: none !important; }
+    </style>
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+
+    Tawk_API.onLoad = function(){
+        Tawk_API.hideWidget();
+    };
+
     (function(){
     var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
     s1.async=true;
@@ -331,6 +459,20 @@ session_start();
     s1.setAttribute('crossorigin','*');
     s0.parentNode.insertBefore(s1,s0);
     })();
+
+    function abrirSoporte() {
+        const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
+        if (tawkContainer) tawkContainer.style.setProperty('display', 'block', 'important');
+        
+        Tawk_API.showWidget();
+        Tawk_API.maximize();
+    }
+
+    Tawk_API.onChatMinimized = function(){
+        Tawk_API.hideWidget();
+        const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
+        if (tawkContainer) tawkContainer.style.setProperty('display', 'none', 'important');
+    };
     </script>
 </body>
 </html>

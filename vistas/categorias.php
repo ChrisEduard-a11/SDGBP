@@ -159,10 +159,10 @@ $categorias = obtenerCategorias($conexion);
                         <h5><i class="fas fa-plus-circle me-2"></i> Nueva Categoría</h5>
                     </div>
                     <div class="card-body p-4">
-                        <form method="post" action="../acciones/controlador_categoria_r.php">
+                        <form method="post" action="../acciones/controlador_categoria_r.php" onsubmit="return validateFormCategoria()">
                             <div class="form-group mb-4">
                                 <label for="nombre" class="form-label small fw-bold text-muted mb-2">Nombre descriptivo</label>
-                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" placeholder="Ej: Equipos Médicos, Mobiliario..." required>
+                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" placeholder="Ej: Equipos Médicos, Mobiliario...">
                                 <div class="form-text small mt-2"><i class="fas fa-info-circle me-1"></i> El nombre de la categoría debe ser único en el sistema.</div>
                             </div>
                             <button type="submit" class="btn btn-save-premium w-100 py-3">

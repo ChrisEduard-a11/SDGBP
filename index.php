@@ -475,7 +475,10 @@ if (isset($_SESSION['user'])) {
                 <p class="mb-4 md:mb-0">
                     Licenciado bajo <a href="https://creativecommons.org/licenses/by-nc/4.0/?ref=chooser-v1" target="_blank" class="text-brand-500 hover:underline">Creative Commons BY-NC 4.0</a>
                 </p>
-                <p class="font-medium text-slate-400">© <?php echo date("Y"); ?> Sistema de Gestión. Todos los derechos reservados.</p>
+                <div class="flex flex-col md:flex-row items-center gap-4">
+                    <p class="font-medium text-slate-400">© <?php echo date("Y"); ?> Sistema de Gestión. Todos los derechos reservados.</p>
+                    <span class="bg-slate-900 text-slate-500 px-3 py-1 rounded-full text-xs border border-slate-800">SDGBP v2.0</span>
+                </div>
             </div>
         </div>
     </footer>
@@ -491,61 +494,114 @@ if (isset($_SESSION['user'])) {
         </button>
     </div>
 
-    <!-- Modal de Bienvenida (Tailwind Native) -->
+    <!-- Modal de Bienvenida (Flyers) -->
+    <?php
+    $flyers = [];
+    if (is_dir('img/flyers')) {
+        $files = glob('img/flyers/*.{jpg,jpeg,png,webp,gif}', GLOB_BRACE);
+        if ($files) {
+            $flyers = $files;
+        }
+    }
+    
+    if (!empty($flyers)):
+    ?>
     <div id="modalBienvenida" class="fixed inset-0 z-[100] hidden">
-        <!-- Backdrop -->
         <div class="fixed inset-0 modal-overlay opacity-0" id="modalBienvenidaBackdrop" onclick="closeBienvenida()"></div>
-        
-        <!-- Contenedor Centrado -->
         <div class="fixed inset-0 overflow-y-auto w-full h-full flex items-center justify-center p-4">
-            <div id="modalBienvenidaPanel" class="bg-white dark:bg-slate-900 rounded-[2rem] w-full max-w-4xl shadow-2xl relative transition-all duration-500 transform scale-95 opacity-0 overflow-hidden flex flex-col md:flex-row">
+            <div id="modalBienvenidaPanel" class="bg-transparent w-full max-w-4xl lg:max-w-5xl relative transition-all duration-500 transform scale-95 opacity-0 flex flex-col items-center justify-center pointer-events-none">
                 
-                <!-- Left Banner -->
-                <div class="hidden md:flex md:w-5/12 bg-slate-50 dark:bg-slate-950 border-r border-slate-100 dark:border-slate-800 items-center justify-center p-8 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-brand-500 opacity-5 dark:opacity-10 blur-2xl"></div>
-                    <img src="img/Logo-OP2_V4.webp" alt="Logo" class="w-48 drop-shadow-xl animate-pulse">
-                </div>
-                
-                <!-- Right Content -->
-                <div class="w-full md:w-7/12 p-8 md:p-12 relative">
-                    <button onclick="closeBienvenida()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
-                        <i class="fas fa-times"></i>
+                <!-- Contenedor del Carrusel -->
+                <div class="w-full relative overflow-hidden shadow-2xl rounded-[1.5rem] md:rounded-[2rem] border-[3px] border-white/20 pointer-events-auto bg-slate-900">
+                    
+                    <button onclick="closeBienvenida()" class="absolute top-4 right-4 text-white hover:text-brand-500 bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center transition-all z-50 backdrop-blur-md shadow-lg border border-white/20">
+                        <i class="fas fa-times text-xl"></i>
                     </button>
-                    
-                    <h2 class="text-4xl font-display font-black text-slate-900 dark:text-white mb-2">¡Bienvenido!</h2>
-                    <p class="text-slate-500 dark:text-slate-400 mb-8">Explora el inmenso alcance de nuestro ecosistema corporativo:</p>
-                    
-                    <div class="space-y-4 mb-8">
-                        <a href="#servicios" onclick="closeBienvenida()" class="flex items-center p-4 rounded-2xl hover:bg-brand-50 dark:hover:bg-slate-800 border border-transparent hover:border-brand-100 dark:hover:border-slate-700 transition-all group">
-                            <div class="w-12 h-12 rounded-xl bg-brand-100 dark:bg-slate-700 text-brand-600 dark:text-brand-400 flex items-center justify-center text-lg mr-4 group-hover:scale-110 transition-transform"><i class="fas fa-concierge-bell"></i></div>
-                            <div>
-                                <span class="block font-bold text-slate-900 dark:text-white">Servicios Múltiples</span>
-                                <span class="block text-sm text-slate-500">Todo lo que tenemos para ofrecerte.</span>
+
+                    <div id="flyerCarousel" class="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] flex bg-slate-950/90 items-center justify-center backdrop-blur-3xl">
+                        <?php foreach($flyers as $index => $flyer): ?>
+                            <div class="flyer-slide absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out <?php echo $index === 0 ? 'opacity-100 relative' : 'opacity-0 pointer-events-none'; ?> flex items-center justify-center p-2 md:p-4">
+                                <img src="<?php echo $flyer; ?>" alt="Flyer Promocional" class="max-w-full max-h-full object-contain drop-shadow-2xl rounded-xl">
                             </div>
-                        </a>
-                        <a href="#funcionalidades" onclick="closeBienvenida()" class="flex items-center p-4 rounded-2xl hover:bg-brand-50 dark:hover:bg-slate-800 border border-transparent hover:border-brand-100 dark:hover:border-slate-700 transition-all group">
-                            <div class="w-12 h-12 rounded-xl bg-brand-100 dark:bg-slate-700 text-brand-600 dark:text-brand-400 flex items-center justify-center text-lg mr-4 group-hover:scale-110 transition-transform"><i class="fas fa-cogs"></i></div>
-                            <div>
-                                <span class="block font-bold text-slate-900 dark:text-white">Las 4 Funcionalidades</span>
-                                <span class="block text-sm text-slate-500">Capacitación, Asesoría, Inversión.</span>
-                            </div>
-                        </a>
-                        <a href="#contacto" onclick="closeBienvenida()" class="flex items-center p-4 rounded-2xl hover:bg-brand-50 dark:hover:bg-slate-800 border border-transparent hover:border-brand-100 dark:hover:border-slate-700 transition-all group">
-                            <div class="w-12 h-12 rounded-xl bg-brand-100 dark:bg-slate-700 text-brand-600 dark:text-brand-400 flex items-center justify-center text-lg mr-4 group-hover:scale-110 transition-transform"><i class="fas fa-envelope"></i></div>
-                            <div>
-                                <span class="block font-bold text-slate-900 dark:text-white">Contact Center</span>
-                                <span class="block text-sm text-slate-500">Habla con un asesor 24/7.</span>
-                            </div>
-                        </a>
+                        <?php endforeach; ?>
                     </div>
                     
-                    <button onclick="closeBienvenida()" class="w-full py-4 bg-slate-900 dark:bg-brand-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-                        Comenzar Navegación Demos
+                    <?php if(count($flyers) > 1): ?>
+                    <!-- Controles -->
+                    <button id="prevFlyer" class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-brand-600 border border-white/20 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-xl hover:scale-110 z-40">
+                        <i class="fas fa-chevron-left"></i>
                     </button>
+                    <button id="nextFlyer" class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-brand-600 border border-white/20 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-xl hover:scale-110 z-40">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <!-- Indicadores -->
+                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-3 z-40 bg-black/40 px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
+                        <?php foreach($flyers as $index => $flyer): ?>
+                            <button class="flyer-indicator w-2.5 h-2.5 rounded-full transition-all <?php echo $index === 0 ? 'bg-brand-500 scale-125 shadow-[0_0_10px_rgba(241,128,0,0.8)]' : 'bg-white/60 hover:bg-white'; ?>" data-index="<?php echo $index; ?>"></button>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                    
                 </div>
             </div>
         </div>
     </div>
+    
+    <script>
+        // Funcionalidad del Carrusel
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.flyer-slide');
+            const indicators = document.querySelectorAll('.flyer-indicator');
+            if(slides.length <= 1) return;
+            
+            let currentSlide = 0;
+            let slideInterval;
+            
+            function showSlide(index) {
+                slides[currentSlide].classList.replace('opacity-100', 'opacity-0');
+                slides[currentSlide].classList.remove('relative');
+                slides[currentSlide].classList.add('pointer-events-none');
+                
+                if(indicators.length) {
+                    indicators[currentSlide].classList.replace('bg-brand-500', 'bg-white/60');
+                    indicators[currentSlide].classList.remove('scale-125', 'shadow-[0_0_10px_rgba(241,128,0,0.8)]');
+                }
+                
+                currentSlide = (index + slides.length) % slides.length;
+                
+                slides[currentSlide].classList.replace('opacity-0', 'opacity-100');
+                slides[currentSlide].classList.add('relative');
+                slides[currentSlide].classList.remove('pointer-events-none');
+                
+                if(indicators.length) {
+                    indicators[currentSlide].classList.replace('bg-white/60', 'bg-brand-500');
+                    indicators[currentSlide].classList.add('scale-125', 'shadow-[0_0_10px_rgba(241,128,0,0.8)]');
+                }
+            }
+            
+            function nextSlide() { showSlide(currentSlide + 1); }
+            function prevSlide() { showSlide(currentSlide - 1); }
+            
+            function startSlideShow() {
+                slideInterval = setInterval(nextSlide, 5000);
+            }
+            
+            document.getElementById('nextFlyer')?.addEventListener('click', () => { clearInterval(slideInterval); nextSlide(); startSlideShow(); });
+            document.getElementById('prevFlyer')?.addEventListener('click', () => { clearInterval(slideInterval); prevSlide(); startSlideShow(); });
+            
+            indicators.forEach((indicator, i) => {
+                indicator.addEventListener('click', () => {
+                    clearInterval(slideInterval);
+                    showSlide(i);
+                    startSlideShow();
+                });
+            });
+            
+            startSlideShow();
+        });
+    </script>
+    <?php endif; ?>
 
     <!-- Manual PDF Modal -->
     <div id="manualModal" class="fixed inset-0 z-[100] hidden">
@@ -571,8 +627,8 @@ if (isset($_SESSION['user'])) {
         document.addEventListener('DOMContentLoaded', () => {
             
             // Welcome Modal Logic
-            if (!sessionStorage.getItem('modalMostrado')) {
-                const modal = document.getElementById('modalBienvenida');
+            const modal = document.getElementById('modalBienvenida');
+            if (modal && !sessionStorage.getItem('modalMostrado')) {
                 const backdrop = document.getElementById('modalBienvenidaBackdrop');
                 const panel = document.getElementById('modalBienvenidaPanel');
                 
@@ -623,6 +679,9 @@ if (isset($_SESSION['user'])) {
         });
 
         function closeBienvenida() {
+            const modal = document.getElementById('modalBienvenida');
+            if(!modal) return;
+            
             const panel = document.getElementById('modalBienvenidaPanel');
             const backdrop = document.getElementById('modalBienvenidaBackdrop');
             // Hide transitions
@@ -631,7 +690,7 @@ if (isset($_SESSION['user'])) {
             backdrop.classList.add('opacity-0');
             
             setTimeout(() => {
-                document.getElementById('modalBienvenida').classList.add('hidden');
+                modal.classList.add('hidden');
             }, 300);
         }
 

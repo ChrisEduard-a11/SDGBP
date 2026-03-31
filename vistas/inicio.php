@@ -40,17 +40,120 @@ if ($tipo_usuario == "admin") {
         font-family: 'Inter', sans-serif;
     }
 
-    .welcome-card {
-        background: rgba(255, 255, 255, 0.9);
+    .premium-welcome-banner {
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.05) 0%, rgba(102, 126, 234, 0.05) 100%);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(23, 162, 184, 0.2);
         border-radius: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        padding: 2.5rem;
     }
 
-    [data-theme="dark"] .welcome-card {
-        background: var(--glass-bg);
+    [data-theme="dark"] .premium-welcome-banner {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
         border: 1px solid var(--glass-border);
+    }
+
+    .premium-welcome-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(23,162,184,0.15) 0%, rgba(0,0,0,0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .welcome-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .welcome-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, #17a2b8, #667eea);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.2rem;
+    }
+
+    [data-theme="dark"] .welcome-title {
+        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .shortcut-btn {
+        border-radius: 50px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        backdrop-filter: blur(5px);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .shortcut-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .shortcut-btn-primary {
+        background: linear-gradient(135deg, #17a2b8 0%, #0dcaf0 100%);
+        color: white !important;
+        border: none;
+        box-shadow: 0 4px 15px rgba(23,162,184,0.3);
+    }
+
+    .shortcut-btn-primary:hover {
+        color: white !important;
+        box-shadow: 0 8px 25px rgba(23,162,184,0.4);
+    }
+
+    .shortcut-btn-secondary {
+        background: rgba(255, 255, 255, 0.8);
+        color: #333 !important;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .shortcut-btn-secondary:hover {
+        color: #17a2b8 !important;
+        background: white;
+    }
+
+    [data-theme="dark"] .shortcut-btn-secondary {
+        background: rgba(30, 41, 59, 0.6);
+        color: #f8fafc !important;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    [data-theme="dark"] .shortcut-btn-secondary:hover {
+        background: rgba(30, 41, 59, 0.9);
+        color: #0dcaf0 !important;
+    }
+
+    .user-avatar-placeholder {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #17a2b8 0%, #667eea 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        box-shadow: 0 8px 20px rgba(23, 162, 184, 0.3);
+        flex-shrink: 0;
     }
 
     [data-theme="dark"] .text-dark {
@@ -145,22 +248,65 @@ if ($tipo_usuario == "admin") {
             </nav>
         </header>
 
-        <div class="card shadow-lg mb-5 animate__animated animate__fadeInDown welcome-card border-0">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="premium-welcome-banner shadow-lg mb-5 animate__animated animate__fadeInDown border-0">
+            <div class="welcome-content d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="user-avatar-placeholder overflow-hidden">
+                        <?php 
+                        $foto_perfil = $_SESSION['foto'] ?? '';
+                        if (!empty($foto_perfil) && file_exists($foto_perfil)): ?>
+                            <img src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar" class="w-100 h-100" style="object-fit: cover;">
+                        <?php else: ?>
+                            <?php echo strtoupper(substr($_SESSION['nombre'], 0, 1) ?: 'U'); ?>
+                        <?php endif; ?>
+                    </div>
                     <div>
-                        <h1 class="h3 mb-2" style="color: #17a2b8; font-weight: 700;">
-                            👋 <?php echo $saludo . ', ' . $_SESSION['nombre']; ?>!
+                        <h1 class="welcome-title">
+                            <?php echo $saludo . ', ' . $_SESSION['nombre']; ?>! 👋
                         </h1>
                         <p class="text-secondary mb-0 fw-semibold fs-5"><?php echo $descripcion_sistema; ?></p>
                     </div>
+                </div>
+                
+                <div class="d-flex flex-column align-items-lg-end gap-3">
+                    <div class="d-flex gap-2 flex-wrap justify-content-lg-end">
+                        <?php if ($_SESSION["tipo"] == "admin") { ?>
+                            <button class="btn shortcut-btn shortcut-btn-primary" onclick="navigateTo('registro_u.php')">
+                                <i class="fas fa-user-plus"></i>Nuevo Usuario
+                            </button>
+                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('registro_bien.php')">
+                                <i class="fas fa-box-open"></i>Nuevo Bien
+                            </button>
+                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('registro_pagos_egresos.php')">
+                                <i class="fas fa-file-invoice-dollar"></i>Reg. Egreso
+                            </button>
+                        <?php } elseif ($_SESSION["tipo"] == "cont") { ?>
+                            <button class="btn shortcut-btn shortcut-btn-primary" onclick="navigateTo('registro_pagos_egresos.php')">
+                                <i class="fas fa-plus-circle"></i>Registrar Egreso
+                            </button>
+                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('ver_pagos_cont.php')">
+                                <i class="fas fa-search-dollar"></i>Revisar Pagos
+                            </button>
+                        <?php } elseif ($_SESSION["tipo"] == "inv") { ?>
+                            <button class="btn shortcut-btn shortcut-btn-primary" onclick="navigateTo('registro_bien.php')">
+                                <i class="fas fa-plus-circle"></i>Registrar Bien
+                            </button>
+                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('lista_bienes.php')">
+                                <i class="fas fa-list"></i>Ver Inventario
+                            </button>
+                        <?php } elseif ($_SESSION["tipo"] == "upu") { ?>
+                            <button class="btn shortcut-btn shortcut-btn-primary" onclick="navigateTo('registro_pagos.php')">
+                                <i class="fas fa-upload"></i>Reportar Pago
+                            </button>
+                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('ver_pagos.php')">
+                                <i class="fas fa-history"></i>Historial Pagos
+                            </button>
+                        <?php } ?>
+                    </div>
                     
-                    <div class="text-end" style="color: #6c757d;">
-                        <small class="d-block mb-2">
-                            Última conexión: 
-                            <span id="ultimaConexion" class="text-dark fw-bold"><?php echo $_SESSION['ultima_conexion']; ?></span>
-                        </small>
-                        <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm fs-6">
+                    <div class="text-muted small d-flex align-items-center gap-3">
+                        <span><i class="far fa-clock me-1"></i>Última conexión: <strong id="ultimaConexion" class="text-dark"><?php echo $_SESSION['ultima_conexion']; ?></strong></span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill">
                             <i class="fas fa-user-shield me-1"></i> <?php echo ucfirst($tipo_usuario); ?>
                         </span>
                     </div>
@@ -274,6 +420,20 @@ if ($tipo_usuario == "admin") {
                 </div>
             </div>
             <?php } ?>
+
+            <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.6s;">
+                <div class="card metric-card bg-gradient-info h-100 shadow-lg">
+                    <div class="card-body p-4 d-flex flex-column position-relative">
+                        <h4 class="card-title text-white fw-bold mb-3"><i class="fas fa-headset me-2"></i> Soporte en Línea</h4>
+                        <p class="card-text text-white opacity-75 mb-4 fw-medium">¿Necesitas ayuda inmediata? Chatea con nuestro equipo técnico.</p>
+                        <i class="fas fa-comments metric-icon"></i>
+                    </div>
+                    <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="javascript:void(0);" onclick="abrirSoporte()">Chatear con Soporte</a>
+                        <div class="small text-white"><i class="fas fa-comment-dots"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
         
     </div>

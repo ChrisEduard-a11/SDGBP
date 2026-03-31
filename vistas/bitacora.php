@@ -218,7 +218,7 @@ include('../conexion.php');
                         
                         <div class="<?php echo ($_SESSION['tipo'] == 'admin') ? 'col-md-2' : 'col-md-4'; ?>">
                             <label class="form-label small fw-600 text-muted">Fecha del Evento</label>
-                            <input type="date" name="filtro_fecha" class="form-control form-control-premium" value="<?php echo isset($_GET['filtro_fecha']) ? $_GET['filtro_fecha'] : ''; ?>">
+                            <input type="text" name="filtro_fecha" class="form-control form-control-premium datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo isset($_GET['filtro_fecha']) ? $_GET['filtro_fecha'] : ''; ?>">
                         </div>
                         
                         <div class="<?php echo ($_SESSION['tipo'] == 'admin') ? 'col-md-2' : 'col-md-2'; ?> d-flex align-items-end gap-2">

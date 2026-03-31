@@ -29,7 +29,7 @@ $stmt->close();
 
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="../js/all.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Toastr & SweetAlert2 -->
@@ -257,7 +257,7 @@ $stmt->close();
             "debug": false,
             "newestOnTop": true,
             "progressBar": true,
-            "positionClass": "toast-top-right",
+            "positionClass": "toast-bottom-right",
             "preventDuplicates": true,
             "showDuration": "300",
             "hideDuration": "1000",
@@ -304,11 +304,18 @@ $stmt->close();
                             return body.message; 
                         } else if (status === 403) {
                             Swal.fire({
-                                title: 'Procesando...',
-                                html: 'Serás redirigido al login en <b>3</b> segundos.',
-                                icon: 'info',
+                                html: `
+                                    <div style="color: #f18000; padding: 20px;">
+                                        <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                                        <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Cargando...</h5>
+                                        <p style="color: rgba(255,255,255,0.8); font-weight: 500; font-size: 0.95rem; margin-bottom: 0;">Serás redirigido al login en <b>3</b> segundos.</p>
+                                    </div>
+                                `,
                                 allowOutsideClick: false,
                                 showConfirmButton: false,
+                                background: 'transparent',
+                                backdrop: 'rgba(15, 23, 42, 0.8)',
+                                customClass: { popup: 'border-0 shadow-none bg-transparent' },
                                 didOpen: () => {
                                     const b = Swal.getHtmlContainer().querySelector('b');
                                     let timer = 3; 

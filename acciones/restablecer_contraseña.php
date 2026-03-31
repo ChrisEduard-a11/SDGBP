@@ -14,6 +14,13 @@ if ($nueva_contrasena !== $confirmar_contrasena) {
     exit();
 }
 
+if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/', $nueva_contrasena)) {
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "La contraseña no cumple con los requisitos de seguridad.";
+    header("Location: ../vistas/recu_correo.php");
+    exit();
+}
+
 // Verificar el token
 $sql = "SELECT * FROM recuperacion WHERE token = '$token' AND expira > NOW()";
 $result = mysqli_query($conexion, $sql);

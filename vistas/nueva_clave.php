@@ -14,7 +14,7 @@ $usuario = $_SESSION['user'];
 
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="../js/all.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Toastr & SweetAlert2 -->
@@ -92,6 +92,38 @@ $usuario = $_SESSION['user'];
     </style>
 </head>
 <body>
+<!-- GLOBAL PRELOADER -->
+<style>.swal2-container { z-index: 9999999 !important; }</style>
+<div id="global-preloader" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease;">
+    <div style="color: #f18000; text-align: center; padding: 20px;">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); margin-bottom: 20px;"></i>
+        <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px; margin: 0;">Cargando...</h5>
+    </div>
+</div>
+<script>
+    window.addEventListener('load', function() {
+        const preloader = document.getElementById('global-preloader');
+        if (preloader) {
+            preloader.style.opacity = '0';
+            preloader.style.visibility = 'hidden';
+            setTimeout(() => preloader.remove(), 400);
+        }
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('a:not([target="_blank"]):not([href^="#"]):not([href^="javascript:"])').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (!e.ctrlKey && !e.shiftKey && !e.metaKey && this.href) {
+                    const preloader = document.getElementById('global-preloader');
+                    if (preloader) {
+                        preloader.style.visibility = 'visible';
+                        preloader.style.opacity = '1';
+                    }
+                }
+            });
+        });
+    });
+</script>
+<!-- END GLOBAL PRELOADER -->
     <div class="login-layout">
         <div class="login-image-side">
             <img src="../img/login_bg_premium.png" alt="Corporative Office" class="login-bg-img">
@@ -113,9 +145,10 @@ $usuario = $_SESSION['user'];
             <div class="login-form-container">
                 <div class="text-center md:text-left mb-6">
                     <img src="../img/Logo-OP2_V4.webp" alt="Logo" class="inst-logo mx-auto md:mx-0">
-                    <h2 class="inst-title">Recuperación de Cuenta</h2>
+                    <h2 class="inst-title"><?php echo isset($_GET['vencida']) ? 'Actualización de Seguridad' : 'Recuperación de Cuenta'; ?></h2>
                 </div>
 
+                <?php if (!isset($_GET['vencida'])): ?>
                 <div class="stepper">
                     <div class="step-item completed">
                         <div class="step-circle"><i class="fas fa-check"></i></div><div class="step-label">ID</div>
@@ -130,29 +163,26 @@ $usuario = $_SESSION['user'];
                         <div class="step-circle">4</div><div class="step-label">Clave</div>
                     </div>
                 </div>
+                <?php endif; ?>
 
                 <div class="text-center md:text-left mb-6">
-                    <h4 class="font-bold text-lg text-slate-800">Paso 4: Nueva Contraseña</h4>
-                    <p class="text-slate-500 text-sm font-medium mt-1">Establece tu nueva clave de acceso segura.</p>
+                    <h4 class="font-bold text-lg text-slate-800"><?php echo isset($_GET['vencida']) ? 'Contraseña Vencida' : 'Paso 4: Nueva Contraseña'; ?></h4>
+                    <p class="text-slate-500 text-sm font-medium mt-1"><?php echo isset($_GET['vencida']) ? 'Tu contraseña ha caducado. Por motivos de seguridad, debes actualizarla para continuar.' : 'Establece tu nueva clave de acceso segura.'; ?></p>
                 </div>
 
-                <?php if (isset($_GET['vencida'])): ?>
-                    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6 shadow-sm">
-                        <p class="font-bold mb-1"><i class="fas fa-clock mr-2"></i> Aviso de Seguridad</p>
-                        <p class="text-sm">Tu contraseña ha superado los 180 días de vigencia y debe ser actualizada para acceder.</p>
-                    </div>
-                <?php endif; ?>
+
 
                 <form action="../acciones/solicitar_cambio_clave.php" method="POST" onsubmit="return validateFormNC()" class="mt-4">
                     <div class="recovery-icon mx-auto md:mx-0"><i class="fas fa-key"></i></div>
 
-                    <div class="inst-input-wrapper">
+                    <div class="inst-input-wrapper" style="margin-bottom: 0.5rem;">
                         <i class="fas fa-lock inst-icon"></i>
-                        <input type="password" id="inputPassword" name="clave" class="inst-input" placeholder="Nueva Contraseña" autocomplete="off" />
+                        <input type="password" id="inputPassword" name="clave" onkeyup="checkPasswordStrength()" class="inst-input" placeholder="Nueva Contraseña" autocomplete="off" />
                         <button type="button" class="inst-btn-eye" onclick="togglePasswordVisibility('inputPassword', 'iconPass1')">
                             <i id="iconPass1" class="fas fa-eye"></i>
                         </button>
                     </div>
+                    <small id="passwordStrength" class="text-xs text-slate-500 mt-1 ml-1 block mb-3"></small>
 
                     <div class="inst-input-wrapper">
                         <i class="fas fa-lock inst-icon"></i>
@@ -195,3 +225,4 @@ $usuario = $_SESSION['user'];
     <script src="../js/vali_login.js"></script>
 </body>
 </html>
+

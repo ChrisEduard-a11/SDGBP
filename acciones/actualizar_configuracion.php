@@ -42,6 +42,13 @@ if (!empty($password) && $password !== $password1) {
     exit();
 }
 
+if (!empty($password) && !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/', $password)) {
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "La nueva contraseña no cumple con los requisitos de seguridad.";
+    header("Location: ../vistas/configuracion_usuario.php");
+    exit();
+}
+
 // Procesar la imagen
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     $imagen = $_FILES['imagen'];
@@ -97,7 +104,7 @@ $sql = "UPDATE usuario SET id_usuario = id_usuario $sql_imagen";
 
 if (!empty($password)) {
     $hashed_password = sha1($password);
-    $sql .= ", clave = '$hashed_password'";
+    $sql .= ", clave = '$hashed_password', fecha_cambio_clave = CURRENT_DATE";
 }
 
 // Solo si se envían respuestas nuevas

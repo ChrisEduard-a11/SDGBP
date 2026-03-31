@@ -11,7 +11,7 @@ if (!$usuarioid || !$session_token) {
     exit;
 } // Consulta consolidada de seguridad y vigencia de clave
 // Usamos una sola consulta para optimizar y evitar inconsistencias
-$sql_seguridad = "SELECT session_token, fecha_cambio_clave, tipos FROM usuario WHERE id_usuario = '$usuarioid'";
+$sql_seguridad = "SELECT session_token, fecha_cambio_clave, tipos, foto FROM usuario WHERE id_usuario = '$usuarioid'";
 $res_seguridad = mysqli_query($conexion, $sql_seguridad);
 $row = mysqli_fetch_assoc($res_seguridad);
 
@@ -25,6 +25,7 @@ if (!$row || $row['session_token'] !== $session_token) {
 
 $tipo_usuario = $row['tipos'];
 $nombre_usuario = $_SESSION['nombre'];
+$_SESSION['foto'] = $row['foto'];
 
 // Lógica de Vencimiento de Contraseña
 $fecha_db = $row['fecha_cambio_clave'] ?? '';
@@ -38,6 +39,9 @@ else {
 // Cálculo robusto de días para vencimiento
 $dias_transcurridos = floor((time() - strtotime($fecha_cambio)) / 86400);
 $dias_para_vencer = 180 - $dias_transcurridos;
+
+require_once(__DIR__ . "/notificaciones.php");
+$notificaciones_db = obtenerNotificacionesNoLeidas($conexion, $usuarioid);
 
 $notificaciones = [];
 if ($dias_para_vencer <= 15) {
@@ -59,8 +63,17 @@ if ($dias_para_vencer <= 15) {
     }
 }
 
+$notificaciones = array_merge($notificaciones, $notificaciones_db);
+
 // BLOQUEO OBLIGATORIO (Universal: Incluye Admins)
 $current_page = basename($_SERVER['PHP_SELF']);
+
+if ($dias_para_vencer <= 0) {
+    // Si la clave está vencida, no mostrar el cartel de bienvenida emergente
+    unset($_SESSION['alert']);
+    unset($_SESSION['type']);
+}
+
 if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_page !== 'restablecer_contraseña.php') {
     // Calculamos la ruta absoluta para evitar fallos de redirección
     $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
@@ -75,6 +88,38 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
         // Respaldo por HTML/JS si las cabeceras ya se enviaron (Fallos silenciosos corregidos)
         echo "<html><body><script>window.location.href='$redir_url';</script></body></html>";
         exit;
+    }
+}
+
+// --- VALIDACIÓN DE TÉRMINOS Y CONDICIONES (SECURITY ENFORCEMENT) ---
+// Consultar si el sistema de términos está activo
+$sql_status_h = "SELECT valor FROM ajustes_sistema WHERE clave = 'terminos_status'";
+$res_status_h = mysqli_query($conexion, $sql_status_h);
+$row_status_h = mysqli_fetch_assoc($res_status_h);
+$terminos_activos = ($row_status_h['valor'] ?? '1') == '1';
+
+if ($terminos_activos && $tipo_usuario !== 'admin' && $tipo_usuario !== 'cont') {
+    if (!isset($_COOKIE['sdgbp_terms_accepted'])) {
+        $current_url = $_SERVER['PHP_SELF'];
+        $current_page = basename($current_url);
+        
+        // Páginas permitidas sin haber aceptado (para ver el banner y aceptar o ir a denegado)
+        $allowed_pages = ['inicio.php', 'dashboard.php', 'terminos.php', 'denegado_a.php', 'login.php', 'salir.php'];
+        
+        // Si intenta entrar a una página no permitida por URL
+        if (!in_array($current_page, $allowed_pages)) {
+            // Calculamos ruta absoluta para denegado_a.php
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
+            $denied_url = "$protocol://" . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/') . "/vistas/denegado_a.php?error=terminos";
+            
+            if (!headers_sent()) {
+                header("Location: $denied_url");
+                exit;
+            } else {
+                echo "<script>window.location.href='$denied_url';</script>";
+                exit;
+            }
+        }
     }
 }
 ?>
@@ -769,11 +814,57 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                     border-radius: 20px;
                     box-shadow: var(--shadow-float);
                     border: none;
-                    padding: 10px;
+                    padding: 12px;
+                    width: auto !important;
+                    box-sizing: content-box !important;
                 }
+
+                /* ================= TOASTR ULTRA-PREMIUM DESIGN (SHARED) ================= */
+                <?php include("../models/toastr_css.php"); ?>
             </style>
         </head>
         <body class="sb-nav-fixed" >
+            <!-- GLOBAL PRELOADER -->
+            <style>
+                .swal2-container { z-index: 9999999 !important; }
+                #global-preloader {
+                    position: fixed; top: 0; left: 0;
+                    width: 100vw; height: 100vh;
+                    background: rgba(248, 250, 252, 0.85);
+                    backdrop-filter: blur(6px);
+                    -webkit-backdrop-filter: blur(6px);
+                    z-index: 999999;
+                    display: flex; align-items: center; justify-content: center;
+                    transition: opacity 0.35s ease, visibility 0.35s ease;
+                    opacity: 1;
+                    visibility: visible;
+                }
+                [data-theme="dark"] #global-preloader {
+                    background: rgba(0, 0, 0, 0.85) !important;
+                }
+                #global-preloader .preloader-inner { color: #f18000; text-align: center; padding: 20px; }
+                #global-preloader .preloader-icon { font-size: 4rem; filter: drop-shadow(0 0 12px rgba(241,128,0,0.6)); margin-bottom: 20px; display: block; }
+                #global-preloader .preloader-text { font-family: 'Outfit', sans-serif; font-weight: 600; color: #1e293b; letter-spacing: 1px; margin: 0; }
+                [data-theme="dark"] #global-preloader .preloader-text { color: #ffffff !important; }
+            </style>
+            <div id="global-preloader">
+                <div class="preloader-inner">
+                    <i class="fas fa-circle-notch fa-spin preloader-icon"></i>
+                    <h5 class="preloader-text">Cargando...</h5>
+                </div>
+            </div>
+            <script>
+                // Ocultar el preloader cuando la página termina de cargar completamente
+                window.addEventListener('load', function() {
+                    const preloader = document.getElementById('global-preloader');
+                    if (preloader) {
+                        preloader.style.opacity = '0';
+                        preloader.style.visibility = 'hidden';
+                        setTimeout(() => preloader.remove(), 400);
+                    }
+                });
+            </script>
+            <!-- END GLOBAL PRELOADER -->
         <nav class="sb-topnav navbar navbar-expand navbar-dark" style="background-color: #f18000 !important;">
             <a class="navbar-brand ps-3 d-flex align-items-center gap-2" href="javascript:void(0);" onclick="navigateTo('inicio.php')">
                 <img src="../img/Logo-OP2_V4.webp" alt="Logo" style="width: 40px; height: 40px; object-fit: contain;"> 
@@ -830,6 +921,10 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                         } else { ?>
                             <li class="dropdown-item text-center text-muted small py-3">No tienes notificaciones pendientes</li>
                         <?php } ?>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-item text-center">
+                            <a href="../vistas/notificaciones.php" class="text-decoration-none small fw-bold text-primary">Ver todas las notificaciones</a>
+                        </li>
                     </ul>
                 </li>
 
@@ -957,6 +1052,27 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </div>
                             <?php
 }?>
+                            
+                            <?php if ($_SESSION["tipo"] == "admin") { ?>
+                            <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#collapseInfoEmpresa" aria-expanded="false" aria-controls="collapseInfoEmpresa">
+                                <div class="sb-nav-link-icon"><i class="fas fa-building fa-fw"></i></div>
+                                Info Institucional
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseInfoEmpresa" aria-labelledby="headingInfo" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/gestionar_flyers.php')">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-images"></i></div>
+                                        Banners Informativos
+                                    </a>
+                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/editar_terminos.php')">
+                                        <div class="sb-nav-link-icon"><i class="fas fa-file-signature"></i></div>
+                                        Gestionar Términos
+                                    </a>
+                                </nav>
+                            </div>
+                            <?php
+}?>
 
                             <?php if ($_SESSION["tipo"] == "upu") { ?>
                             <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#collapseClientes" aria-expanded="false" aria-controls="collapseClientes">
@@ -1051,6 +1167,11 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </div>
                             <?php
 }?>
+                            <div class="sb-sidenav-menu-heading">Ayuda y Soporte</div>
+                            <a class="nav-link" href="javascript:void(0);" onclick="abrirSoporte()">
+                                <div class="sb-nav-link-icon"><i class="fas fa-headset fa-fw"></i></div>
+                                Soporte en Línea
+                            </a>
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">
@@ -1060,8 +1181,18 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                 </nav>
             </div>
             <!--Start of Tawk.to Script-->
+            <style>
+                /* Ocultar el contenedor de Tawk.to por CSS para evitar el "parpadeo" al cargar */
+                #tawk-chatwidget-container, .tawk-min-container { display: none !important; }
+            </style>
             <script type="text/javascript">
             var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+
+            // Configurar el comportamiento antes de cargar el script
+            Tawk_API.onLoad = function(){
+                Tawk_API.hideWidget();
+            };
+
             (function(){
             var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
             s1.async=true;
@@ -1070,6 +1201,23 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
             s1.setAttribute('crossorigin','*');
             s0.parentNode.insertBefore(s1,s0);
             })();
+
+            // Función para abrir el chat desde el sidebar
+            function abrirSoporte() {
+                // Forzar visibilidad antes de maximizar
+                const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
+                if (tawkContainer) tawkContainer.style.setProperty('display', 'block', 'important');
+                
+                Tawk_API.showWidget();
+                Tawk_API.maximize();
+            }
+
+            // Ocultar de nuevo si el usuario minimiza el chat
+            Tawk_API.onChatMinimized = function(){
+                Tawk_API.hideWidget();
+                const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
+                if (tawkContainer) tawkContainer.style.setProperty('display', 'none', 'important');
+            };
             </script>
             <!--End of Tawk.to Script-->
             <?php

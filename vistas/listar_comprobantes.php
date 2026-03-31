@@ -308,12 +308,17 @@ $archivos = array_diff(scandir($rutaCarpeta), array('.', '..'));
                         if (result.isConfirmed) {
                             // Mostrar loader (opcional)
                             Swal.fire({
-                                title: 'Eliminando...',
-                                text: 'Por favor, espere.',
+                                html: `
+                                    <div style="color: #f18000; padding: 20px;">
+                                        <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                                        <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Cargando...</h5>
+                                    </div>
+                                `,
+                                showConfirmButton: false,
                                 allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading()
-                                }
+                                background: 'transparent',
+                                backdrop: 'rgba(15, 23, 42, 0.8)',
+                                customClass: { popup: 'border-0 shadow-none bg-transparent' }
                             });
 
                             // Enviar datos por AJAX al backend
@@ -369,9 +374,17 @@ $archivos = array_diff(scandir($rutaCarpeta), array('.', '..'));
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({
-                        title: 'Eliminando...',
+                        html: `
+                            <div style="color: #f18000; padding: 20px;">
+                                <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                                <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Cargando...</h5>
+                            </div>
+                        `,
+                        showConfirmButton: false,
                         allowOutsideClick: false,
-                        didOpen: () => { Swal.showLoading() }
+                        background: 'transparent',
+                        backdrop: 'rgba(15, 23, 42, 0.8)',
+                        customClass: { popup: 'border-0 shadow-none bg-transparent' }
                     });
 
                     // Reutilizar la misma API para la eliminación individual

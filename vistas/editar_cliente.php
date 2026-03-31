@@ -168,7 +168,7 @@ $nombre_cliente = htmlspecialchars($cliente['nombre']); // Nombre original para 
             </div>
             
             <div class="card-body p-4 p-md-5">
-                <form method="post" action="../acciones/controlador_editar_cliente.php">
+                <form method="post" action="../acciones/controlador_editar_cliente.php" onsubmit="return validateFormAgregarCliente()">
                     <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
                     
                     <div class="mb-5">
@@ -185,7 +185,6 @@ $nombre_cliente = htmlspecialchars($cliente['nombre']); // Nombre original para 
                             name="nombre" 
                             value="<?php echo $nombre_cliente; ?>" 
                             placeholder="Ingrese el nuevo nombre del cliente" 
-                            required
                         >
                     </div>
 

@@ -26,10 +26,10 @@ require_once("../models/header.php");
                 </div>
                 <div class="row justify-content-center">
                     <div class="col-md-8">
-                        <form action="../config/importar_db.php" method="POST" enctype="multipart/form-data" class="text-center">
+                        <form action="../config/importar_db.php" method="POST" enctype="multipart/form-data" class="text-center" onsubmit="return validateFormImportBD()">
                             <div class="form-group mb-3">
                                 <label for="archivoBD" class="form-label">Selecciona el archivo .sql para importar:</label>
-                                <input type="file" name="archivoBD" id="archivoBD" class="form-control" accept=".sql" required>
+                                <input type="file" name="archivoBD" id="archivoBD" class="form-control" accept=".sql">
                             </div>
                             <button type="submit" class="btn btn-primary mt-2">
                                 <i class="fas fa-upload"></i> Importar Base de Datos

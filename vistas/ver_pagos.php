@@ -141,6 +141,10 @@ $metrics_act = $stmt_a->get_result()->fetch_assoc();
 
     #layoutSidenav_content {
         background: transparent;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 100vh !important;
+        padding-bottom: 150px !important;
     }
 
     /* Glassmorphism Containers */
@@ -248,6 +252,14 @@ $metrics_act = $stmt_a->get_result()->fetch_assoc();
         to { opacity: 1; transform: translateY(0); }
     }
     .animate-up { animation: fadeInUp 0.5s ease forwards; }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .metric-value { font-size: 1.4rem; }
+        .metric-card { padding: 1.2rem; }
+        .custom-table thead { display: none; } /* Opcional: ocultar cabecera en móvil si es muy ancha */
+        .custom-table td { font-size: 0.85rem; padding: 1rem 0.75rem; }
+    }
 </style>
 
 <div id="layoutSidenav_content">
@@ -329,7 +341,7 @@ $metrics_act = $stmt_a->get_result()->fetch_assoc();
                     </div>
                     <div class="card-body px-4">
                         <form method="get" class="row g-3">
-                            <div class="col-md-2">
+                            <div class="col-6 col-md-2">
                                 <label class="form-label small fw-bold">Estado</label>
                                 <select name="estado" class="form-select form-select-sm rounded-3">
                                     <option value="">Todos</option>
@@ -338,19 +350,19 @@ $metrics_act = $stmt_a->get_result()->fetch_assoc();
                                     <option value="rechazado" <?php echo $estado == 'rechazado' ? 'selected' : ''; ?>>Rechazado</option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-6 col-md-2">
                                 <label class="form-label small fw-bold">Desde</label>
-                                <input type="date" name="fecha_inicio" class="form-control form-control-sm rounded-3" value="<?php echo htmlspecialchars($fecha_inicio); ?>">
+                                <input type="text" name="fecha_inicio" class="form-control form-control-sm rounded-3 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo htmlspecialchars($fecha_inicio); ?>">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-6 col-md-2">
                                 <label class="form-label small fw-bold">Hasta</label>
-                                <input type="date" name="fecha_fin" class="form-control form-control-sm rounded-3" value="<?php echo htmlspecialchars($fecha_fin); ?>">
+                                <input type="text" name="fecha_fin" class="form-control form-control-sm rounded-3 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo htmlspecialchars($fecha_fin); ?>">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-6 col-md-3">
                                 <label class="form-label small fw-bold">Nro Referencia</label>
                                 <input type="text" name="referencia" class="form-control form-control-sm rounded-3" placeholder="Buscar ref..." value="<?php echo htmlspecialchars($referencia); ?>">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-12 col-md-3">
                                 <label class="form-label small fw-bold">Entidad/Cliente</label>
                                 <select name="cliente" class="form-select form-select-sm rounded-3">
                                     <option value="">Todos</option>
@@ -368,7 +380,7 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
 ?>
                                 </select>
                             </div>
-                            <div class="col-md-12 text-end">
+                            <div class="col-12 text-end">
                                 <a href="ver_pagos.php" class="btn btn-light btn-sm rounded-pill px-3 me-2">Limpiar</a>
                                 <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">Aplicar Filtros</button>
                             </div>
@@ -386,13 +398,19 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
                             <h5 class="fw-bold mb-0 text-success"><i class="fas fa-file-export me-2"></i> Reportes Contables</h5>
                             <p class="text-muted small mb-0">Generar balance de ingresos y egresos en formato PDF</p>
                         </div>
-                        <form method="POST" action="../dompdf/exportar_pdf_I-E_UPU.php" id="form-exportar" class="d-flex gap-2" target="_blank">
-                            <input type="date" name="filtro_fecha_inicio" class="form-control form-control-sm rounded-3 w-auto" value="<?php echo $fecha_inicio ?: date('Y-m-01'); ?>" required title="Fecha Inicio">
-                            <input type="date" name="filtro_fecha_fin" class="form-control form-control-sm rounded-3 w-auto" value="<?php echo $fecha_fin ?: date('Y-m-d'); ?>" required title="Fecha Fin">
+                        <form method="POST" action="../dompdf/exportar_pdf_I-E_UPU.php" id="form-exportar" class="row g-2 w-100" target="_blank" onsubmit="return validateFormExportPDF()">
+                            <div class="col-6 col-md-auto">
+                                <input type="text" name="filtro_fecha_inicio" class="form-control form-control-sm rounded-3 w-100 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio ?: date('Y-m-01'); ?>" title="Fecha Inicio">
+                            </div>
+                            <div class="col-6 col-md-auto">
+                                <input type="text" name="filtro_fecha_fin" class="form-control form-control-sm rounded-3 w-100 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_fin ?: date('Y-m-d'); ?>" title="Fecha Fin">
+                            </div>
                             <input type="hidden" name="usuario_upu" value="<?php echo $_SESSION['id']; ?>">
-                            <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 shadow-sm">
-                                <i class="fas fa-file-pdf me-1"></i> Exportar PDF
-                            </button>
+                            <div class="col-12 col-md-auto">
+                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 shadow-sm w-100">
+                                    <i class="fas fa-file-pdf me-1"></i> Exportar PDF
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -515,12 +533,11 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
 endif; ?>
                         </tbody>
                     </table>
-                </div>
-            </div>
         </div>
     </div>
+</div>
 
-    <!-- Modal Detalle Mensual (Restaurado y Mejorado) -->
+     <!-- Modal Detalle Mensual (Restaurado y Mejorado) -->
     <div class="modal fade" id="modalSaldoUPU" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content glass-card border-0">
@@ -532,7 +549,7 @@ endif; ?>
                     <form id="formFiltroMes" class="mb-4">
                         <label class="form-label small fw-bold">Selecciona el mes (YYYY-MM):</label>
                         <div class="input-group">
-                            <input type="text" class="form-control rounded-start-pill ps-3" id="mesFiltro" name="mesFiltro" placeholder="Ej: 2024-03" required>
+                            <input type="text" class="form-control rounded-start-pill ps-3" id="mesFiltro" name="mesFiltro" placeholder="Ej: 2024-03">
                             <button type="submit" class="btn btn-primary rounded-end-pill px-4 fw-bold">Filtrar</button>
                         </div>
                     </form>

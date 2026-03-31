@@ -29,6 +29,13 @@ if ($clave !== $confirmar_clave) {
     exit();
 }
 
+if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/', $clave)) {
+    $_SESSION["estatus"] = "error";
+    $_SESSION["mensaje"] = "La contraseña no cumple con los requisitos de seguridad.";
+    header("Location: ../vistas/register.php");
+    exit();
+}
+
 // Manejar la subida de la foto
 $foto_predeterminada = "../img/default_profile.png"; // Ruta de la foto predeterminada
 $foto = $foto_predeterminada;

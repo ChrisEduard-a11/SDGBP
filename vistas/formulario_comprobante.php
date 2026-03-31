@@ -159,23 +159,23 @@ require_once("../conexion.php");
             </div>
             <div class="card-body p-4 p-md-5">
                 
-                <form action="../dompdf/generar_comprobante.php" method="post" class="row">
+                <form action="../dompdf/generar_comprobante.php" method="post" class="row" onsubmit="return validateFormComprobante()">
                     
                     <!-- Datos Principales -->
                     <div class="row g-4">
                         <div class="col-md-4">
                             <label for="num_comprobante" class="form-label-premium"><i class="fas fa-hashtag"></i> N° de Comprobante</label>
-                            <input type="number" class="form-control form-control-premium" id="num_comprobante" name="num_comprobante" placeholder="Ej: 00123" required>
+                            <input type="number" class="form-control form-control-premium" id="num_comprobante" name="num_comprobante" placeholder="Ej: 00123">
                         </div>
 
                         <div class="col-md-4">
                             <label for="fecha" class="form-label-premium"><i class="fas fa-calendar-day"></i> Fecha de Emisión</label>
-                            <input type="text" class="form-control form-control-premium datepicker-flat" id="fecha" name="fecha" required>
+                            <input type="text" class="form-control form-control-premium datepicker-flat" id="fecha" name="fecha">
                         </div>
                         
                         <div class="col-md-4">
                             <label for="monto" class="form-label-premium"><i class="fas fa-money-bill-wave"></i> Monto Total (Bs)</label>
-                            <input type="text" class="form-control form-control-premium campo-monto" id="monto" name="monto" placeholder="0,00" required>
+                            <input type="text" class="form-control form-control-premium campo-monto" id="monto" name="monto" placeholder="0,00">
                         </div>
                     </div>
 
@@ -187,32 +187,32 @@ require_once("../conexion.php");
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label for="nombre" class="form-label-premium"><i class="fas fa-user-circle"></i> Nombre o Razón Social</label>
-                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" placeholder="Nombre completo del cliente" required>
+                                <input type="text" class="form-control form-control-premium" id="nombre" name="nombre" placeholder="Nombre completo del cliente">
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="rif" class="form-label-premium"><i class="fas fa-id-card-clip"></i> RIF / C.I.</label>
-                                <input type="text" class="form-control form-control-premium" id="rif" name="rif" placeholder="V-00000000-0" required>
+                                <input type="text" class="form-control form-control-premium" id="rif" name="rif" placeholder="V-00000000-0">
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="telefono" class="form-label-premium"><i class="fas fa-phone-volume"></i> Teléfono</label>
-                                <input type="text" class="form-control form-control-premium" id="telefono" name="telefono" placeholder="+58 4XX-XXXXXXX" required>
+                                <input type="text" class="form-control form-control-premium" id="telefono" name="telefono" placeholder="+58 4XX-XXXXXXX">
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="correo" class="form-label-premium"><i class="fas fa-at"></i> Correo Electrónico</label>
-                                <input type="email" class="form-control form-control-premium" id="correo" name="correo" placeholder="correo@ejemplo.com" required>
+                                <input type="email" class="form-control form-control-premium" id="correo" name="correo" placeholder="correo@ejemplo.com">
                             </div>
                             
                             <div class="col-md-4">
                                 <label for="ciudad" class="form-label-premium"><i class="fas fa-location-dot"></i> Ciudad / Estado</label>
-                                <input type="text" class="form-control form-control-premium" id="ciudad" name="ciudad" placeholder="Ej: Caracas" required>
+                                <input type="text" class="form-control form-control-premium" id="ciudad" name="ciudad" placeholder="Ej: Caracas">
                             </div>
 
                             <div class="col-12">
                                 <label for="direccion" class="form-label-premium"><i class="fas fa-map-location-dot"></i> Dirección Fiscal</label>
-                                <input type="text" class="form-control form-control-premium" id="direccion" name="direccion" placeholder="Ingrese la dirección completa" required>
+                                <input type="text" class="form-control form-control-premium" id="direccion" name="direccion" placeholder="Ingrese la dirección completa">
                             </div>
                         </div>
                     </div>
@@ -224,7 +224,7 @@ require_once("../conexion.php");
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label for="banco" class="form-label-premium"><i class="fas fa-bank"></i> Banco de Destino</label>
-                            <select class="form-select form-control-premium form-select-select2" id="banco" name="banco" required>
+                            <select class="form-select form-control-premium form-select-select2" id="banco" name="banco">
                                 <option value="">Seleccione una entidad...</option>
                                 <optgroup label="Bancos Públicos">
                                     <option value="Banco de Venezuela">Banco de Venezuela (BDV)</option>
@@ -256,7 +256,7 @@ require_once("../conexion.php");
                         
                         <div class="col-md-6">
                             <label for="tipo_pago" class="form-label-premium"><i class="fas fa-wallet"></i> Tipo de Cuenta</label>
-                            <select class="form-select form-control-premium form-select-select2" id="tipo_pago" name="tipo_pago" required>
+                            <select class="form-select form-control-premium form-select-select2" id="tipo_pago" name="tipo_pago">
                                 <option value="">Seleccione...</option>
                                 <option value="Corriente">Cuenta Corriente</option>
                                 <option value="Ahorro">Cuenta de Ahorro</option>
@@ -265,17 +265,17 @@ require_once("../conexion.php");
                         
                         <div class="col-md-6">
                             <label for="cuenta" class="form-label-premium"><i class="fas fa-credit-card"></i> Número de Cuenta (20 dígitos)</label>
-                            <input type="text" class="form-control form-control-premium" id="cuenta" name="cuenta" placeholder="01XXXXXXXXXXXXXX" required maxlength="20">
+                            <input type="text" class="form-control form-control-premium" id="cuenta" name="cuenta" placeholder="01XXXXXXXXXXXXXX" maxlength="20">
                         </div>
                         
                         <div class="col-md-6">
                             <label for="referencia" class="form-label-premium"><i class="fas fa-receipt"></i> N° de Referencia Bancaria</label>
-                            <input type="number" class="form-control form-control-premium" id="referencia" name="referencia" placeholder="Número de confirmación" required>
+                            <input type="number" class="form-control form-control-premium" id="referencia" name="referencia" placeholder="Número de confirmación">
                         </div>
 
                         <div class="col-12">
                             <label for="descripcion" class="form-label-premium"><i class="fas fa-comment-dots"></i> Concepto del Egreso</label>
-                            <textarea class="form-control form-control-premium" id="descripcion" name="descripcion" rows="4" placeholder="Describa brevemente el motivo de este egreso..." required></textarea>
+                            <textarea class="form-control form-control-premium" id="descripcion" name="descripcion" rows="4" placeholder="Describa brevemente el motivo de este egreso..."></textarea>
                         </div>
                     </div>
 

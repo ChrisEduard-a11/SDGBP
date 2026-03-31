@@ -450,6 +450,23 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
     <!-- Tailwind Toasts Container -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-[2000] flex flex-col gap-3 pointer-events-none"></div>
 
+    <!-- Footer Marketing -->
+    <footer class="bg-white border-t border-slate-200 pt-16 pb-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex items-center">
+                    <img src="../img/Logo-OP2_V4.webp" alt="Logo" class="h-8 w-auto filter grayscale opacity-50">
+                    <span class="ml-3 font-display font-bold text-slate-400">EURIPYS STORE</span>
+                </div>
+                
+                <div class="flex flex-col md:flex-row items-center gap-6 text-sm text-slate-500">
+                    <p>© <?php echo date("Y"); ?> Todos los derechos reservados.</p>
+                    <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs border border-slate-200">SDGBP v2.0</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <script src="marketing.js"></script>
 </body>
 </html>

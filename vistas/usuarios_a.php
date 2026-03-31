@@ -79,7 +79,7 @@ $totalPendientes = count($usuarios_no_aprobados);
 </style>
 
 <script>
-    function confirmarRechazo(id) {
+    function confirmarRechazoUsuario(id) {
         Swal.fire({
             title: '¿Rechazar usuario?',
             text: 'Esta acción eliminará al usuario pendiente. No se puede deshacer.',
@@ -194,7 +194,7 @@ $totalPendientes = count($usuarios_no_aprobados);
                                         <i class="fas fa-check-circle me-1"></i> Aprobar
                                     </button>
                                 </form>
-                                <button class="btn-rechazar flex-grow-1" onclick="confirmarRechazo(<?php echo $usuario['id_usuario']; ?>)">
+                                <button type="button" class="btn-rechazar flex-grow-1" onclick="confirmarRechazoUsuario(<?php echo $usuario['id_usuario']; ?>)">
                                     <i class="fas fa-times-circle me-1"></i> Rechazar
                                 </button>
                             </div>
@@ -209,4 +209,4 @@ $totalPendientes = count($usuarios_no_aprobados);
     </div>
 <?php
 require_once("../models/footer.php");
-?>
+?>

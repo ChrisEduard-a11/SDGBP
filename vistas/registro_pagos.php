@@ -181,7 +181,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
             <div class="col-lg-8 animate-up" style="animation-delay: 0.2s;">
                 <div class="glass-card p-4 p-md-5">
                     <form method="post" id="formRegistroPago" action="../acciones/controlador_pago.php" onsubmit="return validateFormRegistroP()" enctype="multipart/form-data">
-                        <input type="hidden" name="idempotency_token" value="<?php echo $idempotency_token; ?>">
+                        <input type="hidden" id="idempotency_token" name="idempotency_token" value="<?php echo $idempotency_token; ?>">
                         
                         <div class="form-section-title">
                             <i class="fas fa-receipt"></i> Detalles de la Transacción
@@ -193,7 +193,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                     <?php if ($_SESSION["tipo"] == "admin") { ?>
-                                        <select class="form-select" id="nombre_cliente" name="nombre_cliente" onchange="actualizarUsuarioId(this)" required>
+                                        <select class="form-select" id="nombre_cliente" name="nombre_cliente" onchange="actualizarUsuarioId(this)">
                                             <option value="">Seleccione una UPU</option>
                                             <?php
                                             $sql = "SELECT id_usuario, nombre FROM usuario WHERE tipos = 'upu' AND aprobado = 1";
@@ -243,7 +243,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                                 <label class="small fw-bold mb-2">Monto del Ingreso (Bs)</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-money-bill-wave"></i></span>
-                                    <input type="text" class="form-control campo-monto" id="monto" name="monto" placeholder="1.234,56" maxlength="15" required>
+                                    <input type="text" class="form-control campo-monto" id="monto" name="monto" placeholder="1.234,56" maxlength="15">
                                 </div>
                                 <div class="form-text small opacity-70"><i class="fas fa-info-circle me-1"></i> Formato sugerido: 1.500,00 (Punto para miles, coma para decimales).</div>
                             </div>
@@ -252,7 +252,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                                 <label class="small fw-bold mb-2">Banco de Origen</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-university"></i></span>
-                                    <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                                    <select class="form-select" id="metodo_pago" name="metodo_pago">
                                         <option value="">Seleccione el banco...</option>
                                         <optgroup label="Bancos Públicos">
                                             <option value="Banco de Venezuela">Banco de Venezuela (BDV)</option>
@@ -296,7 +296,7 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
                                 <label class="small fw-bold mb-2">Fecha del Pago</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                                    <input type="text" class="form-control datepicker-flat" id="fecha_pago" name="fecha_pago" placeholder="YYYY-MM-DD">
+                                    <input type="text" class="form-control datepicker-flat" id="fecha_pago" name="fecha_pago" placeholder="YYYY-MM-DD" readonly>
                                 </div>
                             </div>
 
