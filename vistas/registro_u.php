@@ -145,7 +145,7 @@ require_once("../models/header.php")
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                 <input class="form-control" id="inputPassword" type="password" name="clave" placeholder="••••••••">
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword" onclick="togglePasswordVisibility('inputPassword', this)"><i class="fas fa-eye"></i></button>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -153,7 +153,7 @@ require_once("../models/header.php")
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                 <input class="form-control" id="inputPassword2" type="password" name="confirmar_clave" placeholder="••••••••">
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword2"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword2" onclick="togglePasswordVisibility('inputPassword2', this)"><i class="fas fa-eye"></i></button>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -257,6 +257,7 @@ require_once("../models/header.php")
 
         </form>
     </div>
+    <script src="../js/vali_login.js"></script>
 <?php
 require_once("../models/footer.php");
 ?>

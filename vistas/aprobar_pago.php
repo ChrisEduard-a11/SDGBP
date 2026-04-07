@@ -239,15 +239,49 @@ if (!isset($_SESSION['form_tokens'])) {
     .fade-in-up {
         animation: fadeIn 0.6s ease-out forwards;
     }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        .table-container {
+            padding: 1rem;
+        }
+        .metric-card {
+            padding: 1.5rem !important;
+        }
+        .metric-icon {
+            font-size: 2.5rem;
+        }
+        header.page-header-standard h1 {
+            font-size: 1.5rem;
+        }
+        .upu-group-header td {
+            padding: 1rem !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .btn-action {
+            width: 36px;
+            height: 36px;
+        }
+        .amount-badge {
+            font-size: 0.9rem;
+            padding: 0.3rem 0.6rem;
+        }
+    }
 </style>
 
 <div id="layoutSidenav_content">
     <div class="container-fluid dashboard-container px-4">
         
-        <header class="page-header-standard d-flex justify-content-between align-items-center animate__animated animate__fadeIn">
+        <header class="page-header-standard d-flex justify-content-between align-items-center flex-wrap gap-3 animate__animated animate__fadeIn">
             <div>
                 <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-check-double me-2"></i>Centro de Aprobaciones</h1>
-                <p class="text-muted">Gestión inteligente de flujos financieros y validación de pagos</p>
+                <p class="text-muted mb-0">Gestión inteligente de flujos financieros y validación de pagos</p>
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
@@ -259,7 +293,7 @@ if (!isset($_SESSION['form_tokens'])) {
 
         <!-- Metrics Section -->
         <div class="row g-4 mb-5 fade-in-up" style="animation-delay: 0.1s;">
-            <div class="col-xl-4 col-md-6">
+            <div class="col-xl-4 col-md-6 col-12">
                 <div class="card metric-card bg-gradient-primary shadow-lg p-4">
                     <div class="card-body p-0">
                         <h6 class="text-uppercase mb-2 opacity-75 fw-bold">Volumen Pendiente</h6>
@@ -270,7 +304,7 @@ if (!isset($_SESSION['form_tokens'])) {
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4 col-md-6">
+            <div class="col-xl-4 col-md-6 col-12">
                 <div class="card metric-card bg-gradient-warning shadow-lg p-4">
                     <div class="card-body p-0">
                         <h6 class="text-uppercase mb-2 opacity-75 fw-bold">Pagos en Cola</h6>
@@ -281,7 +315,7 @@ if (!isset($_SESSION['form_tokens'])) {
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4 col-md-12">
+            <div class="col-xl-4 col-md-12 col-12">
                 <div class="card metric-card bg-gradient-success shadow-lg p-4">
                     <div class="card-body p-0">
                         <h6 class="text-uppercase mb-2 opacity-75 fw-bold">Ticket Promedio</h6>
@@ -296,9 +330,9 @@ if (!isset($_SESSION['form_tokens'])) {
 
         <!-- Main Content -->
         <div class="card glass-card fade-in-up" style="animation-delay: 0.2s;">
-            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <h4 class="fw-bold mb-0"><i class="fas fa-tasks me-3 text-primary"></i> Cola de Procesamiento</h4>
-                <div class="ms-auto me-4" style="width: 300px;">
+                <div class="ms-md-auto me-md-4 w-100" style="max-width: 350px;">
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
                         <input type="text" id="upuSearchInput" class="form-control bg-light border-start-0" placeholder="Buscar pagos...">
@@ -337,15 +371,15 @@ if (!isset($_SESSION['form_tokens'])) {
                                     ?>
                                         <tr class="upu-group-header">
                                             <td colspan="8">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar-sm bg-primary-premium text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <div class="d-flex align-items-center flex-wrap gap-3">
+                                                    <div class="avatar-sm bg-primary-premium text-white rounded-circle p-2 me-md-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                                         <i class="fas fa-university"></i>
                                                     </div>
-                                                    <div>
+                                                    <div class="me-auto">
                                                         <h5 class="mb-0 fw-bold text-primary">Unidad: <?php echo $upu_name; ?></h5>
                                                         <small class="text-muted text-uppercase tracking-wider">Cola de aprobación por entidad</small>
                                                     </div>
-                                                    <span class="ms-auto badge bg-soft-primary px-3 py-2 rounded-pill fw-bold">
+                                                    <span class="badge bg-soft-primary px-3 py-2 rounded-pill fw-bold">
                                                         <i class="fas fa-layer-group me-1"></i> Agrupado por UPU
                                                     </span>
                                                 </div>

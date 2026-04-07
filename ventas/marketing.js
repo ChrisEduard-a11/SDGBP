@@ -417,8 +417,11 @@ function ConfigurarFlujoCheckout() {
                 if (!regexCuenta.test(cta)) return MostrarToast('danger', 'Inserta los 20 dígitos de tu cuenta de origen.');
             }
 
-            const pmonto = document.getElementById('coMontoPagado').value.trim();
-            if (!pmonto || isNaN(pmonto) || parseFloat(pmonto) <= 0) return MostrarToast('danger', 'Monto de soporte bancario inválido.');
+            const pmontoRaw = document.getElementById('coMontoPagado').value.trim();
+            const pmontoNum = pmontoRaw.replace(/\./g, "").replace(",", ".");
+            if (!pmontoRaw || isNaN(pmontoNum) || parseFloat(pmontoNum) <= 0) return MostrarToast('danger', 'Monto de soporte bancario inválido.');
+            
+            const pmonto = pmontoRaw; 
             
             const fecha = document.getElementById('coFecha').value.trim();
             if (!fecha) return MostrarToast('danger', 'Selecciona fecha de la transferencia.');

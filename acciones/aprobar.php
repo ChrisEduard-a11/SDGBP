@@ -2,6 +2,7 @@
 session_start();
 include('../conexion.php');
 include('../models/bitacora.php');
+include('../models/notificaciones.php');
 
 // Validar parámetros
 if (!isset($_POST['usuario_id']) || empty($_POST['usuario_id'])) {
@@ -24,6 +25,9 @@ if ($row = mysqli_fetch_assoc($resultado)) {
 // Aprobar al usuario (aprobado = 1)
 $sql = "UPDATE usuario SET aprobado = 1 WHERE id_usuario = $id_usuario";
 if (mysqli_query($conexion, $sql)) {
+    // Eliminar notificación de registro pendiente
+    eliminarNotificacionUsuarioPendiente($conexion, $nombre_usuario);
+
     $_SESSION['estatus'] = 'success';
     $_SESSION['mensaje'] = "Usuario $nombre_usuario ha sido aprobado exitosamente y ya puede iniciar sesión.";
     registrarAccion($conexion, "Aprobación de Usuario ($nombre_usuario)", $_SESSION['id']);

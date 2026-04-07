@@ -1,6 +1,7 @@
 <?php
 session_start();
 include('../conexion.php');
+include('../models/notificaciones.php');
 
 // Obtener los datos del formulario
 $usuario = $_POST['usuario'];
@@ -62,6 +63,11 @@ $sql = "INSERT INTO usuario (nombre, nacionalidad, cedula, usuario, correo, clav
 $result = mysqli_query($conexion, $sql);
 
 if ($result) {
+    // Notificar a los administradores sobre el nuevo usuario pendiente
+    $titulo_noti = "Nuevo Usuario Pendiente";
+    $mensaje_noti = "El usuario @$usuario ($nombre) se ha registrado y requiere aprobación.";
+    crearNotificacion($conexion, null, $titulo_noti, $mensaje_noti, 'warning', 'fas fa-user-clock', null, 'admin');
+
     $_SESSION["estatus"] = "success";
     $_SESSION["mensaje"] = "Registro Exitoso! El usuario debe ser aprobado por un administrador.";
     header("Location: ../vistas/login.php");

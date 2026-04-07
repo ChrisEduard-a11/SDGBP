@@ -58,7 +58,7 @@ $correo_pista = enmascararCorreo($_SESSION['temp_recu_correo_real']);
         .login-image-content { position: relative; z-index: 2; padding: 4rem; color: #fff; max-width: 650px; }
         .login-badge { display: inline-block; padding: 0.4rem 1rem; background: rgba(241, 128, 0, 0.2); border: 1px solid rgba(241, 128, 0, 0.3); color: #f18000; border-radius: 50px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; backdrop-filter: blur(4px); margin-bottom: 2rem; }
         .login-image-title { font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px; }
-        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .login-image-desc { font-size: 1.1rem; color: rgba(255,255,255,0.8); line-height: 1.6; font-weight: 300; }
 
         .login-form-side { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; width: 100%; background-color: #ffffff; overflow-y: auto; overflow-x: hidden; }
@@ -104,36 +104,7 @@ $correo_pista = enmascararCorreo($_SESSION['temp_recu_correo_real']);
 </head>
 <body>
 <!-- GLOBAL PRELOADER -->
-<style>.swal2-container { z-index: 9999999 !important; }</style>
-<div id="global-preloader" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease;">
-    <div style="color: #f18000; text-align: center; padding: 20px;">
-        <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); margin-bottom: 20px;"></i>
-        <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px; margin: 0;">Cargando...</h5>
-    </div>
-</div>
-<script>
-    window.addEventListener('load', function() {
-        const preloader = document.getElementById('global-preloader');
-        if (preloader) {
-            preloader.style.opacity = '0';
-            preloader.style.visibility = 'hidden';
-            setTimeout(() => preloader.remove(), 400);
-        }
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('a:not([target="_blank"]):not([href^="#"]):not([href^="javascript:"])').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (!e.ctrlKey && !e.shiftKey && !e.metaKey && this.href) {
-                    const preloader = document.getElementById('global-preloader');
-                    if (preloader) {
-                        preloader.style.visibility = 'visible';
-                        preloader.style.opacity = '1';
-                    }
-                }
-            });
-        });
-    });
-</script>
+<?php include("../models/preloader.php"); ?>
 <!-- END GLOBAL PRELOADER -->
     <div class="login-layout">
         <div class="login-image-side">

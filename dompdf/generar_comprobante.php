@@ -84,7 +84,7 @@ readfile($rutaArchivo);
 
 // Redirigir al usuario a la lista de comprobantes después de la descarga
 echo "<script>
-    window.location.href = '../vistas/listar_comprobantes.php';
+    window.location.href = '../comprobantes';
 </script>";
 exit();
 ?>

@@ -2,6 +2,7 @@
 session_start();
 include('../conexion.php');
 include('../models/bitacora.php');
+include('../models/notificaciones.php');
 
 // Validar parámetros
 if (!isset($_GET['id']) || empty($_GET['id'])) {
@@ -24,6 +25,10 @@ if ($row = mysqli_fetch_assoc($resultado)) {
     // Rechazar (eliminar de la BD)
     $sql_delete = "DELETE FROM usuario WHERE id_usuario = $id_usuario";
     if (mysqli_query($conexion, $sql_delete)) {
+        // Eliminar notificación de registro pendiente
+        eliminarNotificacionUsuarioPendiente($conexion, $usuario);
+
+
         // Eliminar foto de perfil si no es la por defecto
         if (!empty($foto) && file_exists($foto) && strpos($foto, 'default_profile.png') === false) {
             unlink($foto);

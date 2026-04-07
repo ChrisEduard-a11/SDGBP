@@ -24,9 +24,87 @@ toastr.options = {
     "hideMethod": "fadeOut"
 };
 
+// HELPER: Limpiar valores monetarios (Quitar puntos de miles y cambiar coma a punto decimal)
+function cleanNumericValue(val) {
+    if (!val) return "0";
+    // Si ya es un número (raro desde un input.value), lo devolvemos
+    if (typeof val === 'number') return val.toString();
+    
+    let clean = val.trim();
+    // 1. Quitar los puntos que actúan como separadores de miles (ej: 1.500,00 -> 1500,00)
+    // Usamos regex con 'g' para quitar todos
+    clean = clean.replace(/\./g, '');
+    // 2. Cambiar la coma decimal por punto decimal (ej: 1500,00 -> 1500.00)
+    clean = clean.replace(',', '.');
+    
+    return clean;
+}
+
 function playErrorSound() {
     const audio = new Audio('../error/validation_error.mp3');
     audio.play().catch(err => {});
+}
+
+// 0. UTILIDADES DE RESTRICCIÓN DE ENTRADA (Monto/Precios/Números)
+// Bloquea teclas no numéricas y sanea el pegado de texto.
+function setupNumericRestriction(selector, allowDecimal = true) {
+    const inputs = document.querySelectorAll(selector);
+    inputs.forEach(input => {
+        // 1. Bloquear teclas no permitidas
+        input.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which || e.keyCode);
+            const isDigit = /\d/.test(char);
+            const isDot = char === '.';
+            const isComma = char === ',';
+            
+            if (!isDigit && (!allowDecimal || (!isDot && !isComma))) {
+                if (e.ctrlKey || e.metaKey || e.altKey || e.which < 32) return; // Permitir comandos de teclado
+                e.preventDefault();
+                return false;
+            }
+            
+            // Evitar múltiples puntos
+            if (isDot && this.value.includes('.')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // 2. Sanear el contenido al pegar o mediante cualquier entrada (input event)
+        input.addEventListener('input', function() {
+            let val = this.value;
+            if (allowDecimal) {
+                // Permitir números, punto y coma
+                val = val.replace(/[^0-9.,]/g, '');
+                // No permitimos múltiples separadores decimales complejos aquí, 
+                // ya que maskCurrency se encargará de la limpieza final.
+            } else {
+                // Solo números enteros
+                val = val.replace(/[^0-9]/g, '');
+            }
+            if (this.value !== val) {
+                this.value = val;
+            }
+        });
+    });
+}
+
+// Inicializar restricciones al cargar el DOM o cuando se inserten elementos (opcional)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeNumericRestrictions);
+} else {
+    initializeNumericRestrictions();
+}
+
+function initializeNumericRestrictions() {
+    // Montos y Precios (permiten decimales)
+    setupNumericRestriction('#monto', true);
+    setupNumericRestriction('#precio', true);
+    setupNumericRestriction('#precio_unitario', true);
+    
+    // Cantidades y Stock (solo enteros)
+    setupNumericRestriction('#cantidad', false);
+    setupNumericRestriction('#stock', false);
 }
 
 // 2. GESTIÓN DE PAGOS Y INGRESOS (UPU/ADMIN)
@@ -91,6 +169,15 @@ function validateFormRegistroP() {
             return false;
         }
 
+        // Validación extra para Monto (asegurar que es numérico y > 0)
+        const montoValue = cleanNumericValue(document.getElementById("monto").value);
+        if (isNaN(montoValue) || parseFloat(montoValue) <= 0) {
+            playErrorSound();
+            toastr.error("El monto debe ser un valor numérico válido y mayor a cero.", "Error de Validación");
+            setFieldInvalid("monto", true);
+            return false;
+        }
+
         const refEl = document.getElementById("codigo_pago");
         const refValue = refEl?.value.trim() || "";
         if (refValue.length !== 6 || isNaN(refValue)) {
@@ -134,12 +221,7 @@ function validateFormRegistroP() {
         }).then((result) => {
             if (result.isConfirmed) {
                 isConfirmedPago = true;
-                // Mostrar el preloader global en lugar del popup de SweetAlert
-                var preloader = document.getElementById('global-preloader');
-                if (preloader) {
-                    preloader.style.visibility = 'visible';
-                    preloader.style.opacity = '1';
-                }
+                showPreloader("Procesando pago...");
                 document.getElementById("formRegistroPago").submit();
             }
         });
@@ -180,6 +262,15 @@ function validateFormRegistroEgreso() {
         if (faltantes.length > 0) {
             playErrorSound();
             toastr.error("Campos obligatorios: " + faltantes.join(", "), "Validación de Egreso");
+            return false;
+        }
+
+        // Validación extra para Monto Egreso
+        const montoValue = cleanNumericValue(document.getElementById("monto").value);
+        if (isNaN(montoValue) || parseFloat(montoValue) <= 0) {
+            playErrorSound();
+            toastr.error("El monto debe ser un valor numérico válido y mayor a cero.", "Error de Validación");
+            setFieldInvalid("monto", true);
             return false;
         }
 
@@ -234,12 +325,7 @@ function validateFormRegistroEgreso() {
         }).then((result) => {
             if (result.isConfirmed) {
                 isConfirmedEgreso = true;
-                // Mostrar el preloader global en lugar del popup de SweetAlert
-                var preloader = document.getElementById('global-preloader');
-                if (preloader) {
-                    preloader.style.visibility = 'visible';
-                    preloader.style.opacity = '1';
-                }
+                showPreloader("Procesando pago...");
                 document.getElementById("formRegistroEgreso").submit();
             }
         });
@@ -271,6 +357,16 @@ function validateFormComprobante() {
         toastr.error("Faltan campos obligatorios por completar para generar el documento.", "Datos Incompletos");
         return false;
     }
+
+    // Validación numérica para monto
+    const m = cleanNumericValue(document.getElementById("monto").value);
+    if (isNaN(m) || parseFloat(m) <= 0) {
+        playErrorSound();
+        toastr.error("El monto debe ser un valor numérico válido y mayor a cero.", "Error de Datos");
+        setFieldInvalid("monto", true);
+        return false;
+    }
+
     return true;
 }
 
@@ -297,16 +393,26 @@ function validateFormEditarComprobante() {
         toastr.error("Faltan campos obligatorios al intentar editar el documento.", "Campos Vacíos");
         return false;
     }
+
+    // Validación numérica para monto
+    const m = cleanNumericValue(document.getElementById("monto").value);
+    if (isNaN(m) || parseFloat(m) <= 0) {
+        playErrorSound();
+        toastr.error("El monto debe ser un valor numérico válido y mayor a cero.", "Error de Datos");
+        setFieldInvalid("monto", true);
+        return false;
+    }
+
     return true;
 }
 
 // 3. GESTIÓN DE INVENTARIO Y BIENES
 function validateFormRB() { // Registro de Bienes
-    const ids = ["nombre_bien", "descripcion_bien", "categoria", "cantidad", "precio_unitario", "fecha_adquisicion"];
+    const ids = ["categoria", "nombre", "descripcion", "serial", "fecha_adquisicion"];
     let ok = true;
     ids.forEach(id => {
         const el = document.getElementById(id);
-        if(!el?.value) {
+        if(!el || !el.value.trim()) {
             setFieldInvalid(id, true);
             ok = false;
         } else setFieldInvalid(id, false);
@@ -314,8 +420,10 @@ function validateFormRB() { // Registro de Bienes
 
     if(!ok) {
         playErrorSound();
-        toastr.error("Debe completar todos los detalles del bien.", "Error de Inventario");
+        toastr.error("Debe completar todos los detalles del bien, incluyendo seleccionar categoría y un bien existente.", "Error de Inventario");
+        return false;
     }
+
     return ok;
 }
 
@@ -335,7 +443,20 @@ function validateFormAgregarProducto() {
     if(!ok) {
         playErrorSound();
         toastr.error("Complete todos los datos obligatorios del producto.", "Registro Incompleto");
+        return false;
     }
+
+    // Validación numérica para precio y stock
+    const p = cleanNumericValue(document.getElementById("precio").value);
+    const s = document.getElementById("stock").value;
+    if (isNaN(p) || parseFloat(p) < 0 || isNaN(s) || parseInt(s) < 0) {
+        playErrorSound();
+        toastr.error("El precio y el stock deben ser valores numéricos válidos.", "Error de Datos");
+        setFieldInvalid("precio", isNaN(p) || parseFloat(p) < 0);
+        setFieldInvalid("stock", isNaN(s) || parseInt(s) < 0);
+        return false;
+    }
+
     return ok;
 }
 

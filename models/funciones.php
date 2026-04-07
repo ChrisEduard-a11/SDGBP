@@ -38,9 +38,6 @@ function establecerCodigoAleatorio() {
 </script>
 
 <script>
-    function navigateTo(url) {
-        window.location.href = url;
-    }
 
     function confirmDelete(url) {
         // Extraer el id del usuario a eliminar de la URL
@@ -271,28 +268,7 @@ function establecerCodigoAleatorio() {
     }
 </script>
 <script>
-    function navigateTo(url) {
-        window.location.href = url;
-    }
 
-    // Mostrar el preloader global al hacer submit de cualquier form de navegación
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('form').forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                // Solo si el form es válido (no ha sido prevenido por onsubmit)
-                // Usamos un pequeño delay para que la validación interna del form corra primero
-                setTimeout(function() {
-                    if (!e.defaultPrevented) {
-                        var preloader = document.getElementById('global-preloader');
-                        if (preloader) {
-                            preloader.style.visibility = 'visible';
-                            preloader.style.opacity = '1';
-                        }
-                    }
-                }, 0);
-            });
-        });
-    });
 </script>
 <script>
         function confirmarRechazo(usuarioId) {
@@ -391,8 +367,8 @@ function AgregarNuevoBien() {
             <input type="text" id="nuevoNombre" class="swal2-input" placeholder="Nombre del bien">
             <textarea id="nuevaDescripcion" class="swal2-textarea" placeholder="Descripción"></textarea>
             <div class="d-flex flex-column mt-3">
-                <button type="button" class="btn btn-primary mb-2" id="agregarBien">Agregar</button>
-                <button type="button" class="btn btn-danger" id="cerrarBien">Cerrar</button>
+                <button type="button" class="btn btn-primary mb-2" id="agregarBien" data-no-preloader="true">Agregar</button>
+                <button type="button" class="btn btn-danger" id="cerrarBien" data-no-preloader="true">Cerrar</button>
             </div>
         `,
         showConfirmButton: false,
@@ -801,19 +777,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Evento para el botón de aprobar dentro del modal
     document.getElementById('btn-confirmar-aprobar').onclick = function() {
         let comisionRaw = document.getElementById('modal-comision').value.trim();
-        
-        // Lógica robusta para parsear montos con comas o puntos
-        if (comisionRaw.includes(',') && comisionRaw.includes('.')) {
-            comisionRaw = comisionRaw.replace(/\./g, "").replace(",", ".");
-        } else if (comisionRaw.includes(',')) {
-            comisionRaw = comisionRaw.replace(",", ".");
-        } else if (comisionRaw.includes('.')) {
-            if ((comisionRaw.match(/\./g) || []).length > 1) {
-                comisionRaw = comisionRaw.replace(/\./g, "");
-            }
-        }
-        
-        let comision = parseFloat(comisionRaw);
+        let comision = parseFloat(cleanNumericValue(comisionRaw));
         if (isNaN(comision)) comision = 0;
 
         if (comision < 0) {
@@ -827,19 +791,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         let accionTexto = (tipoTransaccionGlobal.toLowerCase() === 'egreso') ? 'descontado/reducido' : 'incrementado';
-        let confirmTitle = `¿Confirmar Aprobación de ${tipoTransaccionGlobal}?`;
-        let confirmHtml = '';
-
-        if (comision > 0) {
-            const comisionFormateada = comision.toLocaleString('es-VE', {minimumFractionDigits: 2});
-            confirmHtml = `<p>¿Estás seguro de registrar y aprobar este <strong>${tipoTransaccionGlobal.toLowerCase()}</strong> aplicando una comisión de <strong>Bs. ${comisionFormateada}</strong>?</p><p class="text-muted small">El saldo del usuario será <strong>${accionTexto}</strong> tomando en cuenta esta comisión.</p>`;
-        } else {
-            confirmHtml = `<p>¿Estás seguro de aprobar este <strong>${tipoTransaccionGlobal.toLowerCase()}</strong> <strong>sin ninguna comisión</strong>?</p><p class="text-muted small">El saldo del usuario será <strong>${accionTexto}</strong> por el monto total de la operación.</p>`;
-        }
+        let confirmTitle = `¿Confirmar Aprobación?`;
+        let confirmHtml = (comision > 0) 
+            ? `<p>¿Estás seguro de aprobar este <strong>${tipoTransaccionGlobal.toLowerCase()}</strong> aplicando una comisión de <strong>Bs. ${comision.toLocaleString('es-VE', {minimumFractionDigits: 2})}</strong>?</p>`
+            : `<p>¿Estás seguro de aprobar este <strong>${tipoTransaccionGlobal.toLowerCase()}</strong> <strong>sin ninguna comisión</strong>?</p>`;
 
         // Cierra el modal Bootstrap ANTES de abrir SweetAlert
         const bsModalEl = document.getElementById('modalAprobarPago');
-        let bsModal = bootstrap.Modal.getInstance(bsModalEl);
+        const bsModal = bootstrap.Modal.getInstance(bsModalEl);
         if(bsModal) bsModal.hide();
 
         setTimeout(() => {
@@ -851,16 +810,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmButtonColor: '#2af598',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: '<i class="fas fa-check"></i> Sí, Confirmar',
-                cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-                background: '#fff',
-                backdrop: `rgba(0,0,123,0.1)`
+                cancelButtonText: '<i class="fas fa-times"></i> Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({
                         html: `
                             <div style="color: #f18000; padding: 20px;">
                                 <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                                <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Cargando...</h5>
+                                <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Aprobando Pago...</h5>
                             </div>
                         `,
                         showConfirmButton: false,
@@ -869,13 +826,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         backdrop: 'rgba(15, 23, 42, 0.8)',
                         customClass: { popup: 'border-0 shadow-none bg-transparent' }
                     });
-                    document.getElementById(`comision-${idPagoSeleccionado}`).value = comision;
-                    document.getElementById(`form-aprobar-${idPagoSeleccionado}`).submit();
+                    
+                    const inputComision = document.getElementById('comision-' + idPagoSeleccionado);
+                    const formAprobar = document.getElementById('form-aprobar-' + idPagoSeleccionado);
+                    
+                    if (inputComision && formAprobar) {
+                        inputComision.value = comision;
+                        formAprobar.submit();
+                    }
                 } else {
-                    if(bsModal) bsModal.show(); // Reabrir si cancelan
+                    if(bsModal) bsModal.show();
                 }
             });
-        }, 300); // Dar tiempo al modal para cerrarse visualmente
+        }, 300);
     };
 
     // Función para rechazar pago (Abre el Modal Bootstrap)
@@ -916,43 +879,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     icon: 'error',
                     title: 'Motivo Requerido',
                     text: 'Es rigurosamente obligatorio justificar el rechazo.',
-                    confirmButtonColor: '#e71d36',
-                    background: '#fff',
-                    customClass: { confirmButton: 'btn btn-danger px-4 rounded-pill fw-bold' },
-                    buttonsStyling: false
+                    confirmButtonColor: '#e71d36'
                 });
                 return;
             }
 
             // Cierra el modal Bootstrap ANTES de abrir SweetAlert
             const bsModalEl = document.getElementById('modalRechazarPago');
-            let bsModal = bootstrap.Modal.getInstance(bsModalEl);
+            const bsModal = bootstrap.Modal.getInstance(bsModalEl);
             if(bsModal) bsModal.hide();
 
             setTimeout(() => {
                 Swal.fire({
-                    title: '<i class="fas fa-exclamation-triangle text-danger me-2"></i> Confirmar Ejecución',
+                    title: '¿Confirmar Ejecución?',
                     html: `<p>¿Estás totalmente seguro de registrar la declinación de este pago?</p><p class="text-muted small">Esta acción registrará el error y no sumará balance al usuario.</p>`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#e71d36',
                     cancelButtonColor: '#6c757d',
                     confirmButtonText: '<i class="fas fa-ban"></i> Sí, Ejecutar Rechazo',
-                    cancelButtonText: '<i class="fas fa-arrow-left"></i> Volver a editar',
+                    cancelButtonText: '<i class="fas fa-arrow-left"></i> Volver',
                     background: '#ffffff',
-                    backdrop: `rgba(231,29,54,0.1)`,
-                    customClass: {
-                        confirmButton: 'btn btn-danger px-4 rounded-pill fw-bold shadow-sm mx-2',
-                        cancelButton: 'btn btn-secondary px-4 rounded-pill fw-bold mx-2'
-                    },
-                    buttonsStyling: false
+                    backdrop: `rgba(231,29,54,0.1)`
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // Preloader de "Procesando Pago..."
                         Swal.fire({
                             html: `
                                 <div style="color: #f18000; padding: 20px;">
                                     <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                                    <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Cargando...</h5>
+                                    <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px;">Procesando Pago...</h5>
                                 </div>
                             `,
                             showConfirmButton: false,
@@ -961,13 +917,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             backdrop: 'rgba(15, 23, 42, 0.8)',
                             customClass: { popup: 'border-0 shadow-none bg-transparent' }
                         });
-                        document.getElementById(`descripcion-${idPagoSeleccionado}`).value = motivo;
-                        document.getElementById(`form-rechazar-${idPagoSeleccionado}`).submit();
+                        
+                        // Guardar motivo y enviar
+                        const inputDesc = document.getElementById(`descripcion-${idPagoSeleccionado}`);
+                        const formRechazar = document.getElementById(`form-rechazar-${idPagoSeleccionado}`);
+                        
+                        if (inputDesc && formRechazar) {
+                            inputDesc.value = motivo;
+                            formRechazar.submit();
+                        } else {
+                            console.error("No se encontró el formulario de rechazo para el ID:", idPagoSeleccionado);
+                        }
                     } else {
                         if(bsModal) bsModal.show(); // Volver a mostrar modal si cancela
                     }
                 });
-            }, 300); // Dar tiempo al modal para cerrarse visualmente
+            }, 300);
         };
     }
 

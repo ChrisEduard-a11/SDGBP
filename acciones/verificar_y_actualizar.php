@@ -5,7 +5,7 @@ require_once('../models/bitacora.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $codigo_ingresado = $_POST['codigo'];
-    $id_usuario = $_SESSION['id'];
+    $id_usuario = $_SESSION['id'] ?? $_SESSION['id_usuario'];
 
     // Verificar el código en la base de datos
     $sql = "SELECT codigo_verificacion, clave FROM usuario WHERE id_usuario = '$id_usuario'";

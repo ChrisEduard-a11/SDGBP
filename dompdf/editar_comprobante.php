@@ -16,7 +16,7 @@ if (!isset($_SESSION['user'])) {
 if (!isset($_POST['archivo']) || empty($_POST['archivo'])) {
     $_SESSION['estatus'] = 'error';
     $_SESSION['mensaje'] = 'No se especificó un archivo para editar.';
-    header("Location: ../vistas/listar_comprobantes.php");
+    header("Location: ../comprobantes");
     exit();
 }
 
@@ -27,7 +27,7 @@ $ruta_original = realpath($rutaCarpeta . basename($archivo_original)); // basena
 if (!file_exists($ruta_original)) {
     $_SESSION['estatus'] = 'error';
     $_SESSION['mensaje'] = 'El archivo especificado no existe.';
-    header("Location: ../vistas/listar_comprobantes.php");
+    header("Location: ../comprobantes");
     exit();
 }
 
@@ -35,7 +35,7 @@ if (!file_exists($ruta_original)) {
 if (empty($_POST['num_comprobante']) || empty($_POST['nombre']) || empty($_POST['monto']) || empty($_POST['fecha'])) {
     $_SESSION['estatus'] = 'error';
     $_SESSION['mensaje'] = 'Los campos N° Comprobante, Nombre, Monto y Fecha son obligatorios.';
-    header("Location: ../vistas/editar_comprobante.php?archivo=" . urlencode($archivo_original));
+    header("Location: ../editar-comprobante?archivo=" . urlencode($archivo_original));
     exit();
 }
 

@@ -41,7 +41,7 @@ $dias_transcurridos = floor((time() - strtotime($fecha_cambio)) / 86400);
 $dias_para_vencer = 180 - $dias_transcurridos;
 
 require_once(__DIR__ . "/notificaciones.php");
-$notificaciones_db = obtenerNotificacionesNoLeidas($conexion, $usuarioid);
+$notificaciones_db = obtenerNotificacionesNoLeidas($conexion, $usuarioid, strtolower($tipo_usuario));
 
 $notificaciones = [];
 if ($dias_para_vencer <= 15) {
@@ -91,37 +91,6 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
     }
 }
 
-// --- VALIDACIÓN DE TÉRMINOS Y CONDICIONES (SECURITY ENFORCEMENT) ---
-// Consultar si el sistema de términos está activo
-$sql_status_h = "SELECT valor FROM ajustes_sistema WHERE clave = 'terminos_status'";
-$res_status_h = mysqli_query($conexion, $sql_status_h);
-$row_status_h = mysqli_fetch_assoc($res_status_h);
-$terminos_activos = ($row_status_h['valor'] ?? '1') == '1';
-
-if ($terminos_activos && $tipo_usuario !== 'admin' && $tipo_usuario !== 'cont') {
-    if (!isset($_COOKIE['sdgbp_terms_accepted'])) {
-        $current_url = $_SERVER['PHP_SELF'];
-        $current_page = basename($current_url);
-        
-        // Páginas permitidas sin haber aceptado (para ver el banner y aceptar o ir a denegado)
-        $allowed_pages = ['inicio.php', 'dashboard.php', 'terminos.php', 'denegado_a.php', 'login.php', 'salir.php'];
-        
-        // Si intenta entrar a una página no permitida por URL
-        if (!in_array($current_page, $allowed_pages)) {
-            // Calculamos ruta absoluta para denegado_a.php
-            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
-            $denied_url = "$protocol://" . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/') . "/vistas/denegado_a.php?error=terminos";
-            
-            if (!headers_sent()) {
-                header("Location: $denied_url");
-                exit;
-            } else {
-                echo "<script>window.location.href='$denied_url';</script>";
-                exit;
-            }
-        }
-    }
-}
 ?>
 <!DOCTYPE html>
     <html lang="es">
@@ -819,51 +788,38 @@ if ($terminos_activos && $tipo_usuario !== 'admin' && $tipo_usuario !== 'cont') 
                     box-sizing: content-box !important;
                 }
 
+                /* Dropdown de Notificaciones Responsivo */
+                .responsive-dropdown {
+                    width: 320px;
+                    max-height: 480px;
+                    overflow-y: auto;
+                }
+
+                @media (max-width: 576px) {
+                    .responsive-dropdown {
+                        width: calc(100vw - 32px) !important;
+                        position: fixed !important;
+                        left: 16px !important;
+                        right: 16px !important;
+                        top: 60px !important;
+                        margin: 0 auto !important;
+                        z-index: 1050;
+                    }
+                    
+                    /* Ajustar el triángulo o flecha de Bootstrap si existe, o forzar alineación */
+                    .responsive-dropdown.dropdown-menu-end {
+                        right: 16px !important;
+                        left: 16px !important;
+                    }
+                }
+
                 /* ================= TOASTR ULTRA-PREMIUM DESIGN (SHARED) ================= */
                 <?php include("../models/toastr_css.php"); ?>
             </style>
         </head>
         <body class="sb-nav-fixed" >
             <!-- GLOBAL PRELOADER -->
-            <style>
-                .swal2-container { z-index: 9999999 !important; }
-                #global-preloader {
-                    position: fixed; top: 0; left: 0;
-                    width: 100vw; height: 100vh;
-                    background: rgba(248, 250, 252, 0.85);
-                    backdrop-filter: blur(6px);
-                    -webkit-backdrop-filter: blur(6px);
-                    z-index: 999999;
-                    display: flex; align-items: center; justify-content: center;
-                    transition: opacity 0.35s ease, visibility 0.35s ease;
-                    opacity: 1;
-                    visibility: visible;
-                }
-                [data-theme="dark"] #global-preloader {
-                    background: rgba(0, 0, 0, 0.85) !important;
-                }
-                #global-preloader .preloader-inner { color: #f18000; text-align: center; padding: 20px; }
-                #global-preloader .preloader-icon { font-size: 4rem; filter: drop-shadow(0 0 12px rgba(241,128,0,0.6)); margin-bottom: 20px; display: block; }
-                #global-preloader .preloader-text { font-family: 'Outfit', sans-serif; font-weight: 600; color: #1e293b; letter-spacing: 1px; margin: 0; }
-                [data-theme="dark"] #global-preloader .preloader-text { color: #ffffff !important; }
-            </style>
-            <div id="global-preloader">
-                <div class="preloader-inner">
-                    <i class="fas fa-circle-notch fa-spin preloader-icon"></i>
-                    <h5 class="preloader-text">Cargando...</h5>
-                </div>
-            </div>
-            <script>
-                // Ocultar el preloader cuando la página termina de cargar completamente
-                window.addEventListener('load', function() {
-                    const preloader = document.getElementById('global-preloader');
-                    if (preloader) {
-                        preloader.style.opacity = '0';
-                        preloader.style.visibility = 'hidden';
-                        setTimeout(() => preloader.remove(), 400);
-                    }
-                });
-            </script>
+            <?php include("../models/preloader.php"); ?>
             <!-- END GLOBAL PRELOADER -->
         <nav class="sb-topnav navbar navbar-expand navbar-dark" style="background-color: #f18000 !important;">
             <a class="navbar-brand ps-3 d-flex align-items-center gap-2" href="javascript:void(0);" onclick="navigateTo('inicio.php')">
@@ -901,20 +857,23 @@ if ($terminos_activos && $tipo_usuario !== 'admin' && $tipo_usuario !== 'cont') 
                             </span>
                         <?php } ?>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="navbarDropdownNotif" style="width: 300px;">
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 responsive-dropdown" aria-labelledby="navbarDropdownNotif">
                         <li class="dropdown-header text-center fw-bold">Notificaciones</li>
                         <li><hr class="dropdown-divider"></li>
                         <?php if (count($notificaciones) > 0) {
                             foreach ($notificaciones as $notif) { ?>
                                 <li class="px-2">
-                                    <div class="d-flex align-items-center p-2 rounded border-start border-4 border-<?php echo $notif['tipo']; ?> hover:bg-light mb-1">
+                                    <div class="d-flex align-items-center p-2 rounded border-start border-4 border-<?php echo $notif['tipo']; ?> hover:bg-light mb-1 position-relative group">
                                         <div class="flex-shrink-0 me-3">
                                             <i class="<?php echo $notif['icono']; ?> text-<?php echo $notif['tipo']; ?> fs-5"></i>
                                         </div>
-                                        <div>
+                                        <div class="flex-grow-1">
                                             <div class="small fw-bold text-dark"><?php echo $notif['titulo']; ?></div>
-                                            <div class="small text-muted"><?php echo $notif['mensaje']; ?></div>
+                                            <div class="small text-muted" style="font-size: 0.75rem;"><?php echo $notif['mensaje']; ?></div>
                                         </div>
+                                        <button onclick="eliminarNotificacionHeader(event, <?php echo $notif['id']; ?>)" class="btn btn-link btn-sm text-danger p-0 ms-2 opacity-0 group-hover:opacity-100 transition-opacity" title="Borrar">
+                                            <i class="fas fa-times-circle"></i>
+                                        </button>
                                     </div>
                                 </li>
                             <?php }
@@ -922,6 +881,14 @@ if ($terminos_activos && $tipo_usuario !== 'admin' && $tipo_usuario !== 'cont') 
                             <li class="dropdown-item text-center text-muted small py-3">No tienes notificaciones pendientes</li>
                         <?php } ?>
                         <li><hr class="dropdown-divider"></li>
+                        <?php if (count($notificaciones) > 0) { ?>
+                            <li class="dropdown-item text-center">
+                                <a href="javascript:void(0);" onclick="borrarTodasNotificacionesHeader()" class="text-decoration-none small fw-bold text-danger">
+                                    <i class="fas fa-trash-alt me-1"></i> Borrar todas
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                        <?php } ?>
                         <li class="dropdown-item text-center">
                             <a href="../vistas/notificaciones.php" class="text-decoration-none small fw-bold text-primary">Ver todas las notificaciones</a>
                         </li>
@@ -948,7 +915,7 @@ if ($terminos_activos && $tipo_usuario !== 'admin' && $tipo_usuario !== 'cont') 
                         <li><a class="dropdown-item py-2" onclick="navigateTo('configuracion_usuario.php')"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Mi Cuenta</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li class="px-3 py-1">
-                            <button class="btn btn-danger btn-sm w-100 rounded-pill" onclick="confsalir(event)">
+                            <button class="btn btn-danger btn-sm w-100 rounded-pill" onclick="confsalir(event)" data-no-preloader="true">
                                 <i class="fas fa-sign-out-alt me-1"></i> Salir
                             </button>
                         </li>
@@ -1064,10 +1031,6 @@ if ($terminos_activos && $tipo_usuario !== 'admin' && $tipo_usuario !== 'cont') 
                                     <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/gestionar_flyers.php')">
                                         <div class="sb-nav-link-icon"><i class="fas fa-images"></i></div>
                                         Banners Informativos
-                                    </a>
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/editar_terminos.php')">
-                                        <div class="sb-nav-link-icon"><i class="fas fa-file-signature"></i></div>
-                                        Gestionar Términos
                                     </a>
                                 </nav>
                             </div>
@@ -1218,6 +1181,35 @@ if ($terminos_activos && $tipo_usuario !== 'admin' && $tipo_usuario !== 'cont') 
                 const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
                 if (tawkContainer) tawkContainer.style.setProperty('display', 'none', 'important');
             };
+
+                function borrarTodasNotificacionesHeader() {
+                    Swal.fire({
+                        title: '¿Borrar todas las notificaciones?',
+                        text: "Esta acción no se puede deshacer.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Sí, borrar todo',
+                        cancelButtonText: 'Cancelar',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1a1a1a' : '#fff',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#1e293b'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                url: '../acciones/eliminar_notificacion.php',
+                                type: 'POST',
+                                data: { all: 'true' },
+                                dataType: 'json',
+                                success: function(response) {
+                                    if (response.status === 'success') {
+                                        location.reload();
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
             </script>
             <!--End of Tawk.to Script-->
             <?php
@@ -1280,4 +1272,39 @@ include("../models/sweetalert.php");
                         initSelect2();
                     });
                 });
+
+                function eliminarNotificacionHeader(event, id) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    $.ajax({
+                        url: '../acciones/eliminar_notificacion.php',
+                        type: 'POST',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                const btn = $(event.target).closest('button');
+                                const item = btn.closest('li');
+                                
+                                item.fadeOut(300, function() {
+                                    item.remove();
+                                    
+                                    const badge = $('#navbarDropdownNotif .badge');
+                                    let count = parseInt(badge.text()) || 0;
+                                    count--;
+                                    if (count > 0) {
+                                        badge.text(count);
+                                    } else {
+                                        badge.remove();
+                                        const dropdown = $('#navbarDropdownNotif').next('.dropdown-menu');
+                                        if (dropdown.find('li.px-2').length === 0) {
+                                            dropdown.find('.dropdown-divider').first().after('<li class="dropdown-item text-center text-muted small py-3">No tienes notificaciones pendientes</li>');
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
             </script>

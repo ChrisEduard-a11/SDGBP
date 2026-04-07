@@ -1,8 +1,8 @@
 <?php
 session_start();
-if (empty($_SESSION["user"])) { header("Location: denegado_a.php"); exit(); }
-$id = $_SESSION['id'];
-$usuario = $_SESSION['user'];
+if (empty($_SESSION["user"]) && empty($_SESSION["usuario"])) { header("Location: denegado_a.php"); exit(); }
+$id = $_SESSION['id'] ?? $_SESSION['id_usuario'];
+$usuario = $_SESSION['user'] ?? $_SESSION['usuario'];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -47,7 +47,7 @@ $usuario = $_SESSION['user'];
         .login-image-content { position: relative; z-index: 2; padding: 4rem; color: #fff; max-width: 650px; }
         .login-badge { display: inline-block; padding: 0.4rem 1rem; background: rgba(241, 128, 0, 0.2); border: 1px solid rgba(241, 128, 0, 0.3); color: #f18000; border-radius: 50px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; backdrop-filter: blur(4px); margin-bottom: 2rem; }
         .login-image-title { font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px; }
-        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-image-title span { background: linear-gradient(135deg, #f18000 0%, #ffc107 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .login-image-desc { font-size: 1.1rem; color: rgba(255,255,255,0.8); line-height: 1.6; font-weight: 300; }
 
         .login-form-side { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; width: 100%; background-color: #ffffff; overflow-y: auto; overflow-x: hidden; }
@@ -93,36 +93,7 @@ $usuario = $_SESSION['user'];
 </head>
 <body>
 <!-- GLOBAL PRELOADER -->
-<style>.swal2-container { z-index: 9999999 !important; }</style>
-<div id="global-preloader" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999999; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s ease;">
-    <div style="color: #f18000; text-align: center; padding: 20px;">
-        <i class="fas fa-circle-notch fa-spin" style="font-size: 4rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); margin-bottom: 20px;"></i>
-        <h5 style="font-family: 'Outfit', sans-serif; font-weight: 600; color: #ffffff; letter-spacing: 1px; margin: 0;">Cargando...</h5>
-    </div>
-</div>
-<script>
-    window.addEventListener('load', function() {
-        const preloader = document.getElementById('global-preloader');
-        if (preloader) {
-            preloader.style.opacity = '0';
-            preloader.style.visibility = 'hidden';
-            setTimeout(() => preloader.remove(), 400);
-        }
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('a:not([target="_blank"]):not([href^="#"]):not([href^="javascript:"])').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (!e.ctrlKey && !e.shiftKey && !e.metaKey && this.href) {
-                    const preloader = document.getElementById('global-preloader');
-                    if (preloader) {
-                        preloader.style.visibility = 'visible';
-                        preloader.style.opacity = '1';
-                    }
-                }
-            });
-        });
-    });
-</script>
+<?php include("../models/preloader.php"); ?>
 <!-- END GLOBAL PRELOADER -->
     <div class="login-layout">
         <div class="login-image-side">
@@ -173,13 +144,16 @@ $usuario = $_SESSION['user'];
 
 
                 <form action="../acciones/solicitar_cambio_clave.php" method="POST" onsubmit="return validateFormNC()" class="mt-4">
+                    <?php if (isset($_GET['vencida'])): ?>
+                    <input type="hidden" name="vencida" value="1">
+                    <?php endif; ?>
                     <div class="recovery-icon mx-auto md:mx-0"><i class="fas fa-key"></i></div>
 
                     <div class="inst-input-wrapper" style="margin-bottom: 0.5rem;">
                         <i class="fas fa-lock inst-icon"></i>
                         <input type="password" id="inputPassword" name="clave" onkeyup="checkPasswordStrength()" class="inst-input" placeholder="Nueva Contraseña" autocomplete="off" />
-                        <button type="button" class="inst-btn-eye" onclick="togglePasswordVisibility('inputPassword', 'iconPass1')">
-                            <i id="iconPass1" class="fas fa-eye"></i>
+                        <button type="button" class="inst-btn-eye" onclick="togglePasswordVisibility('inputPassword', this)">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
                     <small id="passwordStrength" class="text-xs text-slate-500 mt-1 ml-1 block mb-3"></small>
@@ -187,8 +161,8 @@ $usuario = $_SESSION['user'];
                     <div class="inst-input-wrapper">
                         <i class="fas fa-lock inst-icon"></i>
                         <input type="password" id="inputPasswordConfirm" name="clave1" class="inst-input" placeholder="Confirmar Contraseña" autocomplete="off" />
-                        <button type="button" class="inst-btn-eye" onclick="togglePasswordVisibility('inputPasswordConfirm', 'iconPass2')">
-                            <i id="iconPass2" class="fas fa-eye"></i>
+                        <button type="button" class="inst-btn-eye" onclick="togglePasswordVisibility('inputPasswordConfirm', this)">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
 
@@ -207,21 +181,6 @@ $usuario = $_SESSION['user'];
         </div>
     </div>
     
-    <script>
-        function togglePasswordVisibility(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            } else {
-                input.type = "password";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-            }
-        }
-    </script>
     <script src="../js/vali_login.js"></script>
 </body>
 </html>

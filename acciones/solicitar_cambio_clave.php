@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $id_usuario = $_SESSION['id'];
+    $id_usuario = $_SESSION['id'] ?? $_SESSION['id_usuario'];
     
     // Obtener correo del usuario
     $sql_user = "SELECT correo, nombre FROM usuario WHERE id_usuario = '$id_usuario'";
@@ -44,16 +44,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $clave_hash = sha1($nueva_clave);
 
-    // OPTIMIZACIÓN: Si ya validó identidad (por 2FA de recuperación o preguntas), actualizamos directo
+    // CASO: Contraseña vencida (usuario ya logueado, no necesita verificación extra)
+    if (isset($_POST['vencida']) && $_POST['vencida'] == '1' && isset($_SESSION['id'])) {
+        $_SESSION['identidad_verificada'] = true;
+    }
+
+    // OPTIMIZACIÓN: Si ya validó identidad (por 2FA de recuperación, preguntas, o contraseña vencida), actualizamos directo
     if (isset($_SESSION['identidad_verificada']) && $_SESSION['identidad_verificada'] === true) {
         $sql_final = "UPDATE usuario SET clave = ?, codigo_verificacion = NULL, fecha_cambio_clave = CURRENT_DATE WHERE id_usuario = ?";
         $stmt_final = $conexion->prepare($sql_final);
         $stmt_final->bind_param("si", $clave_hash, $id_usuario);
         
         if ($stmt_final->execute()) {
-            unset($_SESSION['identidad_verificada']); // Limpiar bandera
+            // Destruir sesión para forzar nuevo inicio de sesión con nueva clave
+            session_unset();
+            session_destroy();
+            session_start();
             $_SESSION["estatus"] = "success";
-            $_SESSION["mensaje"] = "Tu contraseña ha sido actualizada exitosamente.";
+            $_SESSION["mensaje"] = "Tu contraseña ha sido actualizada exitosamente. Por favor inicia sesión.";
             header("Location: ../vistas/login.php");
             exit;
         } else {

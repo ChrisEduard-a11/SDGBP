@@ -2,8 +2,8 @@
 <?php if (isset($_SESSION["estatus"]) && isset($_SESSION["mensaje"])): ?>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const preloader = document.getElementById('global-preloader');
-            const delay = preloader ? 450 : 0;
+            const preloader = document.getElementById('custom-global-preloader');
+            const delay = preloader ? 1500 : 0;
             setTimeout(() => {
                 Swal.fire({
                     icon: '<?php echo $_SESSION["estatus"]; ?>',
@@ -21,6 +21,10 @@
     unset($_SESSION["mensaje"]);
 ?>                
 <?php endif; ?>
+
+<style>
+    .swal2-container { z-index: 20000000 !important; }
+</style>
 
 <?php if (isset($_SESSION['type']) && isset($_SESSION['alert'])): ?>
     <style>
@@ -82,23 +86,11 @@
         }
     </style>    <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const preloader = document.getElementById('global-preloader');
-            const delay = preloader ? 450 : 0;
+            const preloader = document.getElementById('custom-global-preloader');
+            const delay = preloader ? 1500 : 0;
 
-            // Función interna para obtener cookies
-            function _getTermsCookie(name) {
-                let nameEQ = name + "=";
-                let ca = document.cookie.split(';');
-                for(let i=0;i < ca.length;i++) {
-                    let c = ca[i];
-                    while (c.charAt(0)==' ') c = c.substring(1,c.length);
-                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-                }
-                return null;
-            }
-
-            const termsAccepted = _getTermsCookie('sdgbp_terms_accepted');
             const userType = "<?php echo $_SESSION['tipo'] ?? ''; ?>";
+            
             const welcomeData = {
                 title: '¡Bienvenido!',
                 alert: `<?php echo $_SESSION["alert"]; ?>`,
@@ -107,14 +99,7 @@
                 foto: '<?php echo isset($_SESSION["foto"]) && !empty($_SESSION["foto"]) ? $_SESSION["foto"] : "../img/default-user.png"; ?>'
             };
 
-            // Si los términos no han sido aceptados (y no es admin), guardamos el saludo para después
-            if (userType !== 'admin' && userType !== 'cont' && !termsAccepted) {
-                sessionStorage.setItem('pending_welcome', JSON.stringify(welcomeData));
-                console.log("Bienvenida pospuesta hasta aceptación de términos.");
-                return;
-            }
-
-            // Si llegamos aquí, o es admin o ya aceptó: Mostramos normalmente
+            // Mostramos normalmente
             setTimeout(() => {
                 showPremiumWelcome(welcomeData);
             }, delay);

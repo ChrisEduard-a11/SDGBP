@@ -3,6 +3,7 @@ session_start();
 require_once("../conexion.php");
 require_once("../models/bitacora.php");
 require_once("../models/comision_helper.php");
+require_once("../models/notificaciones.php"); // Sistema de notificaciones
 require '../PHPMailer/src/PHPMailer.php';
 require '../PHPMailer/src/SMTP.php';
 require '../PHPMailer/src/Exception.php';
@@ -230,13 +231,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
                 }
             }
 
-            // Eliminar el pago pendiente original
             $sql_delete = "DELETE FROM pagos WHERE id = ?";
             $stmt_delete = $conexion->prepare($sql_delete);
             $stmt_delete->bind_param("i", $id);
             $stmt_delete->execute();
             $stmt_delete->close();
         }
+
+        // --- MANEJO DE NOTIFICACIONES ---
+        // 1. Eliminar avisos pendientes de los administradores sobre este pago
+        eliminarNotificacionesPorPago($conexion, $id);
+
+        // 2. Notificar a la UPU sobre el resultado del pago
+        if ($estado == "aprobado") {
+            $titulo_notif = "Pago Aprobado ✅";
+            $msj_notif = "Tu pago de Bs. {$monto} (Ref: {$referencia}) ha sido aprobado con éxito.";
+            if ($comision > 0) {
+                $msj_notif .= " (Comisión: Bs. {$comision})";
+            }
+            $tipo_notif = 'success';
+            $icono_notif = 'fas fa-check-circle';
+        } else {
+            $titulo_notif = "Pago Rechazado ❌";
+            $msj_notif = "Tu pago de Bs. {$monto} (Ref: {$referencia}) ha sido rechazado. Motivo: " . ($descripcion ?: 'Sin observaciones');
+            $tipo_notif = 'danger';
+            $icono_notif = 'fas fa-times-circle';
+        }
+        crearNotificacion($conexion, $usuario_id, $titulo_notif, $msj_notif, $tipo_notif, $icono_notif);
+        // --------------------------------
     }
 
     // Enviar correo (usando los datos ya obtenidos)

@@ -30,213 +30,234 @@ if ($tipo_usuario == "admin") {
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-    /* Estilos Premium para la vista inicio */
-    [data-theme="dark"] {
-        --glass-bg: rgba(30, 41, 59, 0.7);
-        --glass-border: rgba(255, 255, 255, 0.1);
+    /* 
+       ================================================================
+       ESTILOS ULTRA-PREMIUM 2026 - DASHBOARD (inicio.php)
+       ================================================================
+    */
+    
+    body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+
+    /* Glass Container Base */
+    .glass-premium {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     }
 
-    body {
-        font-family: 'Inter', sans-serif;
+    [data-theme="dark"] .glass-premium {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
+    /* 1. WELCOME BANNER REVOLUTION */
     .premium-welcome-banner {
-        background: linear-gradient(135deg, rgba(23, 162, 184, 0.05) 0%, rgba(102, 126, 234, 0.05) 100%);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(23, 162, 184, 0.2);
-        border-radius: 1.5rem;
         position: relative;
+        padding: 3rem 2.5rem;
+        border-radius: 2rem;
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.08) 0%, rgba(102, 126, 234, 0.08) 100%);
+        border: 1px solid rgba(23, 162, 184, 0.15);
         overflow: hidden;
-        padding: 2.5rem;
+        transition: all 0.4s ease;
     }
 
-    [data-theme="dark"] .premium-welcome-banner {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
-        border: 1px solid var(--glass-border);
-    }
-
+    /* Mesh Gradient Animation */
     .premium-welcome-banner::before {
-        content: '';
+        content: "";
         position: absolute;
         top: -50%;
-        right: -10%;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(23,162,184,0.15) 0%, rgba(0,0,0,0) 70%);
-        border-radius: 50%;
+        left: -20%;
+        width: 140%;
+        height: 200%;
+        background: radial-gradient(circle at center, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(251, 146, 60, 0.03) 0%, transparent 40%);
+        animation: meshRotate 20s linear infinite;
         pointer-events: none;
         z-index: 0;
     }
 
-    .welcome-content {
-        position: relative;
-        z-index: 1;
+    @keyframes meshRotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
     .welcome-title {
-        font-size: 2.2rem;
+        font-size: 2.75rem;
         font-weight: 800;
-        background: linear-gradient(45deg, #17a2b8, #667eea);
+        letter-spacing: -1.5px;
+        background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%);
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.2rem;
+        line-height: 1.1;
     }
 
     [data-theme="dark"] .welcome-title {
-        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%);
         -webkit-background-clip: text;
         background-clip: text;
-        -webkit-text-fill-color: transparent;
     }
 
-    .shortcut-btn {
-        border-radius: 50px;
-        padding: 0.6rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        backdrop-filter: blur(5px);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .shortcut-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-
-    .shortcut-btn-primary {
-        background: linear-gradient(135deg, #17a2b8 0%, #0dcaf0 100%);
-        color: white !important;
-        border: none;
-        box-shadow: 0 4px 15px rgba(23,162,184,0.3);
-    }
-
-    .shortcut-btn-primary:hover {
-        color: white !important;
-        box-shadow: 0 8px 25px rgba(23,162,184,0.4);
-    }
-
-    .shortcut-btn-secondary {
-        background: rgba(255, 255, 255, 0.8);
-        color: #333 !important;
-        border: 1px solid rgba(0,0,0,0.1);
-    }
-    
-    .shortcut-btn-secondary:hover {
-        color: #17a2b8 !important;
-        background: white;
-    }
-
-    [data-theme="dark"] .shortcut-btn-secondary {
-        background: rgba(30, 41, 59, 0.6);
-        color: #f8fafc !important;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    [data-theme="dark"] .shortcut-btn-secondary:hover {
-        background: rgba(30, 41, 59, 0.9);
-        color: #0dcaf0 !important;
-    }
-
-    .user-avatar-placeholder {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #17a2b8 0%, #667eea 100%);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: bold;
-        box-shadow: 0 8px 20px rgba(23, 162, 184, 0.3);
-        flex-shrink: 0;
-    }
-
-    [data-theme="dark"] .text-dark {
-        color: #f8fafc !important;
-    }
-
-    .metric-card {
-        border: none;
-        border-radius: 1.25rem;
-        color: white;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        overflow: hidden;
+    /* Avatar Glow */
+    .user-avatar-premium {
+        width: 85px; height: 85px;
+        border-radius: 2rem;
+        padding: 4px;
+        background: linear-gradient(45deg, #0ea5e9, #6366f1);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
         position: relative;
     }
-    
-    .metric-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+
+    .user-avatar-premium img {
+        width: 100%; height: 100%;
+        border-radius: 1.7rem;
+        object-fit: cover;
+        border: 3px solid #fff;
     }
-    
-    .metric-card::after {
+
+    [data-theme="dark"] .user-avatar-premium img { border-color: #0f172a; }
+
+    /* 2. ACTION CHIPS (Shortcuts) */
+    .action-bar-premium {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+
+    .shortcut-chip {
+        padding: 0.7rem 1.25rem;
+        border-radius: var(--radius-pill);
+        font-weight: 700;
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .shortcut-chip:hover {
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1);
+    }
+
+    .chip-primary {
+        background: #0ea5e9;
+        color: #fff !important;
+        box-shadow: 0 8px 16px -4px rgba(14, 165, 233, 0.4);
+    }
+
+    .chip-secondary {
+        background: rgba(255, 255, 255, 0.85);
+        color: #1e293b !important;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    [data-theme="dark"] .chip-secondary {
+        background: rgba(30, 41, 59, 0.8);
+        color: #f8fafc !important;
+        border-color: rgba(255,255,255,0.05);
+    }
+
+    /* 3. METRIC CARDS REFINEMENT */
+    /* Preserving original gradients but improving feel */
+    .metric-card {
+        border: none;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .metric-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .metric-card::before {
         content: '';
         position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: rgba(255,255,255,0.1);
-        transform: rotate(30deg);
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(225deg, rgba(255,255,255,0.2) 0%, transparent 50%);
         pointer-events: none;
     }
 
     .metric-icon {
-        font-size: 5rem;
-        opacity: 0.15;
+        font-size: 5.5rem;
+        opacity: 0.12;
         position: absolute;
-        right: -0.5rem;
-        bottom: -1rem;
-        transition: transform 0.3s ease;
+        right: -10px; bottom: -20px;
+        transform: rotate(-15deg);
+        transition: all 0.5s ease;
     }
 
     .metric-card:hover .metric-icon {
-        transform: scale(1.1) rotate(-5deg);
+        transform: rotate(0deg) scale(1.1);
+        opacity: 0.2;
     }
 
-    /* Gradient Backgrounds */
-    .bg-gradient-warning { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
-    .bg-gradient-danger { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); }
-    .bg-gradient-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .bg-gradient-success { background: linear-gradient(135deg, #2af598 0%, #009efd 100%); }
-    .bg-gradient-info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-    .bg-gradient-secondary { background: linear-gradient(135deg, #667eea 0%, #4facfe 100%); }
-    .bg-gradient-success-alt { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .bg-gradient-warning { background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); }
+    .bg-gradient-danger { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+    .bg-gradient-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+    .bg-gradient-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .bg-gradient-info { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); }
+    .bg-gradient-secondary { background: linear-gradient(135deg, #64748b 0%, #475569 100%); }
+    .bg-gradient-success-alt { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); }
 
+    /* footer transition */
     .card-footer-premium {
-        background: rgba(0, 0, 0, 0.15);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.08);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1.25rem !important;
         backdrop-filter: blur(5px);
     }
-    
+
     .section-title {
-        font-weight: 700;
-        letter-spacing: -0.5px;
+        font-weight: 800;
+        font-size: 1.75rem;
+        letter-spacing: -1px;
         position: relative;
-        padding-bottom: 0.5rem;
+        padding-bottom: 0.75rem;
+        color: var(--text-main);
     }
-    
-    .section-title::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        bottom: -2px;
-        width: 60px;
-        height: 3px;
-        background: #17a2b8;
-        border-radius: 3px;
+
+    .section-title i {
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* DASHBOARD RESPONSIVENESS */
+    @media (max-width: 991.98px) {
+        .premium-welcome-banner { padding: 2rem 1.5rem; border-radius: 1.5rem; }
+        .welcome-title { font-size: 2rem; }
+        .user-avatar-premium { width: 70px; height: 70px; }
+        .action-bar-premium { flex-direction: column; width: 100%; }
+        .shortcut-chip { width: 100%; justify-content: center; }
+    }
+
+    @media (max-width: 767.98px) {
+        .page-header-standard {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.5rem !important;
+            margin-bottom: 1.5rem;
+        }
+        .page-header-standard .breadcrumb { display: none; }
+        .welcome-content .d-flex.align-items-center.gap-4 {
+            flex-direction: column;
+            text-align: center;
+        }
     }
 </style>
 
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4 py-4">
         
-        <header class="page-header-standard d-flex justify-content-between align-items-center animate__animated animate__fadeIn">
+        <header class="page-header-standard d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 animate__animated animate__fadeIn">
             <div>
                 <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-home me-2"></i>Panel de Control</h1>
                 <p class="text-muted">Resumen de actividades y accesos rápidos del sistema</p>
@@ -251,63 +272,65 @@ if ($tipo_usuario == "admin") {
         <div class="premium-welcome-banner shadow-lg mb-5 animate__animated animate__fadeInDown border-0">
             <div class="welcome-content d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
                 <div class="d-flex align-items-center gap-4">
-                    <div class="user-avatar-placeholder overflow-hidden">
+                    <div class="user-avatar-premium overflow-hidden">
                         <?php 
                         $foto_perfil = $_SESSION['foto'] ?? '';
                         if (!empty($foto_perfil) && file_exists($foto_perfil)): ?>
-                            <img src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar" class="w-100 h-100" style="object-fit: cover;">
+                            <img src="<?php echo htmlspecialchars($foto_perfil); ?>" alt="Avatar">
                         <?php else: ?>
-                            <?php echo strtoupper(substr($_SESSION['nombre'], 0, 1) ?: 'U'); ?>
+                            <div class="d-flex align-items-center justify-content-center w-100 h-100 bg-white bg-opacity-20 text-white fw-bold fs-2" style="border-radius: 1.5rem;">
+                                <?php echo strtoupper(substr($_SESSION['nombre'], 0, 1) ?: 'U'); ?>
+                            </div>
                         <?php endif; ?>
                     </div>
                     <div>
-                        <h1 class="welcome-title">
+                        <h1 class="welcome-title mb-1">
                             <?php echo $saludo . ', ' . $_SESSION['nombre']; ?>! 👋
                         </h1>
-                        <p class="text-secondary mb-0 fw-semibold fs-5"><?php echo $descripcion_sistema; ?></p>
+                        <p class="text-secondary mb-0 fw-semibold fs-5 opacity-75"><?php echo $descripcion_sistema; ?></p>
                     </div>
                 </div>
                 
                 <div class="d-flex flex-column align-items-lg-end gap-3">
-                    <div class="d-flex gap-2 flex-wrap justify-content-lg-end">
+                    <div class="action-bar-premium flex-wrap justify-content-lg-end">
                         <?php if ($_SESSION["tipo"] == "admin") { ?>
-                            <button class="btn shortcut-btn shortcut-btn-primary" onclick="navigateTo('registro_u.php')">
+                            <a href="javascript:void(0);" onclick="navigateTo('registro_u.php')" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-user-plus"></i>Nuevo Usuario
-                            </button>
-                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('registro_bien.php')">
+                            </a>
+                            <a href="javascript:void(0);" onclick="navigateTo('registro_bien.php')" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-box-open"></i>Nuevo Bien
-                            </button>
-                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('registro_pagos_egresos.php')">
+                            </a>
+                            <a href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-file-invoice-dollar"></i>Reg. Egreso
-                            </button>
+                            </a>
                         <?php } elseif ($_SESSION["tipo"] == "cont") { ?>
-                            <button class="btn shortcut-btn shortcut-btn-primary" onclick="navigateTo('registro_pagos_egresos.php')">
+                            <a href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-plus-circle"></i>Registrar Egreso
-                            </button>
-                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('ver_pagos_cont.php')">
+                            </a>
+                            <a href="javascript:void(0);" onclick="navigateTo('ver_pagos_cont.php')" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-search-dollar"></i>Revisar Pagos
-                            </button>
+                            </a>
                         <?php } elseif ($_SESSION["tipo"] == "inv") { ?>
-                            <button class="btn shortcut-btn shortcut-btn-primary" onclick="navigateTo('registro_bien.php')">
+                            <a href="javascript:void(0);" onclick="navigateTo('registro_bien.php')" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-plus-circle"></i>Registrar Bien
-                            </button>
-                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('lista_bienes.php')">
+                            </a>
+                            <a href="javascript:void(0);" onclick="navigateTo('lista_bienes.php')" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-list"></i>Ver Inventario
-                            </button>
+                            </a>
                         <?php } elseif ($_SESSION["tipo"] == "upu") { ?>
-                            <button class="btn shortcut-btn shortcut-btn-primary" onclick="navigateTo('registro_pagos.php')">
+                            <a href="javascript:void(0);" onclick="navigateTo('registro_pagos.php')" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-upload"></i>Reportar Pago
-                            </button>
-                            <button class="btn shortcut-btn shortcut-btn-secondary" onclick="navigateTo('ver_pagos.php')">
+                            </a>
+                            <a href="javascript:void(0);" onclick="navigateTo('ver_pagos.php')" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-history"></i>Historial Pagos
-                            </button>
+                            </a>
                         <?php } ?>
                     </div>
                     
                     <div class="text-muted small d-flex align-items-center gap-3">
-                        <span><i class="far fa-clock me-1"></i>Última conexión: <strong id="ultimaConexion" class="text-dark"><?php echo $_SESSION['ultima_conexion']; ?></strong></span>
-                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill">
-                            <i class="fas fa-user-shield me-1"></i> <?php echo ucfirst($tipo_usuario); ?>
+                        <span class="opacity-75"><i class="far fa-clock me-1"></i>Última conexión: <strong class="text-dark bg-white bg-opacity-10 px-2 py-0.5 rounded"><?php echo $_SESSION['ultima_conexion']; ?></strong></span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1 rounded-pill fw-bold">
+                            <i class="fas fa-user-shield me-1"></i> <?php echo strtoupper($tipo_usuario); ?>
                         </span>
                     </div>
                 </div>

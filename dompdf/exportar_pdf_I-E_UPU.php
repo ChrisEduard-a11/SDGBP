@@ -46,91 +46,126 @@ if (!$resultado) {
         }
     }
 
-// Banner superior corporativo y estilos
-    $html = '
-    <style>
-        body { font-family: "Helvetica", "Arial", sans-serif; font-size: 10pt; color: #333; }
-        .header-table { width: 100%; border-bottom: 3px solid #f18000; padding-bottom: 10px; margin-bottom: 20px; }
-        .logo-cell { width: 30%; vertical-align: middle; }
-        .title-cell { width: 70%; text-align: right; vertical-align: middle; }
-        .company-name { font-size: 22pt; font-weight: bold; color: #0f172a; margin: 0; letter-spacing: 1px; }
-        .report-title { font-size: 12pt; color: #f18000; font-weight: bold; margin: 5px 0 0 0; text-transform: uppercase; }
-        
-        .info-panel { background-color: #f8fafc; border-left: 4px solid #0f172a; padding: 10px 15px; margin-bottom: 25px; border-radius: 0 4px 4px 0; }
-        .info-panel p { margin: 5px 0; font-size: 9.5pt; color: #475569; }
-        .info-panel strong { color: #0f172a; }
+    // Generar un banner vectorial 100% seguro para DOMPDF (solo shapes básicos, sin linear-gradient)
+    $svg_banner = '
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 120" width="100%" height="100%" preserveAspectRatio="none">
+        <path d="M1000,40 C700,120 600,-20 0,60 L0,0 L1000,0 Z" fill="#1e293b" />
+        <path d="M0,120 L0,30 C300,100 450,150 750,120 Z" fill="#f18000" fill-opacity="0.3" />
+        <path d="M0,120 L0,60 C250,100 350,130 550,120 Z" fill="#f18000" fill-opacity="0.95" />
+        <circle cx="880" cy="40" r="3" fill="#f18000" fill-opacity="0.8" />
+        <circle cx="800" cy="90" r="2" fill="#ffffff" fill-opacity="0.15" />
+        <circle cx="830" cy="65" r="1.5" fill="#f18000" fill-opacity="0.3" />
+        <polyline points="800,90 830,65 850,55" fill="none" stroke="#f18000" stroke-width="1" stroke-opacity="0.3" />
+    </svg>';
+    $base64_banner = 'data:image/svg+xml;base64,' . base64_encode(trim($svg_banner));
 
-        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9pt; }
-        .data-table th { background-color: #0f172a; color: #ffffff; padding: 10px; text-align: left; text-transform: uppercase; font-size: 8pt; letter-spacing: 0.5px; border: 1px solid #0f172a; }
-        .data-table td { padding: 8px 10px; border: 1px solid #e2e8f0; vertical-align: middle; }
-        .row-even { background-color: #f8fafc; }
-        .row-odd { background-color: #ffffff; }
-        .row-egreso { background-color: #fef2f2; }
-        
-        .text-success { color: #16a34a; font-weight: bold; }
-        .text-danger { color: #dc2626; font-weight: bold; }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        
-        .totals-row td { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; border-top: 2px solid #cbd5e1; }
-        .saldo-final { background-color: #0f172a !important; color: #ffffff !important; }
-        
-        .footer-signatures { width: 100%; margin-top: 50px; page-break-inside: avoid; }
-        .sig-line { width: 250px; border-top: 1px solid #475569; margin: 0 auto; margin-bottom: 5px; }
-        .sig-name { font-weight: bold; color: #0f172a; font-size: 10pt; margin: 0; }
-        .sig-title { color: #64748b; font-size: 8.5pt; margin: 0; }
-        
-        .page-footer { position: fixed; bottom: -30px; left: 0; right: 0; height: 30px; text-align: center; font-size: 8pt; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px; }
-    </style>
+    $html = '<!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: "Helvetica", "Arial", sans-serif; font-size: 10pt; color: #1e293b; margin: 0; padding: 0 40px; }
+            @page { margin: 120px 0px 60px 0px; }
+            
+            header { position: fixed; top: -120px; left: 0px; right: 0px; height: 120px; background-color: #0f172a; border-bottom: 4px solid #f18000; }
+            .header-content { position: relative; padding-top: 30px; padding-left: 40px; padding-right: 40px; }
+            .company-name { color: #ffffff; font-size: 22pt; font-weight: bold; margin: 0; letter-spacing: 0.5px; }
+            .report-title { color: #ffffff; font-size: 11pt; font-weight: bold; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px; }
+            
+            footer { position: fixed; bottom: -40px; left: 40px; right: 40px; height: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 8pt; color: #94a3b8; }
+            .pagenum:before { content: counter(page); }
 
-    <div class="page-footer">
-        Generado por SDGBP - Sistema de Gestión de Bienes y Pagos el ' . date('d/m/Y h:i A') . '
-    </div>
+            .info-panel { background-color: #f8fafc; padding: 15px 20px; margin-top: 10px; margin-bottom: 25px; border-left: 5px solid #f18000; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+            .info-label { font-size: 8pt; color: #64748b; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+            .info-value { font-size: 11pt; color: #0f172a; font-weight: bold; margin-top: 3px; display: block; }
+            
+            .data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 9pt; }
+            .data-table th { background-color: #0f172a; color: #ffffff; padding: 10px; font-size: 8pt; text-align: left; text-transform: uppercase; border: 1px solid #0f172a; }
+            .data-table td { padding: 8px 10px; border: 1px solid #e2e8f0; vertical-align: middle; }
+            .row-even { background-color: #f8fafc; }
+            .row-odd { background-color: #ffffff; }
+            .row-egreso { background-color: #fff1f2; }
+            
+            .badge-ingreso { color: #16a34a; font-weight: bold; font-size: 8pt; }
+            .badge-egreso { color: #dc2626; font-weight: bold; font-size: 8pt; }
+            .text-success { color: #16a34a; font-weight: bold; }
+            .text-danger { color: #dc2626; font-weight: bold; }
+            .text-right { text-align: right; }
+            .text-center { text-align: center; }
+            
+            .totals-row td { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; border-top: 2px solid #cbd5e1; padding: 12px 10px; }
+            .saldo-final { background-color: #0f172a !important; color: #ffffff !important; font-size: 11pt !important; }
+        </style>
+    </head>
+    <body>
 
-    <table class="header-table">
-        <tr>
-            <td class="logo-cell">
-                <img src="https://lh5.googleusercontent.com/p/AF1QipMIuz9nSKZaDup5Zr7LIVwhyDKheMsfdeD_55hd=w408-h408-k-no" alt="Logo" style="height: 60px;">
-            </td>
-            <td class="title-cell">
-                <h1 class="company-name">EURIPYS 2024 C.A.</h1>
-                <p class="report-title">Registro de Ingreso y Egreso de UPU</p>
-            </td>
-        </tr>
-    </table>
+    <header>
+        <img src="' . $base64_banner . '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;" alt="bg">
+        <div class="header-content">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 25%;">
+                        <img src="https://lh5.googleusercontent.com/p/AF1QipMIuz9nSKZaDup5Zr7LIVwhyDKheMsfdeD_55hd=w408-h408-k-no" alt="Logo" style="height: 65px; border-radius: 8px; background: white; padding: 2px;">
+                    </td>
+                    <td style="width: 75%; text-align: right;">
+                        <h1 class="company-name">EURIPYS 2024 C.A.</h1>
+                        <p class="report-title">Registro de Ingreso y Egreso de UPU</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </header>
 
-    <div class="info-panel">
-        <p><strong>Filtros aplicados:</strong></p>
-        <p><strong>Unidad de Producción (UPU):</strong> ' . htmlspecialchars($nombre_upu) . '</p>
-        <p><strong>Período:</strong> ' . (empty($fecha_inicio) ? 'Todos los registros' : htmlspecialchars($fecha_inicio) . ' al ' . htmlspecialchars($fecha_fin)) . '</p>
-    </div>
-
-    <table class="data-table">
-        <thead>
+    <footer>
+        <table style="width: 100%;">
             <tr>
-                <th>Nombre de la UPU</th>
-                <th>Tipo</th>
-                <th>Fecha</th>
-                <th>Referencia</th>
-                <th class="text-right">Entrada</th>
-                <th class="text-right">Salida</th>
-                <th class="text-right">Saldo</th>
-                <th>Cliente / Proveedor</th>
+                <td style="text-align: left;">SDGBP - SISTEMA DE GESTIÓN DE BIENES Y PAGOS</td>
+                <td style="text-align: right;">Generado el ' . date('d/m/Y h:i A') . ' | Página <span class="pagenum"></span></td>
             </tr>
-        </thead>
-        <tbody>
+        </table>
+    </footer>
+
+    <main>
+        <div class="info-panel">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 50%;">
+                        <span class="info-label">Unidad de Producción (UPU)</span>
+                        <span class="info-value">' . htmlspecialchars($nombre_upu) . '</span>
+                    </td>
+                    <td style="width: 50%; text-align: right;">
+                        <span class="info-label">Período de Reporte</span>
+                        <span class="info-value">' . (empty($fecha_inicio) ? 'Todos los registros' : htmlspecialchars($fecha_inicio) . ' al ' . htmlspecialchars($fecha_fin)) . '</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nombre de la UPU</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Referencia</th>
+                    <th class="text-right">Entrada</th>
+                    <th class="text-right">Salida</th>
+                    <th class="text-right">Saldo</th>
+                    <th>Cliente / Proveedor</th>
+                </tr>
+            </thead>
+            <tbody>
     ';
 
-// Variables acumuladoras
+    // Variables acumuladoras
     $total_entrada = 0;
     $total_salida = 0;
     $saldo_total = 0;
     $max_id = -1;
     $saldo_ultimo_pago = 0;
 
-$i = 0;
+    $i = 0;
     while ($row = $resultado->fetch_assoc()) {
-        // Obtenemos el saldo del pago más reciente (el de mayor ID en la BD)
         if ($row['id'] > $max_id) {
             $max_id = $row['id'];
             $saldo_ultimo_pago = $row['saldo_resultante'];
@@ -140,63 +175,68 @@ $i = 0;
         if ($row['tipo'] === 'Egreso') $row_class = 'row-egreso';
 
         $html .= '<tr class="' . $row_class . '">';
-        $html .= '<td>' . htmlspecialchars($row['nombre_cliente']) . '</td>';
-        $html .= '<td>' . htmlspecialchars($row['tipo'] === 'Ingreso' ? 'Ingreso' : 'Egreso') . '</td>';
+        
+        $nombre_col = isset($row['nombre_cliente']) ? $row['nombre_cliente'] : '';
+        $html .= '<td><strong>' . htmlspecialchars($nombre_col) . '</strong></td>';
+        
+        $tipo_badge = ($row['tipo'] === 'Ingreso') ? '<span class="badge-ingreso">INGRESO</span>' : '<span class="badge-egreso">EGRESO</span>';
+        $html .= '<td>' . $tipo_badge . '</td>';
+        
         $html .= '<td>' . htmlspecialchars($row['fecha_pago']) . '</td>';
-        $html .= '<td>' . htmlspecialchars($row['referencia']) . '</td>';
+        $html .= '<td><span style="color:#64748b;">#' . htmlspecialchars($row['referencia']) . '</span></td>';
 
         if ($row['tipo'] === 'Ingreso') {
             $html .= '<td class="text-right text-success">Bs +' . htmlspecialchars($row['monto']) . '</td>';
             $html .= '<td></td>';
             $total_entrada += $row['monto']; 
-            $saldo_total += $row['monto'];
         } else {
             $html .= '<td></td>';
             $html .= '<td class="text-right text-danger">Bs -' . htmlspecialchars($row['monto']) . '</td>';
             $total_salida += $row['monto']; 
-            $saldo_total += $row['monto'];
         }
 
-        $html .= '<td class="text-right">Bs ' . htmlspecialchars($row['saldo_resultante']) . '</td>';
+        $html .= '<td class="text-right" style="font-weight: 600;">Bs ' . htmlspecialchars($row['saldo_resultante']) . '</td>';
         $html .= '<td>' . htmlspecialchars($row['cliente']) . '</td>';
         $html .= '</tr>';
         $i++;
     }
-
-// Fila de totales
-    // Usamos el saldo del último pago registrado encontrado (mayor ID)
+    
+    // Fila de totales
     $saldo_periodo = number_format((float)$saldo_ultimo_pago, 2, ',', '.');
 
+    $html .= '</tbody>';
+    $html .= '<tfoot>';
     $html .= '<tr class="totals-row">';
     $html .= '<td colspan="4" class="text-right">TOTAL DEL PERÍODO</td>';
     $html .= '<td class="text-right text-success">Bs +' . number_format($total_entrada, 2, ',', '.') . '</td>';
     $html .= '<td class="text-right text-danger">Bs -' . number_format($total_salida, 2, ',', '.') . '</td>';
     $html .= '<td colspan="2" class="text-center saldo-final">SALDO TOTAL: Bs ' . $saldo_periodo . '</td>';
     $html .= '</tr>';
-
-    $html .= '</tbody>';
+    $html .= '</tfoot>';
     $html .= '</table>';
 
-    // Si no hay registros
     if ($resultado->num_rows == 0) {
-        $html .= '<div style="height:250px;"></div>';
+        $html .= '<div style="height:150px; text-align:center; padding-top: 50px; color: #94a3b8;">No se encontraron registros para el período seleccionado.</div>';
     }
 
     $html .= '
-    <table class="footer-signatures">
-        <tr>
-            <td class="text-center">
-                <div class="sig-line"></div>
-                <p class="sig-name">Firma del Coordinador</p>
-                <p class="sig-title">Representante de la UPU</p>
-            </td>
-            <td class="text-center">
-                <div class="sig-line"></div>
-                <p class="sig-name">Sello / Conforme</p>
-                <p class="sig-title">EURIPYS 2024 C.A.</p>
-            </td>
-        </tr>
-    </table>
+        <table style="width: 100%; text-align: center; margin-top: 60px; page-break-inside: avoid;">
+            <tr>
+                <td style="width: 50%;">
+                    <div style="width: 250px; border-top: 1.5px solid #0f172a; margin: 0 auto;"></div>
+                    <p style="font-weight: bold; color: #0f172a; margin: 10px 0 2px 0; font-size: 10pt;">Firma del Coordinador</p>
+                    <p style="color: #64748b; font-size: 8.5pt; margin: 0;">Representante de la UPU</p>
+                </td>
+                <td style="width: 50%;">
+                    <div style="width: 250px; border-top: 1.5px solid #0f172a; margin: 0 auto;"></div>
+                    <p style="font-weight: bold; color: #0f172a; margin: 10px 0 2px 0; font-size: 10pt;">Sello / Conforme</p>
+                    <p style="color: #64748b; font-size: 8.5pt; margin: 0;">EURIPYS 2024 C.A.</p>
+                </td>
+            </tr>
+        </table>
+    </main>
+    </body>
+    </html>
     ';
 
 // Configuración de Dompdf

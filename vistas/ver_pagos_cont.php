@@ -233,19 +233,25 @@ $result_upu_saldos = $conexion->query($query_upu_saldos);
     @media (max-width: 768px) {
         .metric-value { font-size: 1.4rem; }
         .metric-card { padding: 1.2rem; }
-        .custom-table thead { display: none; }
+        .custom-table { min-width: 900px; } /* Forzar scroll en tablas muy anchas */
         .custom-table td { font-size: 0.85rem; padding: 1rem 0.75rem; }
         .page-header-standard { flex-direction: column; align-items: flex-start !important; gap: 1rem; }
+        header.page-header-standard h1 { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 576px) {
+        .container-fluid { padding-left: 1rem !important; padding-right: 1rem !important; }
+        .glass-card { padding: 1.5rem !important; }
     }
 </style>
 
 <div id="layoutSidenav_content">
     <div class="container-fluid px-4">
         
-        <header class="page-header-standard d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+        <header class="page-header-standard d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 animate__animated animate__fadeIn">
             <div>
                 <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-globe me-2"></i>Balance Financiero Global</h1>
-                <p class="text-muted">Historial detallado de transacciones y estados de cuenta de todas las unidades</p>
+                <p class="text-muted mb-0">Historial detallado de transacciones y estados de cuenta de todas las unidades</p>
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
@@ -257,21 +263,21 @@ $result_upu_saldos = $conexion->query($query_upu_saldos);
 
         <!-- Metrics Dashboard -->
         <div class="row g-4 mb-5 stagger-1 fade-in-up">
-            <div class="col-xl-3 col-md-6">
+            <div class="col-xl-3 col-md-6 col-12">
                 <div class="metric-card bg-gradient-blue text-white shadow-lg">
                     <div class="metric-label">Ventas / Ingresos</div>
                     <div class="metric-value"><?php echo number_format($total_ingresos, 2, ',', '.'); ?> <small>Bs</small></div>
                     <i class="fas fa-arrow-down metric-icon"></i>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6">
+            <div class="col-xl-3 col-md-6 col-12">
                 <div class="metric-card bg-gradient-rose text-white shadow-lg stagger-3 fade-in-up">
                     <div class="metric-label">Compras / Egresos</div>
                     <div class="metric-value"><?php echo number_format($total_egresos, 2, ',', '.'); ?> <small>Bs</small></div>
                     <i class="fas fa-arrow-up metric-icon"></i>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6">
+            <div class="col-xl-3 col-md-6 col-12">
                 <div class="metric-card bg-gradient-teal text-white shadow-lg stagger-2 fade-in-up">
                     <div class="metric-label">Balance Global</div>
                     <div class="metric-value"><?php echo number_format($balance_global, 2, ',', '.'); ?> <small>Bs</small></div>
@@ -346,7 +352,7 @@ if ($result_usuarios_upu_filter->num_rows > 0) {
                 </div>
                 <h5 class="mb-0 fw-bold">Exportación de Reportes</h5>
             </div>
-            <form method="POST" action="../dompdf/exportar_pdf_I-E.php" class="row g-3 w-100" onsubmit="return validateFormExportPDF()">
+            <form method="POST" action="../dompdf/exportar_pdf_I-E.php" class="row g-3 w-100" onsubmit="return validateFormExportPDF()" data-no-preloader="true">
                 <div class="col-6 col-md-3">
                     <input type="text" name="filtro_fecha_inicio" class="form-control border-0 bg-light rounded-3 datepicker-flat w-100" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio; ?>">
                 </div>

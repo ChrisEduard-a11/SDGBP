@@ -54,8 +54,8 @@ function registrarComision(
         error_log("Error al insertar relación usuario-pago comisión: " . $stmt_rel->error);
     }
     $stmt_rel->close();
-
-    // 3. Actualizar el saldo del usuario
+    
+    // --- Actualizar el saldo del usuario ---
     $sql_saldo = "UPDATE usuario SET saldo = ? WHERE id_usuario = ?";
     $stmt_saldo = $conexion->prepare($sql_saldo);
     $stmt_saldo->bind_param("di", $nuevo_saldo_comision, $usuario_id);

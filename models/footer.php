@@ -4,8 +4,7 @@
                 <div class="text-muted">
                     <span class="fw-bold">SDGBP v2.0</span> &middot; 
                     Desarrollado por Cristian Arcaya, Pedro Rivera y Daniel Espinoza &middot; 
-                    <span class="fw-bold">PNF Informática</span> &middot;
-                    <a href="../vistas/terminos.php"  class="text-primary fw-bold text-decoration-none">Términos y Condiciones</a>
+                    <span class="fw-bold">PNF Informática</span>
                 </div>
                 <div>
                     <div class="text-muted">
@@ -23,94 +22,8 @@
             </div>
         </div>
     </footer>
-
-    <!-- Overlay de Bloqueo para Términos -->
-    <div id="terms-overlay" class="terms-overlay-premium d-none"></div>
-
-    <!-- Banner de Aceptación de Términos (Cookies) -->
-    <div id="terms-banner" class="terms-banner-premium d-none">
-        <div class="container-fluid px-4 py-3">
-            <div class="row align-items-center">
-                <div class="col-lg-8 mb-3 mb-lg-0">
-                    <div class="d-flex align-items-center text-start">
-                        <div class="banner-icon me-3 d-none d-md-block">
-                            <i class="fas fa-cookie-bite fa-2x text-primary animate__animated animate__pulse animate__infinite"></i>
-                        </div>
-                        <div>
-                            <div id="terms-update-notice" class="d-none animate__animated animate__flash animate__infinite">
-                                <span class="badge bg-warning text-dark mb-2 px-3 py-2 rounded-pill shadow-sm">
-                                    <i class="fas fa-exclamation-circle me-1"></i> ¡Términos Actualizados! (Revisión Obligatoria)
-                                </span>
-                            </div>
-                            <h6 class="fw-bold mb-1 text-dark">Política de Privacidad y Uso del Sistema</h6>
-                            <p class="mb-0 text-muted small">
-                                Utilizamos cookies para mejorar su experiencia y garantizar la seguridad de sus datos. 
-                                Al continuar navegando, usted acepta nuestros 
-                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#modalTerminosFull" class="text-primary fw-bold text-decoration-none border-bottom border-primary border-2">Términos y Condiciones</a>.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 text-lg-end text-center">
-                    <button id="btn-aceptar-terminos" class="btn btn-primary rounded-pill px-4 fw-bold me-2 shadow-sm">
-                        <i class="fas fa-check me-1"></i> Aceptar
-                    </button>
-                    <button id="btn-rechazar-terminos" class="btn btn-outline-danger rounded-pill px-4 fw-bold shadow-sm">
-                        <i class="fas fa-times me-1"></i> Rechazar
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <?php
-    // Recuperar términos dinámicos y su estado de activación
-    require_once("../conexion.php");
-    $sql_terms = "SELECT clave, valor, ultima_actualizacion FROM ajustes_sistema WHERE clave IN ('terminos_condiciones', 'terminos_status')";
-    $res_terms = mysqli_query($conexion, $sql_terms);
-    $ajustes_f = [];
-    while ($r_f = mysqli_fetch_assoc($res_terms)) {
-        if ($r_f['clave'] == 'terminos_condiciones') {
-            $texto_terminos_db = $r_f['valor'];
-            $version_terminos = strtotime($r_f['ultima_actualizacion'] ?? 'now');
-        }
-        $ajustes_f[$r_f['clave']] = $r_f['valor'];
-    }
-    $texto_terminos_db = $texto_terminos_db ?? 'No se han definido términos.';
-    $version_terminos = $version_terminos ?? time();
-    $terminos_activos_f = ($ajustes_f['terminos_status'] ?? '1') == '1';
-    ?>
-
-    <!-- Modal de Términos y Condiciones Integrado (Lectura) -->
-    <div class="modal fade" id="modalTerminosFull" tabindex="-1" aria-labelledby="modalTerminosLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header border-0 bg-gradient-primary text-white p-4">
-                    <h5 class="modal-title fw-bold" id="modalTerminosLabel">
-                        <i class="fas fa-file-contract me-2"></i> Términos y Condiciones
-                    </h5>
-                    <div class="mt-1 small bg-white bg-opacity-25 rounded-pill px-3 py-1">
-                        <i class="fas fa-history me-1"></i> Actualizado: <?php echo date("d/m/Y", $version_terminos); ?>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4 p-md-5 text-dark" style="background: rgba(255,255,255,0.95); line-height: 1.7;">
-                    <div id="content-terminos-db">
-                        <?php echo $texto_terminos_db; ?>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 p-3 bg-light">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Entendido</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" onclick="window.aceptarTerminosDesdeModal()">Aceptar Términos</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <style>
-    .bg-gradient-primary { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
-    </style>
-    
     <?php
 // Incluye funciones PHP necesarias para el entorno
 include("../models/funciones.php");
@@ -439,131 +352,6 @@ include("../models/funciones.php");
                 integerPart = parseInt(integerPart).toLocaleString('de-DE'); 
                 
                 element.value = integerPart + "," + decimalPart;
-            }
-
-            // Lógica de Aceptación de Términos (Banner Inferior Premium)
-            const userType = "<?php echo $tipo_usuario ?? ''; ?>";
-            const currentUrl = window.location.href;
-            
-            // Versión de los términos desde PHP
-            const versionTerminosActual = "<?php echo $version_terminos; ?>";
-
-            function checkTermsStatus(version) {
-                const cookieVal = getCookie('sdgbp_terms_accepted');
-                if (!cookieVal) return 'new'; // Primera vez
-                if (cookieVal === version) return 'ok'; // Ya aceptó esta versión
-                return 'updated'; // Aceptó una versión vieja, hubo cambios
-            }
-
-            const statusTerminos = checkTermsStatus(versionTerminosActual);
-
-            // Solo mostrar si el sistema está activo, no es admin, no ha aceptado la versión actual y no está en denegado
-            const terminosActivos = <?php echo $terminos_activos_f ? 'true' : 'false'; ?>;
-            if (terminosActivos && userType !== 'admin' && statusTerminos !== 'ok' && !currentUrl.includes('denegado_a.php')) {
-                const banner = document.getElementById('terms-banner');
-                const overlay = document.getElementById('terms-overlay');
-                if (banner && overlay) {
-                    banner.classList.remove('d-none');
-                    overlay.classList.remove('d-none');
-                    
-                    // Si hubo una actualización, mostramos el aviso visual
-                    if (statusTerminos === 'updated') {
-                        document.getElementById('terms-update-notice')?.classList.remove('d-none');
-                    }
-
-                    // Bloqueamos el scroll del body mientas no acepte
-                    document.body.style.overflow = 'hidden';
-                }
-            }
-
-            window.aceptarTerminosDesdeModal = function() {
-                const modalElement = document.getElementById('modalTerminosFull');
-                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-                modal.hide();
-                aceptarTerminosAction();
-            }
-
-            function aceptarTerminosAction() {
-                setCookie('sdgbp_terms_accepted', versionTerminosActual, 365);
-                const banner = document.getElementById('terms-banner');
-                const overlay = document.getElementById('terms-overlay');
-                
-                banner.classList.add('animate__animated', 'animate__fadeOutDown');
-                overlay.style.transition = 'opacity 0.6s ease';
-                overlay.style.opacity = '0';
-                
-                setTimeout(() => {
-                    banner.classList.add('d-none');
-                    overlay.classList.add('d-none');
-                    document.body.style.overflow = 'auto'; // Restauramos scroll
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Términos Aceptados',
-                        text: 'Gracias por su compromiso con la seguridad institucional.',
-                        timer: 2000,
-                        showConfirmButton: false,
-                        background: '#ffffff',
-                        customClass: { popup: 'rounded-4 shadow-lg' }
-                    }).then(() => {
-                        // REVISAR SI HAY UNA BIENVENIDA PENDIENTE
-                        const pendingWelcome = sessionStorage.getItem('pending_welcome');
-                        if (pendingWelcome) {
-                            try {
-                                const data = JSON.parse(pendingWelcome);
-                                // showPremiumWelcome está definida en sweetalert.php (que se incluye en el header/inicio)
-                                if (typeof showPremiumWelcome === 'function') {
-                                    showPremiumWelcome(data);
-                                    sessionStorage.removeItem('pending_welcome');
-                                }
-                            } catch (e) {
-                                console.error("Error al procesar bienvenida pendiente:", e);
-                            }
-                        }
-                    });
-                }, 600);
-            }
-
-            document.getElementById('btn-aceptar-terminos')?.addEventListener('click', aceptarTerminosAction);
-
-            // Acción: Rechazar (Salir del sistema)
-            document.getElementById('btn-rechazar-terminos')?.addEventListener('click', function() {
-                Swal.fire({
-                    title: '<span class="text-danger">¿Está seguro?</span>',
-                    text: "Al rechazar los términos, su sesión será cerrada inmediatamente por seguridad.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sí, rechazar y salir',
-                    cancelButtonText: 'Cancelar',
-                    background: '#ffffff',
-                    customClass: { popup: 'rounded-4' }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '../acciones/salir.php';
-                    }
-                });
-            });
-
-            function setCookie(name, value, days) {
-                let expires = "";
-                if (days) {
-                    let date = new Date();
-                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                    expires = "; expires=" + date.toUTCString();
-                }
-                document.cookie = name + "=" + (value || "") + expires + "; path=/";
-            }
-
-            function getCookie(name) {
-                let nameEQ = name + "=";
-                let ca = document.cookie.split(';');
-                for(let i=0;i < ca.length;i++) {
-                    let c = ca[i];
-                    while (c.charAt(0)==' ') c = c.substring(1,c.length);
-                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-                }
-                return null;
             }
 
         });

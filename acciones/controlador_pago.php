@@ -2,6 +2,7 @@
 session_start();
 include('../conexion.php'); // Conexión a la base de datos
 include_once('../models/bitacora.php'); // Asegúrate de incluir el archivo donde está registrarAccion
+include_once('../models/notificaciones.php'); // Sistema de notificaciones
 require '../PHPMailer/src/PHPMailer.php';
 require '../PHPMailer/src/SMTP.php';
 require '../PHPMailer/src/Exception.php';
@@ -249,6 +250,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $final_status = "success";
         $final_message = "Ingreso registrado correctamente.";
+        
+        // --- NOTIFICACIÓN PARA ADMINISTRADORES Y CONTABLES ---
+        // Se crea una sola notificación para el rol 'staff' (admins y conts)
+        $titulo_notif = "Nuevo Pago Pendiente";
+        $msj_notif = "La UPU {$nombre_usuario} ha registrado un pago de Bs. {$monto} (Ref: {$referencia}) que requiere revisión.";
+        crearNotificacion($conexion, null, $titulo_notif, $msj_notif, 'warning', 'fas fa-sack-dollar', $pago_id, 'staff');
+        // -----------------------------------------------------
         
         // Registrar en bitácora
         if (isset($_SESSION['id'])) {

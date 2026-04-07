@@ -66,7 +66,7 @@ $aviso_status = ($config['bienvenida_login_status'] ?? '1') == '1';
                         <p class="text-muted small mb-0">Sube una imagen promocional para el carrusel público de la página index.</p>
                     </div>
                     <div class="card-body p-4">
-                        <form action="../acciones/subir_flyer.php" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate onsubmit="mostrarPreloader()">
+                        <form action="../acciones/subir_flyer.php" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate onsubmit="showPreloader('Subiendo Flyer...')">
                             
                             <!-- Input Virtual para Archivo -->
                             <div class="mb-4 text-center p-4 border border-2 border-secondary border-dashed rounded-4 bg-light bg-gradient position-relative overflow-hidden transition-all duration-300 hover:border-primary hover:bg-white popup-subida" id="drop-zone" style="border-style: dashed; transition: 0.3s ease;">
@@ -99,7 +99,7 @@ $aviso_status = ($config['bienvenida_login_status'] ?? '1') == '1';
                         <p class="text-muted small mb-0">Gestiona el mensaje que ven los usuarios al entrar al sistema.</p>
                     </div>
                     <div class="card-body p-4">
-                        <form action="../acciones/actualizar_noticia_login.php" method="POST" onsubmit="mostrarPreloader()">
+                        <form action="../acciones/actualizar_noticia_login.php" method="POST" onsubmit="showPreloader('Actualizando Aviso...')">
                             <div class="mb-3">
                                 <label class="form-label fw-600">Estado del Aviso</label>
                                 <div class="form-check form-switch">
@@ -280,18 +280,10 @@ $aviso_status = ($config['bienvenida_login_status'] ?? '1') == '1';
                 cancelButtonText: 'Cancelar Abortar'
             }).then((resp) => {
                 if(resp.isConfirmed) {
-                    mostrarPreloader();
+                    showPreloader("Eliminando Flyer...");
                     document.getElementById(formIdText).submit(); // Ejecuto Action de post local Form
                 }
             });
-        }
-        
-        function mostrarPreloader() {
-            const domBase = document.getElementById('global-preloader');
-            if (domBase) {
-                domBase.style.visibility = 'visible';
-                domBase.style.opacity = '1';
-            }
         }
     </script>
     

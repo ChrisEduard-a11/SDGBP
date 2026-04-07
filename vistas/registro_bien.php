@@ -3,20 +3,7 @@ require_once("../models/header.php");
 include('../acciones/controlador_categoria.php');
 $categorias = obtenerCategorias($conexion);
 
-// Obtener los bienes según la categoría seleccionada
-$bienes = [];
-if (isset($_POST['categoria'])) {
-    $categoria_id = intval($_POST['categoria']);
-    $query = "SELECT id, nombre, descripcion FROM bienes WHERE categoria_id = ?";
-    $stmt = $conexion->prepare($query);
-    $stmt->bind_param("i", $categoria_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    while ($row = $result->fetch_assoc()) {
-        $bienes[] = $row;
-    }
-}
+// Los bienes ahora se cargarán por AJAX. Ya no necesitamos procesar $_POST['categoria'] aquí.
 ?>
 <style>
     /* =========================================
@@ -27,53 +14,58 @@ if (isset($_POST['categoria'])) {
         --primary: #f18000;
         --primary-dark: #d67100;
         --primary-light: rgba(241, 128, 0, 0.1);
-        --accent-blue: #3b82f6;
-        --accent-green: #10b981;
-        --bg-body: #f8fafc;
-        --text-main: #1e293b;
+        --bg-body: #f4f6f9;
+        --text-main: #0f172a;
         --text-muted: #64748b;
         --border-color: #e2e8f0;
-        --radius-premium: 20px;
-        --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-        --glass: rgba(255, 255, 255, 0.8);
-        --glass-border: rgba(255, 255, 255, 0.3);
     }
 
     body {
         background-color: var(--bg-body);
+        background-image: 
+            radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.04) 0%, transparent 40%), 
+            radial-gradient(circle at 0% 100%, rgba(241, 128, 0, 0.04) 0%, transparent 30%);
         color: var(--text-main);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
-    .breadcrumb-premium {
-        background: var(--glass) !important;
-        backdrop-filter: blur(10px);
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 12px !important;
-        box-shadow: var(--shadow-premium);
-    }
-
+    /* CARD SAAS */
     .card-premium {
-        background: transparent;
-        border: none !important;
-        border-radius: var(--radius-premium) !important;
-        overflow: hidden;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.8) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0,0,0,0.02) !important;
+        transition: transform 0.3s ease;
+        overflow: visible;
     }
 
     .card-premium-header {
-        padding: 1.5rem 2rem;
-        border: none !important;
-        color: white;
+        background: transparent !important;
+        color: var(--text-main) !important;
+        padding: 1.75rem 2rem 1rem 2rem !important;
+        border-bottom: 1px solid #f1f5f9 !important;
     }
-
-    .header-info { background: linear-gradient(135deg, var(--accent-blue) 0%, #1d4ed8 100%); }
-    .header-success { background: linear-gradient(135deg, var(--accent-green) 0%, #059669 100%); }
-    .header-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
 
     .card-premium-header h5 {
         margin: 0;
-        font-weight: 700;
-        letter-spacing: 0.5px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        font-size: 1.35rem;
     }
+
+    .icon-glow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        margin-right: 12px;
+    }
+    
+    .icon-info { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .icon-success { background: rgba(16,185,129,0.1); color: #10b981; }
 
     .form-control-premium, .form-select-premium {
         border: 1.5px solid var(--border-color) !important;
@@ -116,6 +108,19 @@ if (isset($_POST['categoria'])) {
     .instruction-alert {
         border: none !important;
         border-radius: 15px !important;
+        background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Los floating labels ahora utilizan el estándar form-floating de Bootstrap 5 */
+    .form-floating > .form-control-premium:focus,
+    .form-floating > .form-select-premium:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 4px var(--primary-light) !important;
+    }
+    .input-group-premium {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        border-radius: 12px;
     }
 </style>
 
@@ -137,6 +142,7 @@ if (isset($_POST['categoria'])) {
 
         <div class="row justify-content-center">
             <div class="col-xl-8">
+                <form method="post" action="../acciones/controlador_bien.php" onsubmit="return validateFormRB()" autocomplete="off">
                 <!-- INSTRUCCIONES -->
                 <div class="alert instruction-alert alert-dismissible fade show p-4 mb-4" role="alert">
                     <div class="d-flex">
@@ -152,52 +158,46 @@ if (isset($_POST['categoria'])) {
                 </div>
 
                 <!-- PASO 1: CATEGORÍA -->
-                <div class="card card-premium mb-4">
-                    <div class="card-premium-header header-info">
-                        <h5><i class="fas fa-tags me-2"></i> Paso 1: Clasificación</h5>
+                <div class="card card-premium mb-5 border-0">
+                    <div class="card-premium-header d-flex align-items-center">
+                        <div class="icon-glow icon-info"><i class="fas fa-tags"></i></div>
+                        <h5>Paso 1: Clasificación</h5>
                     </div>
-                    <div class="card-body p-4">
-                        <form method="post" action="">
-                            <div class="form-group">
-                                <label for="categoria" class="form-label small fw-bold text-muted mb-2">Categoría del Bien</label>
-                                <select class="form-select form-select-premium" id="categoria" name="categoria" onchange="this.form.submit()">
-                                    <option value="">Seleccione una categoría</option>
+                    <div class="card-body p-4 pt-4">
+                            <div class="form-group mb-3">
+                                <label for="categoria" class="form-label small fw-bold text-muted mb-2"><i class="fas fa-layer-group me-1"></i> Categoría del Bien</label>
+                                <select class="form-select form-select-premium shadow-sm" id="categoria" name="categoria" onchange="cargarBienesPorCategoria(this.value)">
+                                    <option value="" selected>Seleccione una categoría</option>
                                     <?php foreach ($categorias as $categoria) { ?>
-                                        <option value="<?php echo $categoria['id']; ?>" <?php echo (isset($_POST['categoria']) && $_POST['categoria'] == $categoria['id']) ? 'selected' : ''; ?>>
+                                        <option value="<?php echo $categoria['id']; ?>">
                                             <?php echo htmlspecialchars($categoria['nombre']); ?>
                                         </option>
                                     <?php } ?>
                                 </select>
                             </div>
-                        </form>
                     </div>
                 </div>
 
                 <!-- PASO 2: DETALLES -->
-                <div class="card card-premium mb-5">
-                    <div class="card-premium-header header-success">
-                        <h5><i class="fas fa-edit me-2"></i> Paso 2: Información Técnica</h5>
+                <div class="card card-premium border-0">
+                    <div class="card-premium-header d-flex align-items-center">
+                        <div class="icon-glow icon-success"><i class="fas fa-edit"></i></div>
+                        <h5>Paso 2: Información Técnica</h5>
                     </div>
-                    <div class="card-body p-4">
-                        <form method="post" action="../acciones/controlador_bien.php" onsubmit="return validateFormRB()">
-                            <input type="hidden" name="categoria" value="<?php echo isset($_POST['categoria']) ? $_POST['categoria'] : ''; ?>">
-
+                    <div class="card-body p-4 pt-4">
                             <div class="row g-4">
                                 <!-- Nombre del Bien -->
                                 <div class="col-12">
-                                    <label for="nombre" class="form-label small fw-bold text-muted mb-2">Nombre del Activo</label>
-                                    <div class="input-group">
-                                        <select class="form-select form-select-premium" id="nombre" name="nombre" onchange="autocompletarDescripcion()" style="border-radius: 12px 0 0 12px !important;">
-                                            <option value="">Seleccione un bien existente...</option>
-                                            <?php foreach ($bienes as $bien) { ?>
-                                                <option value="<?php echo $bien['id']; ?>" data-descripcion="<?php echo htmlspecialchars($bien['description'] ?? $bien['descripcion']); ?>">
-                                                    <?php echo htmlspecialchars($bien['nombre']); ?>
-                                                </option>
-                                            <?php } ?>
-                                        </select>
-                                        <button type="button" class="btn btn-success px-4" onclick="AgregarNuevoBien()" style="border-radius: 0 12px 12px 0;">
-                                            <i class="fas fa-plus me-1"></i> Nuevo
-                                        </button>
+                                    <div class="form-group mb-1">
+                                        <label for="nombre" class="form-label small fw-bold text-muted mb-2"><i class="fas fa-box-open me-1"></i> Nombre del Activo</label>
+                                        <div class="input-group input-group-premium shadow-sm">
+                                            <select class="form-select form-select-premium" id="nombre" name="nombre" onchange="autocompletarDescripcion()" style="border-radius: 12px 0 0 12px !important; z-index: 1;" disabled>
+                                                <option value="">Seleccione primero una categoría...</option>
+                                            </select>
+                                            <button type="button" class="btn btn-success px-4" onclick="AgregarNuevoBien()" data-no-preloader="true" style="border-radius: 0 12px 12px 0; z-index: 2; border: 1.5px solid var(--accent-green); border-left: none;">
+                                                <i class="fas fa-plus me-1"></i> <span class="fw-bold">Añadir Nuevo</span>
+                                            </button>
+                                        </div>
                                     </div>
                                     <!-- Campos ocultos para bien nuevo -->
                                     <input type="hidden" id="nuevo_nombre" name="nuevo_nombre">
@@ -206,41 +206,90 @@ if (isset($_POST['categoria'])) {
 
                                 <!-- Descripción -->
                                 <div class="col-12">
-                                    <label for="descripcion" class="form-label small fw-bold text-muted mb-2">Descripción Detallada</label>
-                                    <textarea id="descripcion" name="descripcion" class="form-control form-control-premium" rows="3" readonly placeholder="La descripción se cargará automáticamente al seleccionar un bien"></textarea>
+                                    <div class="form-group mb-1">
+                                        <label for="descripcion" class="form-label small fw-bold text-muted mb-2"><i class="fas fa-align-left me-1"></i> Descripción Detallada</label>
+                                        <textarea id="descripcion" name="descripcion" class="form-control form-control-premium shadow-sm" style="height: 100px" readonly placeholder="La descripción se cargará automáticamente..."></textarea>
+                                    </div>
                                 </div>
 
                                 <!-- Serial -->
                                 <div class="col-md-6">
-                                    <label for="serial" class="form-label small fw-bold text-muted mb-2">Número de Serial</label>
-                                    <input type="text" class="form-control form-control-premium" id="serial" name="serial" placeholder="Ej: SN-12345678">
+                                    <div class="form-group mb-1">
+                                        <label for="serial" class="form-label small fw-bold text-muted mb-2"><i class="fas fa-barcode me-1"></i> Número de Serial</label>
+                                        <input type="text" class="form-control form-control-premium shadow-sm" id="serial" name="serial" placeholder="Ej: SN-12345678" autocomplete="off">
+                                    </div>
                                 </div>
 
                                 <!-- Código Alternativo -->
                                 <div class="col-md-6">
-                                    <label for="codigo_alternativo" class="form-label small fw-bold text-muted mb-2">Código Interno (Auto-generado)</label>
-                                    <input type="text" class="form-control form-control-premium bg-light fw-bold text-primary" id="codigo_alternativo" name="codigo_alternativo" value="BN-<?php echo strtoupper(substr(md5(uniqid(rand(), true)), 0, 8)); ?>" readonly>
+                                    <div class="form-group mb-1">
+                                        <label for="codigo_alternativo" class="form-label small fw-bold text-muted mb-2"><i class="fas fa-fingerprint me-1"></i> Código Interno (Generado)</label>
+                                        <input type="text" class="form-control form-control-premium bg-light fw-bold text-primary shadow-sm" id="codigo_alternativo" name="codigo_alternativo" value="BN-<?php echo strtoupper(substr(md5(uniqid(rand(), true)), 0, 8)); ?>" readonly placeholder="BN-XXXX" autocomplete="off">
+                                    </div>
                                 </div>
 
                                 <!-- Fecha de Adquisición -->
                                 <div class="col-md-12">
-                                    <label for="fecha_adquisicion" class="form-label small fw-bold text-muted mb-2">Fecha de Ingreso</label>
-                                    <input type="text" class="form-control form-control-premium datepicker-flat" id="fecha_adquisicion" name="fecha_adquisicion" placeholder="YYYY-MM-DD">
+                                    <div class="form-group mb-1">
+                                        <label for="fecha_adquisicion" class="form-label small fw-bold text-muted mb-2"><i class="far fa-calendar-alt me-1"></i> Fecha de Ingreso</label>
+                                        <input type="text" class="form-control form-control-premium datepicker-flat shadow-sm" id="fecha_adquisicion" name="fecha_adquisicion" placeholder="Seleccione la fecha de ingreso...">
+                                    </div>
                                 </div>
 
                                 <!-- Botón Guardar -->
-                                <div class="col-12 mt-4">
-                                    <button type="submit" class="btn btn-premium-gradient w-100 py-3">
-                                        <i class="fas fa-save me-2"></i> Finalizar Registro de Activo
+                                <div class="col-12 mt-4 d-flex justify-content-center">
+                                    <button type="submit" class="btn btn-premium-gradient py-3" style="width: 80%; border-radius: 16px; font-size: 1.1rem; letter-spacing: 0.5px;">
+                                        <i class="fas fa-save me-2"></i> Procesar Alta en Inventario
                                     </button>
                                 </div>
                             </div>
-                        </form>
                     </div>
                 </div>
+                </form>
             </div>
         </div>
-    </div>
+<script>
+// Manejar la carga por AJAX basado en la categoría seleccionada
+function cargarBienesPorCategoria(categoriaId) {
+    const selectNombre = document.getElementById('nombre');
+    const inputDescripcion = document.getElementById('descripcion');
+    
+    // Limpieza inicial
+    selectNombre.innerHTML = '<option value="">Seleccione un bien existente...</option>';
+    inputDescripcion.value = '';
+    
+    // Validar si hay categoría
+    if (!categoriaId) {
+        selectNombre.disabled = true;
+        selectNombre.innerHTML = '<option value="">Seleccione primero una categoría...</option>';
+        return;
+    }
+    
+    selectNombre.disabled = false;
+
+    // Fetch silencioso en background
+    fetch(`../acciones/obtener_bienes_por_categoria_ajax.php?categoria_id=${categoriaId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                data.forEach(bien => {
+                    const desc = typeof bien.descripcion !== 'undefined' ? bien.descripcion : (bien.description || '');
+                    const option = document.createElement('option');
+                    option.value = bien.id;
+                    option.setAttribute('data-descripcion', desc);
+                    option.textContent = bien.nombre;
+                    selectNombre.appendChild(option);
+                });
+            } else {
+                selectNombre.innerHTML = '<option value="">No hay bienes en esta categoría, añada uno nuevo...</option>';
+            }
+        })
+        .catch(error => {
+            console.error("Error cargando los bienes:", error);
+            toastr.error("Hubo un problema de conexión al cargar los activos. Refresca la ventana.");
+        });
+}
+</script>
 <?php
 require_once("../models/footer.php");
 ?>

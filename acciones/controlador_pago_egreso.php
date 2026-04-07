@@ -2,6 +2,7 @@
 session_start();
 include('../conexion.php'); // Conexión a la base de datos
 include_once('../models/bitacora.php'); // Bitácora
+include_once('../models/notificaciones.php'); // Sistema de notificaciones
 require '../PHPMailer/src/PHPMailer.php';
 require '../PHPMailer/src/SMTP.php';
 require '../PHPMailer/src/Exception.php';
@@ -142,13 +143,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Cálculo con precisión arbitraria (bcmath) para 0 margen de error
             $saldo_resultante = bcsub($saldo_actual, $monto, 2);
             $usuario_aprobador = $_SESSION['nombre'];
+
+            // --- CORRECCIÓN: Obtener el nombre de la UPU seleccionada ---
+            $sql_nombre_upu = "SELECT nombre FROM usuario WHERE id_usuario = ?";
+            $stmt_upu = $conexion->prepare($sql_nombre_upu);
+            $stmt_upu->bind_param("i", $usuario_id);
+            $stmt_upu->execute();
+            $res_upu = $stmt_upu->get_result();
+            if ($row_upu = $res_upu->fetch_assoc()) {
+                $nombre_para_pago = $row_upu['nombre'];
+            } else {
+                $nombre_para_pago = $nombre_usuario; // Fallback
+            }
+            $stmt_upu->close();
+            // -------------------------------------------------------------
+        } else {
+            $nombre_para_pago = $nombre_usuario; // El usuario normal se registra a sí mismo
         }
 
         // Insertar el registro en la tabla `pagos`
         $sql_pago = "INSERT INTO pagos (nombre_cliente, monto, descripcion, referencia, fecha_pago, estado, tipo, cliente, comprobante_archivo, saldo_resultante, usuario_aprobador, metodo_pago)
                      VALUES (?, ?, ?, ?, ?, ?, 'Egreso', ?, ?, ?, ?, ?)";
         $stmt_pago = $conexion->prepare($sql_pago);
-        $stmt_pago->bind_param("ssssssssdss", $nombre_usuario, $monto, $descripcion, $referencia, $fecha_pago, $estado_inicial, $nombre_cliente, $ruta_comprobante, $saldo_resultante, $usuario_aprobador, $metodo_pago);
+        $stmt_pago->bind_param("ssssssssdss", $nombre_para_pago, $monto, $descripcion, $referencia, $fecha_pago, $estado_inicial, $nombre_cliente, $ruta_comprobante, $saldo_resultante, $usuario_aprobador, $metodo_pago);
         if (!$stmt_pago->execute()) {
             throw new Exception("Error al registrar el egreso: " . $stmt_pago->error);
         }
@@ -288,6 +305,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         mysqli_commit($conexion);
 
         $final_status = "success";
+        
+        // --- MANEJO DE NOTIFICACIONES ---
+        if ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') {
+            // Caso: Admin/Cont registra un gasto/comisión para una UPU
+            $titulo_notif = "Nuevo Cargo/Gasto Registrado";
+            $msj_notif = "Se ha registrado una comisión bancaria de Bs. {$monto} en tu cuenta (Ref: {$referencia}).";
+            crearNotificacion($conexion, $usuario_id, $titulo_notif, $msj_notif, 'info', 'fas fa-file-invoice-dollar');
+        } else {
+            // Caso: UPU registra un egreso pendiente
+            // Se crea una sola notificación para el rol 'staff' (admins y conts)
+            $titulo_notif = "Nuevo Egreso Pendiente";
+            $msj_notif = "La UPU {$nombre_usuario} ha registrado un egreso de Bs. {$monto} (Ref: {$referencia}) que requiere revisión.";
+            crearNotificacion($conexion, null, $titulo_notif, $msj_notif, 'warning', 'fas fa-hand-holding-dollar', $pago_id, 'staff');
+        }
+        // --------------------------------
         
         if ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') {
             $final_message = "Comisión bancaria registrada correctamente.";
