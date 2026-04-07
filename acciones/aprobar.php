@@ -28,6 +28,11 @@ if (mysqli_query($conexion, $sql)) {
     // Eliminar notificación de registro pendiente
     eliminarNotificacionUsuarioPendiente($conexion, $nombre_usuario);
 
+    // Enviar notificación de bienvenida al usuario aprobado
+    $bt = "¡Cuenta Aprobada!";
+    $bm = "¡Bienvenido! Tu cuenta ha sido aprobada por un administrador. Ya puedes gestionar tus ingresos y egresos.";
+    crearNotificacion($conexion, $id_usuario, $bt, $bm, 'success', 'fas fa-user-check');
+
     $_SESSION['estatus'] = 'success';
     $_SESSION['mensaje'] = "Usuario $nombre_usuario ha sido aprobado exitosamente y ya puede iniciar sesión.";
     registrarAccion($conexion, "Aprobación de Usuario ($nombre_usuario)", $_SESSION['id']);

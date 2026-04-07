@@ -424,22 +424,44 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
             </div>
         </div>
         <div class="modal fade" id="motivoRechazoModal" tabindex="-1" aria-labelledby="motivoRechazoModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="motivoRechazoModalLabel"><i class="fas fa-exclamation-triangle me-1"></i> Motivo del Rechazo</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body bg-light">
-                <p id="motivoRechazoTexto" class="lead text-danger fw-bold border p-3 rounded shadow-sm"></p>
-                <p class="text-muted small mt-3">Este pago no afectó su saldo.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-close" data-bs-dismiss="modal">Cerrar</button>
-            </div>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content glass-card border-0 overflow-hidden shadow-2xl">
+                    <div class="modal-header bg-gradient-danger text-white border-0 py-3 px-4">
+                        <h5 class="modal-title fw-bold" id="motivoRechazoModalLabel">
+                            <i class="fas fa-exclamation-circle me-2"></i>Motivo del Rechazo
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-light bg-opacity-30 backdrop-blur">
+                        <div class="p-4 rounded-4 bg-white shadow-sm border-start border-4 border-danger animate__animated animate__fadeIn">
+                            <p id="motivoRechazoTexto" class="text-danger fw-bold mb-0 fs-5"></p>
+                        </div>
+                        <div class="mt-4 p-3 rounded-3 bg-danger d-flex align-items-center shadow-sm">
+                            <i class="fas fa-info-circle text-white me-2"></i>
+                            <span class="text-white small fw-500">Este pago no afectó su saldo. Por favor contacte soporte si tiene dudas.</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-transparent border-0 px-4 pb-4">
+                        <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cerrar
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-        </div>
+
+        <style>
+            .bg-gradient-danger {
+                background: linear-gradient(135deg, #e71d36 0%, #ff4d6d 100%);
+            }
+            .shadow-2xl {
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            }
+            .backdrop-blur {
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+        </style>
 
         <div class="card glass-card border-0 animate-up" style="animation-delay: 0.4s;">
             <div class="card-header bg-transparent border-0 pt-4 px-4">
@@ -515,6 +537,7 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
                                                 <?php if ($row['estado'] == 'rechazado'): ?>
                                                     <button class="btn btn-sm btn-link p-0 text-danger border-0 ms-1" 
                                                             onclick="verMotivoRechazo('<?php echo addslashes($row['des_rechazo']); ?>')"
+                                                            data-no-preloader="true"
                                                             title="Ver Motivo">
                                                         <i class="fas fa-info-circle"></i>
                                                     </button>

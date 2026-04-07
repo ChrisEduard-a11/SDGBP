@@ -319,10 +319,10 @@ if ($tipo_usuario == "admin") {
                             </a>
                         <?php } elseif ($_SESSION["tipo"] == "upu") { ?>
                             <a href="javascript:void(0);" onclick="navigateTo('registro_pagos.php')" class="shortcut-chip chip-primary text-decoration-none">
-                                <i class="fas fa-upload"></i>Reportar Pago
+                                <i class="fas fa-download"></i>Reportar Pago
                             </a>
-                            <a href="javascript:void(0);" onclick="navigateTo('ver_pagos.php')" class="shortcut-chip chip-secondary text-decoration-none">
-                                <i class="fas fa-history"></i>Historial Pagos
+                            <a href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')" class="shortcut-chip chip-primary text-decoration-none">
+                                <i class="fas fa-upload"></i>Reportar Egreso
                             </a>
                         <?php } ?>
                     </div>

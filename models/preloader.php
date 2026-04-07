@@ -188,7 +188,7 @@
                 ) return;
 
                 // Excluir por contenido del onclick
-                const excludedKeywords = ['confirmar', 'swal', 'delete', 'eliminar', 'borrar', 'abrir', 'rechazar', 'aprobar', 'preview', 'modal', 'show', 'toggle', 'draw', 'stoppropagation', 'history.back', 'copy'];
+                const excludedKeywords = ['confirmar', 'swal', 'delete', 'eliminar', 'borrar', 'abrir', 'rechazar', 'aprobar', 'preview', 'modal', 'show', 'toggle', 'draw', 'stoppropagation', 'history.back', 'copy', 'motivo', 'detalle'];
                 const onclickLower = onclickAttr.toLowerCase();
                 if (excludedKeywords.some(key => onclickLower.includes(key))) return;
 

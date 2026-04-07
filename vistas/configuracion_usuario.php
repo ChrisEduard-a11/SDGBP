@@ -307,7 +307,7 @@ $opciones_preguntas = [
                             <label for="inputFotoPerfil" class="upload-btn-floating">
                                 <i class="fas fa-camera"></i>
                             </label>
-                            <input type="file" id="inputFotoPerfil" name="imagen" accept="image/*" class="d-none" onchange="previewImage1(event)">
+                            <input type="file" id="inputFotoPerfil" name="imagen" accept="image/*" class="d-none" onchange="previewProfileImageConfig(this)">
                         </div>
                         <h5 class="mt-3 fw-bold mb-1"><?php echo $_SESSION['nombre']; ?></h5>
                         <p class="text-muted small">Haz clic en la cámara para actualizar tu foto</p>
@@ -414,13 +414,17 @@ $opciones_preguntas = [
 
 
 <script>
-    function previewImage1(event) {
-        const reader = new FileReader();
-        reader.onload = function() {
-            const output = document.getElementById('profileImagePreview');
-            output.src = reader.result;
+    function previewProfileImageConfig(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('profileImagePreview');
+                if (preview) {
+                    preview.src = e.target.result;
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
         }
-        reader.readAsDataURL(event.target.files[0]);
     }
 </script>
 

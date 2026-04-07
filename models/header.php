@@ -44,21 +44,41 @@ require_once(__DIR__ . "/notificaciones.php");
 $notificaciones_db = obtenerNotificacionesNoLeidas($conexion, $usuarioid, strtolower($tipo_usuario));
 
 $notificaciones = [];
+
+// Recordatorio de Perfil Incompleto para UPUs (Sin persistencia en DB)
+if ($tipo_usuario == 'upu' && (empty($row['foto']) || strpos($row['foto'], 'default_profile.png') !== false)) {
+    $notificaciones[] = [
+        'id' => null,
+        'titulo' => 'Personaliza tu Perfil',
+        'mensaje' => '¡Hola! Te recomendamos subir una foto de perfil desde el menú "Perfil & Seguridad" > <a href="javascript:void(0);" onclick="navigateTo(\'configuracion_usuario.php\')" class="fw-bold text-primary">Configuración</a> para identificar mejor tus registros.',
+        'tipo' => 'warning',
+        'icono' => 'fas fa-user-edit',
+        'leida' => 0,
+        'fecha' => date('Y-m-d H:i:s')
+    ];
+}
+
 if ($dias_para_vencer <= 15) {
     if ($dias_para_vencer <= 0) {
         $notificaciones[] = [
+            'id' => null,
             'titulo' => 'Contraseña Vencida',
             'mensaje' => 'Tu contraseña ha vencido. Por favor cámbiala por seguridad.',
             'tipo' => 'danger',
-            'icono' => 'fas fa-exclamation-triangle'
+            'icono' => 'fas fa-exclamation-triangle',
+            'leida' => 0,
+            'fecha' => date('Y-m-d H:i:s')
         ];
     }
     else {
         $notificaciones[] = [
+            'id' => null,
             'titulo' => 'Cambio de Contraseña',
             'mensaje' => "Tu contraseña vencerá en $dias_para_vencer días.",
             'tipo' => 'warning',
-            'icono' => 'fas fa-key'
+            'icono' => 'fas fa-key',
+            'leida' => 0,
+            'fecha' => date('Y-m-d H:i:s')
         ];
     }
 }
@@ -871,9 +891,11 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                                             <div class="small fw-bold text-dark"><?php echo $notif['titulo']; ?></div>
                                             <div class="small text-muted" style="font-size: 0.75rem;"><?php echo $notif['mensaje']; ?></div>
                                         </div>
-                                        <button onclick="eliminarNotificacionHeader(event, <?php echo $notif['id']; ?>)" class="btn btn-link btn-sm text-danger p-0 ms-2 opacity-0 group-hover:opacity-100 transition-opacity" title="Borrar">
-                                            <i class="fas fa-times-circle"></i>
-                                        </button>
+                                        <?php if (isset($notif['id']) && $notif['id'] !== null) { ?>
+                                            <button onclick="eliminarNotificacionHeader(event, <?php echo $notif['id']; ?>)" class="btn btn-link btn-sm text-danger p-0 ms-2 opacity-0 group-hover:opacity-100 transition-opacity" title="Borrar">
+                                                <i class="fas fa-times-circle"></i>
+                                            </button>
+                                        <?php } ?>
                                     </div>
                                 </li>
                             <?php }
@@ -912,7 +934,7 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             <span class="small text-muted"><?php echo ucfirst($tipo_usuario); ?></span>
                         </li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item py-2" onclick="navigateTo('configuracion_usuario.php')"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Mi Cuenta</a></li>
+                        <li><a class="dropdown-item py-2" onclick="navigateTo('configuracion_usuario.php')"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Configuración</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li class="px-3 py-1">
                             <button class="btn btn-danger btn-sm w-100 rounded-pill" onclick="confsalir(event)" data-no-preloader="true">

@@ -187,7 +187,7 @@ $notificaciones = array_merge($notificaciones_locales, $notificaciones_db);
                 <div class="list-group list-group-flush rounded-bottom">
                     <?php if (count($notificaciones) > 0) { 
                         foreach ($notificaciones as $notificacion) { 
-                            $bg_class = ($notificacion['leida'] == 0) ? 'notif-unread' : '';
+                            $bg_class = (isset($notificacion['leida']) && $notificacion['leida'] == 0) ? 'notif-unread' : '';
                             ?>
                             <div class="notif-item d-flex gap-3 p-4 align-items-center <?php echo $bg_class; ?>">
                                 <div class="flex-shrink-0">
@@ -198,7 +198,7 @@ $notificaciones = array_merge($notificaciones_locales, $notificaciones_db);
                                 <div class="notif-item-content d-flex flex-column flex-md-row gap-2 w-100 justify-content-between align-items-md-center">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 fw-bold text-dark"><?php echo htmlspecialchars($notificacion['titulo']); ?></h6>
-                                        <p class="mb-1 text-muted" style="font-size: 0.88rem; line-height: 1.4; letter-spacing: 0.1px;"><?php echo htmlspecialchars($notificacion['mensaje']); ?></p>
+                                        <p class="mb-1 text-muted" style="font-size: 0.88rem; line-height: 1.4; letter-spacing: 0.1px;"><?php echo $notificacion['mensaje']; ?></p>
                                         <?php if ($tipo_usuario == 'admin' && !empty($notificacion['nombre_usuario'])) { ?>
                                             <div class="mt-2">
                                                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill shadow-sm small">
@@ -210,7 +210,10 @@ $notificaciones = array_merge($notificaciones_locales, $notificaciones_db);
                                     <div class="opacity-75 text-nowrap mt-2 mt-md-0 d-flex align-items-center justify-content-between justify-content-md-end gap-3 small fw-semibold">
                                         <span class="d-flex align-items-center">
                                             <i class="far fa-clock me-1 text-primary"></i>
-                                            <?php echo date('d/Y/m h:i A', strtotime($notificacion['fecha'])); ?>
+                                            <?php 
+                                            $fnt = isset($notificacion['fecha']) ? $notificacion['fecha'] : date('Y-m-d H:i:s');
+                                            echo date('d/m/Y h:i A', strtotime($fnt)); 
+                                            ?>
                                         </span>
                                         
                                         <!-- BOTÓN ELIMINAR -->

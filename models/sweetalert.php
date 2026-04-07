@@ -3,7 +3,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const preloader = document.getElementById('custom-global-preloader');
-            const delay = preloader ? 1500 : 0;
+            const delay = 0;
             setTimeout(() => {
                 Swal.fire({
                     icon: '<?php echo $_SESSION["estatus"]; ?>',
@@ -87,7 +87,7 @@
     </style>    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const preloader = document.getElementById('custom-global-preloader');
-            const delay = preloader ? 1500 : 0;
+            const delay = 0;
 
             const userType = "<?php echo $_SESSION['tipo'] ?? ''; ?>";
             
@@ -113,13 +113,14 @@
                     <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_u.php');">
                         <i class="fas fa-user-plus"></i> Registrar Nuevo Usuario
                     </button>
+
                     <button class="btn btn-outline-info swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_bien.php');">
                         <i class="fas fa-box-open"></i> Registrar Nuevo Bien
                     </button>`;
             } else if (data.tipo_usuario == "cont") {
                 shortcuts = `
                     <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_pagos_egresos.php');">
-                        <i class="fas fa-file-invoice-dollar"></i> Registrar Nuevo Egreso
+                        <i class="fas fa-file-invoice-dollar"></i> Registrar Nueva Comisión Bancaria
                     </button>
                     <button class="btn btn-outline-info swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('ver_pagos_cont.php');">
                         <i class="fas fa-search-dollar"></i> Revisar Pagos
@@ -135,10 +136,13 @@
             } else if (data.tipo_usuario == "upu") {
                 shortcuts = `
                     <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_pagos.php');">
-                        <i class="fas fa-upload"></i> Reportar Nuevo Pago
+                        <i class="fas fa-download"></i> Reportar Nuevo Ingreso
                     </button>
+                    <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_pagos_egresos.php');">
+                        <i class="fas fa-upload"></i> Reportar Nuevo Egreso
+                    </button>                    
                     <button class="btn btn-outline-info swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('ver_pagos.php');">
-                        <i class="fas fa-history"></i> Ver Mi Historial
+                        <i class="fas fa-history"></i> Ver Mi Historial de Pagos
                     </button>`;
             }
 
