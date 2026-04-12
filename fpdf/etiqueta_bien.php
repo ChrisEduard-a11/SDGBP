@@ -112,8 +112,11 @@ class PDF extends FPDF {
 
         $this->Ln(1);
 
-        $codeContents = 'Serial: ' . $bien['codigo'] . "\n" .
-                        'Denominacion: ' . $bien['nombre'];
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+        $host = $_SERVER['HTTP_HOST'];
+        $baseDir = dirname(dirname($_SERVER['SCRIPT_NAME']));
+        if ($baseDir == '\\' || $baseDir == '/') $baseDir = '';
+        $codeContents = $protocol . "://" . $host . $baseDir . "/tarjeta_bien.php?c=" . urlencode($bien['codigo']);
         
         $qrTab = QRcode::text($codeContents, false, QR_ECLEVEL_L);
         $size = count($qrTab);

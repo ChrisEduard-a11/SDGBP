@@ -390,7 +390,7 @@ if ($result_usuarios_upu_export->num_rows > 0) {
                     </div>
                     <h5 class="mb-0 fw-bold">Historial de Transacciones</h5>
                 </div>
-                <a href="exportar_excel_pagos.php?<?php echo http_build_query($_GET); ?>" class="btn btn-outline-success rounded-pill px-4 fw-bold">
+                <a href="exportar_excel_pagos.php?<?php echo http_build_query($_GET); ?>" class="btn btn-outline-success rounded-pill px-4 fw-bold" style="background: linear-gradient(135deg, #2ec4b6 0%, #0891b2 100%);" data-no-preloader="true">
                     <i class="fas fa-file-excel me-2"></i> Excel Full
                 </a>
             </div>

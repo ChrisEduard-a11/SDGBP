@@ -73,7 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION["mensaje"] = "Producto actualizado correctamente.";
         // Registrar en bitácora
         if (isset($_SESSION['id'])) {
-            registrarAccion($conexion, 'Actualizó un producto', $_SESSION['id']);
+            $accion_bitacora = 'Actualizó un producto - Nombre: ' . $nombre;
+            registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
         }
         header("Location: ../vistas/productos.php");
     } else {

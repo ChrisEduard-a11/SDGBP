@@ -28,7 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['archivo'])) {
             // Procedimiento Terminado -> Auditoria Tracker On
             require_once('../conexion.php');
             if (function_exists('registrarAccion')) {
-                @registrarAccion($conexion, 'Erradicó Banner Comercial Activo: ' . $archivo_securizado, $_SESSION['id']);
+                $accion_bitacora = 'Eliminó Flyer Publicitario - Archivo: ' . $archivo_securizado;
+                @registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
             }
             $_SESSION['estatus'] = "success";
             $_SESSION['mensaje'] = "Ecosistema purgado. El Banner fue eliminado y retirado de la web para siempre.";

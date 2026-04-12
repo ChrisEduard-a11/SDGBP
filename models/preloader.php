@@ -155,6 +155,7 @@
                     href.startsWith('tel:') || 
                     href.startsWith('mailto:') ||
                     target === '_blank' ||
+                    link.hasAttribute('data-no-preloader') ||
                     e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0
                 ) return;
 
@@ -181,6 +182,7 @@
                     btn.classList.contains('btn-close') ||
                     btn.classList.contains('swal2-confirm') ||
                     btn.classList.contains('swal2-cancel') ||
+                    btn.classList.contains('swal2-close') ||
                     btnId.includes('toggle') ||
                     btnId.includes('draw') ||
                     btnId === 'sidebarToggle' ||

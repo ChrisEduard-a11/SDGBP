@@ -14,7 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($stmt->execute()) {
             // Registrar la acción en la bitácora
-            registrarAccion($conexion, 'Agregar Categoría de Producto', $_SESSION['id']);
+            $accion_bitacora = 'Agregó Categoría de Producto - Categoría: ' . $nombre;
+            registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
             $_SESSION['estatus'] = "success";
             $_SESSION['mensaje'] = "Categoría agregada correctamente.";
         } else {

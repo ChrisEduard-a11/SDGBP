@@ -53,7 +53,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mensaje = "Bien nacional registrado exitosamente.";
             // Registrar en bitácora
             if (isset($_SESSION['id'])) {
-                registrarAccion($conexion, 'Registrar Bien Nacional', $_SESSION['id']);
+                $accion_bitacora = 'Registró Bien Nacional - Nombre: ' . $nombre;
+                registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
             }
             $_SESSION['estatus'] = 'success';
             $_SESSION['mensaje'] = $mensaje;

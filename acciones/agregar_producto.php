@@ -59,7 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (mysqli_query($conexion, $query)) {
         // Registrar la acción en la bitácora
-        registrarAccion($conexion, 'Agregar Producto', $_SESSION['id']);
+        $accion_bitacora = 'Agregó Producto - Nombre: ' . $nombre;
+        registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
 
         $_SESSION["estatus"] = "success";
         $_SESSION["mensaje"] = "Producto agregado correctamente.";

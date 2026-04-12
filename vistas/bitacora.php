@@ -251,6 +251,9 @@ include('../conexion.php');
                             // --- Lógica de consulta PHP (Sin cambios) ---
                             if ($_SESSION['tipo'] == 'admin') {
                                 $where = [];
+                                // Ocultar los "recibos" destinados exclusivamente a las UPU para que el Admin no vea las acciones duplicadas
+                                $where[] = "(b.accion NOT LIKE 'Comisión Aplicada - Aprobado por:%' AND b.accion NOT LIKE 'Pago Aprobado - Aprobado por:%' AND b.accion NOT LIKE 'Pago Rechazado - Rechazado por:%')";
+                                
                                 if (!empty($_GET['filtro_usuario'])) $where[] = "u.id_usuario = " . intval($_GET['filtro_usuario']);
                                 if (!empty($_GET['filtro_tipo'])) $where[] = "u.tipos = '" . mysqli_real_escape_string($conexion, $_GET['filtro_tipo']) . "'";
                                 if (!empty($_GET['filtro_accion'])) $where[] = "b.accion LIKE '%" . mysqli_real_escape_string($conexion, $_GET['filtro_accion']) . "%'";
@@ -268,35 +271,113 @@ include('../conexion.php');
 
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $accion = $row['accion'];
+                                // Parse action explicitly searching for ' - ' separator
+                                $parts = explode(' - ', $accion, 2);
+                                $main_action = trim($parts[0]);
+                                $details_raw = isset($parts[1]) ? trim($parts[1]) : '';
+                                
                                 $badge_class = 'bg-secondary';
-                                if (strpos($accion, 'Inicio') !== false) $badge_class = 'bg-success';
-                                elseif (strpos($accion, 'Fin') !== false) $badge_class = 'bg-danger';
-                                elseif (strpos($accion, 'Agregado') !== false) $badge_class = 'bg-primary';
-                                elseif (strpos($accion, 'Editado') !== false) $badge_class = 'bg-warning text-dark';
+                                $icon_class = 'fa-info-circle';
+                                $text_color = 'text-secondary';
+                                
+                                if (strpos($main_action, 'Inicio') !== false) { $icon_class = 'fa-sign-in-alt'; $text_color = 'text-success'; }
+                                elseif (strpos($main_action, 'Fin') !== false) { $icon_class = 'fa-sign-out-alt'; $text_color = 'text-danger'; }
+                                elseif (strpos($main_action, 'Agregado') !== false || strpos($main_action, 'Registrar') !== false) { $icon_class = 'fa-plus-circle'; $text_color = 'text-primary'; }
+                                elseif (strpos($main_action, 'Edit') !== false || strpos($main_action, 'Actualiza') !== false) { $icon_class = 'fa-edit'; $text_color = 'text-warning'; }
+                                elseif (strpos($main_action, 'Aprob') !== false) { $icon_class = 'fa-check-circle'; $text_color = 'text-success'; }
+                                elseif (strpos($main_action, 'Rechaz') !== false || strpos($main_action, 'Elimina') !== false) { $icon_class = 'fa-times-circle'; $text_color = 'text-danger'; }
                             ?>
-                                <tr>
+                                <tr class="align-middle">
                                     <?php if ($_SESSION['tipo'] == 'admin') { ?>
-                                        <td class="fw-bold text-dark"><?php echo $row['nombre']; ?></td>
+                                        <td>
+                                            <div class="fw-bold text-dark"><?php echo $row['nombre']; ?></div>
+                                        </td>
                                         <td>
                                             <?php
                                             $rol_label = 'Desconocido'; $rol_class = 'bg-light text-muted';
                                             switch ($row['tipos']) {
-                                                case 'admin': $rol_label = 'Super Usuario'; $rol_class = 'bg-dark text-white'; break;
-                                                case 'cont': $rol_label = 'Administrador'; $rol_class = 'bg-info text-dark'; break;
-                                                case 'check': $rol_label = 'Checkeador'; $rol_class = 'bg-primary text-white'; break;
-                                                case 'upu': $rol_label = 'UPU'; $rol_class = 'bg-secondary text-white'; break;
+                                                case 'admin': $rol_label = 'Super User'; $rol_class = 'bg-dark text-white border-dark'; break;
+                                                case 'cont': $rol_label = 'Admin'; $rol_class = 'bg-info bg-opacity-10 text-info border-info'; break;
+                                                case 'check': $rol_label = 'Checkeador'; $rol_class = 'bg-primary bg-opacity-10 text-primary border-primary'; break;
+                                                case 'upu': $rol_label = 'UPU'; $rol_class = 'bg-secondary bg-opacity-10 text-secondary border-secondary'; break;
                                             }
                                             ?>
-                                            <span class="badge <?php echo $rol_class; ?> rounded-pill px-2 py-1 small"><?php echo $rol_label; ?></span>
+                                            <span class="badge border <?php echo $rol_class; ?> rounded-pill px-2 py-1 small"><?php echo $rol_label; ?></span>
                                         </td>
                                     <?php } ?>
-                                    <td class="text-muted small"><code><?php echo $row['ip']; ?></code></td>
-                                    <td class="fw-semibold small"><?php echo date('d/m/Y H:i', strtotime($row['fecha'])); ?></td>
-                                    <td class="small text-truncate" style="max-width: 150px;" title="<?php echo htmlspecialchars($row['system_info']); ?>"><?php echo htmlspecialchars($row['system_info']); ?></td>
+                                    <td class="text-muted small">
+                                        <div class="bg-light rounded px-2 py-1 border d-inline-block" style="font-family: monospace;"><i class="fas fa-network-wired me-1 opacity-50"></i><?php echo $row['ip']; ?></div>
+                                    </td>
                                     <td>
-                                        <span class="badge <?php echo $badge_class; ?> p-2 w-100 text-wrap shadow-sm" style="max-width: 250px;">
-                                            <?php echo htmlspecialchars($accion); ?>
-                                        </span>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark" style="font-size: 0.85rem;"><i class="far fa-calendar-alt me-1 opacity-50"></i><?php echo date('d/m/Y', strtotime($row['fecha'])); ?></span>
+                                            <span class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock me-1 opacity-50"></i><?php echo date('h:i A', strtotime($row['fecha'])); ?></span>
+                                        </div>
+                                    </td>
+                                    <td class="small align-middle text-muted" style="font-size: 0.8rem;">
+                                        <i class="fas fa-desktop me-1 opacity-50"></i> <?php echo htmlspecialchars($row['system_info']); ?>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="d-flex flex-column gap-2" style="min-width: 250px;">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center border shadow-sm me-2 <?php echo str_replace('text-', 'bg-', $text_color); ?> bg-opacity-10 <?php echo str_replace('text-', 'border-', $text_color); ?> border-opacity-50" style="width: 32px; height: 32px;">
+                                                    <i class="fas <?php echo $icon_class; ?> <?php echo $text_color; ?>"></i>
+                                                </div>
+                                                <span class="fw-bold text-dark" style="font-size: 0.95rem; letter-spacing: -0.2px;"><?php echo htmlspecialchars($main_action); ?></span>
+                                            </div>
+                                            <?php if (!empty($details_raw)): ?>
+                                                <div class="d-flex flex-wrap gap-2 mt-1 ms-4 ps-2 border-start border-2 border-light">
+                                                    <?php 
+                                                    $tags = explode('|', $details_raw);
+                                                    foreach($tags as $t) {
+                                                        $t = trim($t);
+                                                        if(!empty($t)): 
+                                                            $tag_bg = "bg-white border-secondary border-opacity-25";
+                                                            $tag_text = "text-muted";
+                                                            $tag_icon = "fa-tag";
+                                                            $label_text = $t;
+                                                            
+                                                            if (strpos($t, 'Aprobado por:') !== false || strpos($t, 'Rechazado por:') !== false) {
+                                                                $tag_bg = "bg-info bg-opacity-10 border-info";
+                                                                $tag_text = "text-info fw-bold";
+                                                                $tag_icon = "fa-user-check";
+                                                                $label_text = str_replace(['Aprobado por:', 'Rechazado por:'], '', $t);
+                                                            } elseif (strpos($t, 'Comisión:') !== false) {
+                                                                $tag_bg = "bg-danger bg-opacity-10 border-danger";
+                                                                $tag_text = "text-danger fw-bold";
+                                                                $tag_icon = "fa-hand-holding-usd";
+                                                            } elseif (strpos($t, 'Bs.') !== false) {
+                                                                $tag_bg = "bg-success bg-opacity-10 border-success";
+                                                                $tag_text = "text-success fw-bold";
+                                                                $tag_icon = "fa-money-bill-wave";
+                                                            } elseif (strpos($t, 'Cliente:') !== false || strpos($t, 'Usuario:') !== false) {
+                                                                $tag_bg = "bg-primary bg-opacity-10 border-primary";
+                                                                $tag_text = "text-primary fw-bold";
+                                                                $tag_icon = "fa-user-tie";
+                                                                $label_text = $t;
+                                                            } elseif (strpos($t, 'Ref:') !== false) {
+                                                                $tag_bg = "bg-warning bg-opacity-10 border-warning";
+                                                                $tag_text = "text-dark fw-bold";
+                                                                $tag_icon = "fa-hashtag";
+                                                                $label_text = str_replace('Ref:', '', $t);
+                                                            } elseif (strpos($t, 'Motivo:') !== false) {
+                                                                $tag_bg = "bg-light border border-secondary border-opacity-50 text-wrap text-start mt-1 w-100 rounded-3";
+                                                                $tag_text = "text-dark fst-italic";
+                                                                $tag_icon = "fa-comment-dots text-primary";
+                                                                $label_text = " " . str_replace('Motivo:', '', $t);
+                                                            }
+                                                    ?>
+                                                        <span class="badge border <?php echo $tag_bg . ' ' . $tag_text; ?> px-2 py-1 shadow-sm d-flex align-items-center" style="font-size: 0.75rem;">
+                                                            <i class="fas <?php echo $tag_icon; ?> me-1 opacity-75"></i> 
+                                                            <?php echo htmlspecialchars(trim($label_text)); ?>
+                                                        </span>
+                                                    <?php 
+                                                        endif;
+                                                    } 
+                                                    ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php } ?>

@@ -60,7 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['flyer_img'])) {
         // Enlazar Bitácora para rastreabilidad y auditorias operacionales
         if (function_exists('registrarAccion')) {
             require_once('../conexion.php'); 
-            @registrarAccion($conexion, 'Publicó Nuevo Banners Publicitario: ' . $new_file_name_secure, $_SESSION['id']);
+            $accion_bitacora = 'Agregó Flyer Publicitario - Archivo: ' . $new_file_name_secure;
+            @registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
         }
         
         $_SESSION['estatus'] = "success";

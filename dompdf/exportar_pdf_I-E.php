@@ -289,8 +289,21 @@ try {
     // Renderizar el PDF
     $dompdf->render();
 
+    // Construir nombre del PDF dinámico
+    $nombre_upu_archivo = ($usuario_upu === 0)
+        ? 'Todas_las_UPU'
+        : preg_replace('/[^A-Za-z0-9_\-]/', '_', $nombre_upu);
+
+    if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+        $periodo_archivo = $fecha_inicio . '_al_' . $fecha_fin; // formato: 2026-04-07_al_2026-12-31
+    } else {
+        $periodo_archivo = 'Todos_los_registros';
+    }
+
+    $nombre_pdf = 'Reporte_Ingresos_Egresos_' . $nombre_upu_archivo . '_' . $periodo_archivo . '.pdf';
+
     // Mostrar el PDF en el navegador
-    $dompdf->stream('REGISTRO_DE_INGRESO_Y_EGRESO.pdf', ['Attachment' => 0]); 
+    $dompdf->stream($nombre_pdf, ['Attachment' => 0]); 
     exit;
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();

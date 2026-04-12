@@ -260,7 +260,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         // Registrar en bitácora
         if (isset($_SESSION['id'])) {
-            registrarAccion($conexion, 'Registrar Ingreso', $_SESSION['id']);
+            $accion_bitacora = 'Registrar Ingreso - Cliente: ' . $nombre_cliente . ' | Monto: Bs. ' . $monto . ' | Ref: ' . $referencia;
+            if (!empty($descripcion)) {
+                $accion_bitacora .= ' | Motivo: ' . $descripcion;
+            }
+            registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
         }
     } catch (Exception $e) {
         mysqli_rollback($conexion);

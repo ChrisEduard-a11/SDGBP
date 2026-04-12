@@ -16,7 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             // Registrar en bitácora si lo usas
             if (isset($_SESSION['id'])) {
-                registrarAccion($conexion, 'Editar Categoría de Producto', $_SESSION['id']);
+                $accion_bitacora = 'Editó Categoría de Producto - Categoría: ' . $nombre;
+                registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
             }
             $_SESSION['estatus'] = "success";
             $_SESSION['mensaje'] = "Categoría editada correctamente.";

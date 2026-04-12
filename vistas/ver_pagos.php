@@ -298,7 +298,8 @@ $metrics_act = $stmt_a->get_result()->fetch_assoc();
                         <div class="mt-3">
                             <button class="btn btn-light btn-sm rounded-pill fw-bold text-primary px-3" 
                                     data-bs-toggle="modal" data-bs-target="#modalSaldoUPU" 
-                                    onclick="cargarSaldoUPUPorMes(<?php echo $_SESSION['id']; ?>)">
+                                    onclick="cargarSaldoUPUPorMes(<?php echo $_SESSION['id']; ?>)"
+                                    data-no-preloader="true">
                                 <i class="fas fa-calendar-alt me-1"></i> Detalle Mensual
                             </button>
                         </div>
@@ -473,6 +474,7 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
                         <tr>
                             <th>Concepto / Referencia</th>
                             <th>Fecha</th>
+                            <th>Entidad / Cliente</th>
                             <th class="text-center">Monto</th>
                             <th class="text-center">Saldo Resultante</th>
                             <th class="text-center">Estado</th>
@@ -494,6 +496,16 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
                                         <td class="text-center">
                                             <div class="small fw-bold"><?php echo date('d/m/Y', strtotime($row['fecha_pago'])); ?></div>
                                             <div class="extra-small text-muted"><?php echo ucfirst($row['tipo']); ?></div>
+                                        </td>
+                                        <td>
+                                            <?php if (!empty($row['cliente'])): ?>
+                                                <span class="d-flex align-items-center gap-1">
+                                                    <i class="fas fa-building text-muted" style="font-size:0.8rem;"></i>
+                                                    <span class="small fw-semibold"><?php echo htmlspecialchars($row['cliente']); ?></span>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="text-muted small">—</span>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="text-center">
                                             <?php if ($row["tipo"] == "Ingreso"): ?>

@@ -11,7 +11,8 @@ include_once('../models/bitacora.php'); // Asegúrate de incluir el archivo dond
             $_SESSION["mensaje"] = "Categoría registrada exitosamente.";
             // Registrar en bitácora
             if (isset($_SESSION['id'])) {
-                registrarAccion($conexion, 'Registrar Categoría', $_SESSION['id']);
+                $accion_bitacora = 'Registró Categoría - Categoría: ' . $nombre;
+                registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
             }
             header("Location: ../vistas/categorias.php");
         } else {

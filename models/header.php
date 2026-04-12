@@ -40,6 +40,48 @@ else {
 $dias_transcurridos = floor((time() - strtotime($fecha_cambio)) / 86400);
 $dias_para_vencer = 180 - $dias_transcurridos;
 
+// =====================================================================
+// AUTO-LIMPIEZA DE COMPROBANTES (> 15 días) — Corre en cada sesión
+// =====================================================================
+$ruta_comprobantes = __DIR__ . '/../uploads/comprobantes/';
+$sql_expirados = "SELECT id, comprobante_archivo FROM pagos 
+                  WHERE comprobante_archivo IS NOT NULL 
+                    AND comprobante_archivo != '' 
+                    AND (
+                        estado = 'rechazado'
+                        OR (estado = 'aprobado' AND fecha_pago <= DATE_SUB(CURDATE(), INTERVAL 15 DAY))
+                    )";
+$res_expirados = mysqli_query($conexion, $sql_expirados);
+if ($res_expirados && mysqli_num_rows($res_expirados) > 0) {
+    $ids_limpiar = [];
+    while ($pago_exp = mysqli_fetch_assoc($res_expirados)) {
+        $archivo_path = $ruta_comprobantes . $pago_exp['comprobante_archivo'];
+        if (file_exists($archivo_path)) {
+            @unlink($archivo_path); // Eliminar archivo físico
+        }
+        $ids_limpiar[] = intval($pago_exp['id']);
+    }
+    if (!empty($ids_limpiar)) {
+        $ids_str = implode(',', $ids_limpiar);
+        mysqli_query($conexion, "UPDATE pagos SET comprobante_archivo = NULL WHERE id IN ($ids_str)");
+    }
+}
+// =====================================================================
+
+// =====================================================================
+// AUTO-LIMPIEZA DE NOTIFICACIONES DE UPU (> 3 días)
+// =====================================================================
+mysqli_query($conexion, 
+    "DELETE n FROM notificaciones n
+     LEFT JOIN usuario u ON n.usuario_id = u.id_usuario
+     WHERE n.fecha <= DATE_SUB(NOW(), INTERVAL 3 DAY)
+       AND (
+           LOWER(n.tipo_usuario_destino) = 'upu'
+           OR (n.usuario_id IS NOT NULL AND LOWER(u.tipos) = 'upu')
+       )"
+);
+// =====================================================================
+
 require_once(__DIR__ . "/notificaciones.php");
 $notificaciones_db = obtenerNotificacionesNoLeidas($conexion, $usuarioid, strtolower($tipo_usuario));
 
@@ -87,6 +129,36 @@ $notificaciones = array_merge($notificaciones, $notificaciones_db);
 
 // BLOQUEO OBLIGATORIO (Universal: Incluye Admins)
 $current_page = basename($_SERVER['PHP_SELF']);
+
+// =====================================================================
+// RBAC (ROLE-BASED ACCESS CONTROL) ESTRICTO
+// =====================================================================
+$vistas_permitidas = [
+    'admin' => ['usuario.php', 'usuarios_a.php', 'edit_u.php', 'gestionar_flyers.php', 'aprobar_marketing.php', 'agregar_producto.php', 'productos.php', 'editar_producto.php', 'registro_bien.php', 'lista_bienes.php', 'categorias.php', 'agregar_categoria_producto.php', 'editar_categoria_producto.php', 'formulario_comprobante.php', 'listar_comprobantes.php', 'editar_comprobante.php', 'aprobar_pago.php', 'registro_pagos_egresos.php', 'ver_pagos_cont.php', 'backup_db.php', 'exportar_excel_pagos.php'],
+    'upu' => ['ver_clientes.php', 'agregar_cliente.php', 'editar_cliente.php', 'registro_pagos.php', 'registro_pagos_egresos.php', 'ver_pagos.php'],
+    'cont' => ['formulario_comprobante.php', 'listar_comprobantes.php', 'editar_comprobante.php', 'aprobar_pago.php', 'registro_pagos_egresos.php', 'ver_pagos_cont.php', 'exportar_excel_pagos.php'],
+    'inv' => ['registro_bien.php', 'lista_bienes.php', 'categorias.php', 'agregar_categoria_producto.php', 'editar_categoria_producto.php']
+];
+
+$vistas_restringidas = array_unique(array_merge($vistas_permitidas['admin'], $vistas_permitidas['upu'], $vistas_permitidas['cont'], $vistas_permitidas['inv']));
+
+if (in_array($current_page, $vistas_restringidas)) {
+    // Si la vista está en la matriz protegida, validar que el rol la tenga asignada
+    if (!isset($vistas_permitidas[strtolower($tipo_usuario)]) || !in_array($current_page, $vistas_permitidas[strtolower($tipo_usuario)])) {
+        $_SESSION['estatus'] = 'error';
+        $_SESSION['mensaje'] = "Acceso Restringido. Tu rol de " . strtoupper($tipo_usuario) . " no cuenta con autorizacion para este módulo.";
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
+        $redir_url = "$protocol://" . $_SERVER['HTTP_HOST'] . rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/') . "/vistas/inicio.php";
+        if (!headers_sent()) {
+            header("Location: $redir_url");
+            exit;
+        } else {
+            echo "<html><body><script>window.location.href='$redir_url';</script></body></html>";
+            exit;
+        }
+    }
+}
+// =====================================================================
 
 if ($dias_para_vencer <= 0) {
     // Si la clave está vencida, no mostrar el cartel de bienvenida emergente

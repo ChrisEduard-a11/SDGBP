@@ -36,7 +36,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             mysqli_commit($conexion);
 
             // Registrar la acción en la bitácora
-            registrarAccion($conexion, 'Agregar Cliente/Proveedor', $usuario_id);
+            $accion_bitacora = 'Agregó Cliente - Cliente: ' . $nombre;
+            registrarAccion($conexion, $accion_bitacora, $usuario_id);
 
             $_SESSION['estatus'] = 'success';
             $_SESSION['mensaje'] = 'Se agregado correctamente.';

@@ -323,14 +323,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') {
             $final_message = "Comisión bancaria registrada correctamente.";
-            $accion_bitacora = 'Registrar Comisión Bancaria';
+            $accion_bitacora = 'Registrar Comisión Bancaria - Monto: Bs. ' . $monto . ' | Ref: ' . $referencia . (!empty($descripcion) ? ' | Motivo: ' . $descripcion : '');
         } else {
             $final_message = "Egreso registrado correctamente.";
-            $accion_bitacora = 'Registrar Egreso';
+            $accion_bitacora = 'Registrar Egreso - Cliente: ' . $nombre_cliente . ' | Monto: Bs. ' . $monto . ' | Ref: ' . $referencia . (!empty($descripcion) ? ' | Motivo: ' . $descripcion : '');
         }
         
         if (isset($_SESSION['id'])) {
+            // Guardar en la bitácora del usuario que está haciendo la acción (puede ser admin, cont, o upu)
             registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
+            
+            // Si la acción la hizo un admin/cont cobrando a una UPU, también se lo reflejamos a la UPU
+            if (($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont') && $usuario_id != $_SESSION['id']) {
+                $accion_upu = 'Comisión Aplicada - Aprobado por: ' . $_SESSION['nombre'] . ' | Comisión: Bs. ' . $monto . ' | Ref: ' . $referencia . (!empty($descripcion) ? ' | Motivo: ' . $descripcion : '');
+                registrarAccion($conexion, $accion_upu, $usuario_id);
+            }
         }
     } catch (Exception $e) {
         mysqli_rollback($conexion);

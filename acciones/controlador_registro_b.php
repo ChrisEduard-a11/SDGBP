@@ -19,7 +19,8 @@ include_once('../models/bitacora.php'); // Asegúrate de incluir el archivo dond
             $success = "Bien nacional registrado exitosamente.";
             // Registrar en bitácora
             if (isset($_SESSION['id'])) {
-                registrarAccion($conn, 'Registrar Bien Nacional', $_SESSION['id']);
+                $accion_bitacora = 'Registró Bien Nacional - Nombre: ' . $nombre;
+                registrarAccion($conn, $accion_bitacora, $_SESSION['id']);
             }
         } else {
             $error = "Error al registrar el bien: " . $conn->error;

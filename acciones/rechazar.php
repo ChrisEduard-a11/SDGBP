@@ -36,7 +36,8 @@ if ($row = mysqli_fetch_assoc($resultado)) {
 
         $_SESSION['estatus'] = 'success';
         $_SESSION['mensaje'] = "El usuario $usuario ha sido rechazado y su solicitud fue eliminada.";
-        registrarAccion($conexion, "Rechazo de Usuario ($usuario)", $_SESSION['id']);
+        $accion_bitacora = 'Rechazó Usuario - Usuario: ' . $usuario;
+        registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
     } else {
         $_SESSION['estatus'] = 'error';
         $_SESSION['mensaje'] = 'Error al rechazar el usuario: ' . mysqli_error($conexion);

@@ -35,7 +35,8 @@ if (mysqli_query($conexion, $sql)) {
 
     $_SESSION['estatus'] = 'success';
     $_SESSION['mensaje'] = "Usuario $nombre_usuario ha sido aprobado exitosamente y ya puede iniciar sesión.";
-    registrarAccion($conexion, "Aprobación de Usuario ($nombre_usuario)", $_SESSION['id']);
+    $accion_bitacora = 'Aprobó Usuario - Usuario: ' . $nombre_usuario;
+    registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
 } else {
     $_SESSION['estatus'] = 'error';
     $_SESSION['mensaje'] = 'Error al aprobar el usuario: ' . mysqli_error($conexion);

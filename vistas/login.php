@@ -264,6 +264,7 @@ $mostrar_aviso = ($aviso_activo && $dias_transcurridos <= 90);
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
+                showCloseButton: true,
                 timer: 8000,
                 timerProgressBar: true,
                 background: '#ffffff',

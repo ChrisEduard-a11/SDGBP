@@ -258,6 +258,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
             $icono_notif = 'fas fa-times-circle';
         }
         crearNotificacion($conexion, $usuario_id, $titulo_notif, $msj_notif, $tipo_notif, $icono_notif);
+
+        // --- Registro en Bitácora de la UPU ---
+        $nombre_aprobador = $_SESSION['nombre'];
+        if ($estado == "aprobado") {
+            $accion_upu = "Pago Aprobado - Aprobado por: " . $nombre_aprobador . " | Monto: Bs. " . $monto . " | Ref: " . $referencia . ($comision > 0 ? " | Comisión: Bs. " . $comision : "");
+        } else {
+            $accion_upu = "Pago Rechazado - Rechazado por: " . $nombre_aprobador . " | Monto: Bs. " . $monto . " | Ref: " . $referencia . (!empty($descripcion) ? " | Motivo: " . $descripcion : "");
+        }
+        registrarAccion($conexion, $accion_upu, $usuario_id);
         // --------------------------------
     }
 
@@ -381,7 +390,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
 
     // Registrar la acción en la bitácora
     if (isset($_SESSION['id'])) {
-        $accion_bitacora = ($estado == "aprobado" ? "Aprobar Pago" : "Rechazar Pago");
+        $accion_label = ($estado == "aprobado" ? "Aprobar" : "Rechazar");
+        $accion_bitacora = $accion_label . ' - Cliente: ' . $nombre_cliente . ' | Monto: Bs. ' . $monto . ' | Ref: ' . $referencia . (!empty($descripcion) ? ' | Motivo: ' . $descripcion : '');
         registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
     }
 

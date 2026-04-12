@@ -45,12 +45,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($puedeBorrar) {
         // Obtener la información del usuario, incluyendo la foto
-        $sql = "SELECT foto FROM usuario WHERE id_usuario = $id_usuario";
+        $sql = "SELECT foto, usuario, nombre FROM usuario WHERE id_usuario = $id_usuario";
         $result = mysqli_query($conexion, $sql);
 
         if (mysqli_num_rows($result) == 1) {
             $row = mysqli_fetch_assoc($result);
             $foto = $row['foto'];
+            $username_borrado = $row['usuario'];
+            $nombre_borrado = $row['nombre'];
 
             // Eliminar la foto del servidor
             $rutaFoto = '../img/fotos/' . $foto;
@@ -64,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Registrar en bitácora
             if (isset($_SESSION['id'])) {
-                registrarAccion($conexion, 'Eliminó un Usuario', $_SESSION['id']);
+                $accion_bitacora = 'Eliminó Usuario - Usuario: ' . $username_borrado . ' | Nombre: ' . $nombre_borrado;
+                registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
             }
 
             echo json_encode(['success' => true]);

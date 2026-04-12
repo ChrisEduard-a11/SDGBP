@@ -39,8 +39,9 @@ if (isset($data['archivos']) && is_array($data['archivos'])) {
 
     if ($archivos_eliminados > 0) {
         // Registrar en bitácora si es necesario
-        $detalles = "Archivos: " . implode(", ", $nombres_eliminados);
-        registrarAccion($conexion, 'Eliminación Múltiple de Comprobantes', $_SESSION['id']);
+        $nombres_str = implode(", ", $nombres_eliminados);
+        $accion_bitacora = 'Eliminó Comprobantes (Físico) - Cantidad: ' . $archivos_eliminados . ' | Archivos: ' . $nombres_str;
+        registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
         
         echo json_encode([
             'success' => true, 

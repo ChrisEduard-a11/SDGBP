@@ -127,7 +127,8 @@ if ($result) {
     $_SESSION["estatus"] = "success";
     $_SESSION["mensaje"] = "Usuario actualizado exitosamente";
 
-    registrarAccion($conexion, 'Actualizacion de Usuario', $id_usuario);
+    $accion_bitacora = 'Actualizó Usuario - Usuario: ' . $nuevo_usuario . ' | Nombre: ' . $nombre . ' | Rol: ' . $tipo;
+    registrarAccion($conexion, $accion_bitacora, $id_usuario);
     header("Location: ../vistas/usuario.php");
 } else {
     $_SESSION["estatus"] = "error";

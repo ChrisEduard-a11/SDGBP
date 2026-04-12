@@ -34,7 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $_SESSION['mensaje'] = 'Cliente actualizado correctamente.';
         // Registrar en bitácora
         if (isset($_SESSION['id'])) {
-            registrarAccion($conexion, 'Actualizar Cliente', $_SESSION['id']);
+            $accion_bitacora = 'Actualizó Cliente - Cliente: ' . $nuevo_nombre;
+            registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
         }
     } else {
         $_SESSION['estatus'] = 'error';

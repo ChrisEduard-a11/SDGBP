@@ -28,7 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($success) {
         if (function_exists('registrarAccion')) {
-            @registrarAccion($conexion, 'Actualizó aviso de bienvenida del login', $_SESSION['id']);
+            $est_lbl = ($status == '1' ? 'Activado' : 'Desactivado');
+            $accion_bitacora = 'Actualizó Configuración - Módulo: Aviso de Login | Estatus: ' . $est_lbl;
+            @registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
         }
         $_SESSION['estatus'] = "success";
         $_SESSION['mensaje'] = "Aviso de bienvenida actualizado correctamente.";
