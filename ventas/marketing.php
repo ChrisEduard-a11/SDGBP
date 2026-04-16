@@ -1,5 +1,25 @@
 <?php 
 session_start(); 
+
+$configFile = '../config/marketing_status.json';
+$marketingActivo = true; // default
+if (file_exists($configFile)) {
+    $ms_data = json_decode(file_get_contents($configFile), true);
+    // Strict boolean checking. If key exists, strict compare to true.
+    if (isset($ms_data['activo'])) {
+        $marketingActivo = ($ms_data['activo'] === true || $ms_data['activo'] === "true" || $ms_data['activo'] == 1);
+    }
+}
+
+$isAdmin = (isset($_SESSION['user']) && isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin');
+
+// Si el marketing está desactivado, SOLO un administrador puede entrar.
+// Si NO está activo Y la persona actual NO es administrador, bloqueamos.
+if ($marketingActivo === false && $isAdmin === false) {
+    header("Location: ../vistas/denegado_a.php");
+    exit();
+}
+
 // Generar token de seguridad (idempotencia)
 if (!isset($_SESSION['form_tokens'])) {
     $_SESSION['form_tokens'] = [];

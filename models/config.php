@@ -3,8 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Configurar el tiempo de expiración de la sesión a 1 hora
-$session_timeout = 3600; // 1 hora en segundos
+// Configurar el tiempo de expiración de la sesión a 3 minutos
+$session_timeout = 180; // 3 minutos en segundos
 
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $session_timeout)) {
     // Si la última actividad fue hace más de $session_timeout segundos

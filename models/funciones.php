@@ -629,70 +629,66 @@ function autocompletarDescripcion() {
 </script>
 <script>
     <?php include('config.php'); ?>
-    // Tiempo restante de la sesión en segundos
-    var timeRemaining = <?php echo $time_remaining; ?>;
+    let timeRemaining = <?php echo $time_remaining; ?>;
+    let timerAdvertencia;
+    let timerExpiracion;
 
-    // Mostrar alerta 20 segundos antes de que la sesión expire
-    if (timeRemaining > 20) {
-        setTimeout(function() {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Advertencia',
-                text: 'Tu sesión está a punto de expirar. ¿Deseas extenderla?',
-                confirmButtonText: 'Extender sesión',
-                showCancelButton: true,
-                cancelButtonText: 'Salir',
-                allowOutsideClick: false,
-                allowOutsideClick: false,
-                confirmButtonColor: '#007bff',
-                cancelButtonColor: '#d33' // Color rojo para el botón de cancelar
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Extender la sesión
-                    fetch('../acciones/extender_sesion.php')
-                        .then(response => {
-                            if (response.ok) {
-                                location.reload(); // Recargar la página para extender la sesión
-                            }
-                        });
-                } else {
-                    // Redirigir a salir.php si el usuario no extiende la sesión
-                    window.location.href = '../acciones/salir.php';
-                }
-            });
-        }, (timeRemaining - 20) * 1000); // Mostrar la alerta 20 segundos antes de que expire
-    } else {
+    function iniciarTemporizadorSesion() {
+        // Limpiamos temporizadores anteriores si existen
+        clearTimeout(timerAdvertencia);
+        clearTimeout(timerExpiracion);
+
+        // Mostrar alerta 20 segundos antes de que expire la sesión (si quedan más de 20s)
+        if (timeRemaining > 20) {
+            timerAdvertencia = setTimeout(mostrarAlertaSesion, (timeRemaining - 20) * 1000);
+        } else {
+            mostrarAlertaSesion();
+        }
+
+        // Timer definitivo que expulsa al usuario
+        timerExpiracion = setTimeout(function() {
+            window.location.href = '../acciones/salir.php';
+        }, timeRemaining * 1000);
+    }
+
+    function mostrarAlertaSesion() {
         Swal.fire({
             icon: 'warning',
-            title: 'Advertencia',
-            text: 'Tu sesión está a punto de expirar. ¿Deseas extenderla?',
-            confirmButtonText: 'Extender sesión',
+            title: 'Sesión por expirar',
+            text: 'Tu sesión expira en 20 segundos por inactividad. ¿Deseas extender el tiempo?',
+            confirmButtonText: 'Extender',
             showCancelButton: true,
             cancelButtonText: 'Salir',
             allowOutsideClick: false,
-            allowOutsideClick: false,
-            confirmButtonColor: '#007bff',
-            cancelButtonColor: '#d33' // Color rojo para el botón de cancelar
+            confirmButtonColor: '#10b981', // green
+            cancelButtonColor: '#64748b' 
         }).then((result) => {
             if (result.isConfirmed) {
-                // Extender la sesión
-                fetch('../acciones/extender_sesion.php')
-                    .then(response => {
-                        if (response.ok) {
-                            location.reload(); // Recargar la página para extender la sesión
-                        }
-                    });
+                // Hacer el llamado al backend silenciosamente
+                fetch('../acciones/extender_sesion.php').then(response => { 
+                    if (response.ok) { 
+                        // En lugar de location.reload(), reseteamos el temporizador a 3 minutos
+                        timeRemaining = 180; 
+                        iniciarTemporizadorSesion();
+                        Swal.fire({
+                            icon: 'success', 
+                            title: 'Extendida', 
+                            text: 'Sesión renovada por 3 minutos más.', 
+                            timer: 1500, 
+                            showConfirmButton: false, 
+                            backdrop: false
+                        });
+                    } 
+                });
             } else {
-                // Redirigir a salir.php si el usuario no extiende la sesión
                 window.location.href = '../acciones/salir.php';
             }
         });
     }
 
-    // Redirigir a salir.php cuando la sesión expire
-    setTimeout(function() {
-        window.location.href = '../acciones/salir.php';
-    }, timeRemaining * 1000);
+    // Iniciar temporizador al cargar la página
+    iniciarTemporizadorSesion();
+
 </script>
 <script>
     function verMotivoRechazo(motivo) {

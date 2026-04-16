@@ -1,5 +1,13 @@
 <?php
 require_once("../models/header.php");
+
+$marketing_status_path = '../config/marketing_status.json';
+$marketingEnabled = true;
+if (file_exists($marketing_status_path)) {
+    $ms_data = json_decode(file_get_contents($marketing_status_path), true);
+    $marketingEnabled = isset($ms_data['activo']) ? $ms_data['activo'] : true;
+}
+
 // Configurar la zona horaria correcta
 date_default_timezone_set('America/Caracas'); // Cambia esto según tu ubicación
 
@@ -303,6 +311,9 @@ if ($tipo_usuario == "admin") {
                             <a href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-file-invoice-dollar"></i>Reg. Egreso
                             </a>
+                            <a href="../ventas/marketing.php" target="_blank" class="shortcut-chip chip-secondary text-decoration-none" style="border-color: #f18000; color: #f18000 !important;">
+                                <i class="fas fa-bullhorn"></i>Marketing
+                            </a>
                         <?php } elseif ($_SESSION["tipo"] == "cont") { ?>
                             <a href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-plus-circle"></i>Registrar Egreso
@@ -366,6 +377,30 @@ if ($tipo_usuario == "admin") {
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
                         <a class="small text-white stretched-link text-decoration-none fw-bold" href="javascript:void(0);" onclick="navigateTo('usuario.php')">Administrar Usuarios</a>
+                        <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.15s;">
+                <div class="card metric-card bg-gradient-warning h-100 shadow-lg">
+                    <div class="card-body p-4 d-flex flex-column position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h4 class="card-title text-white fw-bold mb-3"><i class="fas fa-bullhorn me-2"></i> Marketing</h4>
+                            <div style="z-index:10; position:relative;" class="text-end">
+                                <span id="marketingStatusBadge" class="badge <?php echo $marketingEnabled ? 'bg-success' : 'bg-danger'; ?> mb-1 d-block shadow-sm">
+                                    <?php echo $marketingEnabled ? 'Público: ON' : 'Público: OFF'; ?>
+                                </span>
+                                <button type="button" onclick="toggleMarketingState(event)" class="btn btn-sm btn-light text-dark fw-bold w-100 shadow-sm" style="font-size: 0.75rem;">
+                                    <i class="fas fa-sync-alt me-1"></i> Alternar
+                                </button>
+                            </div>
+                        </div>
+                        <p class="card-text text-white opacity-75 mb-4 fw-medium">Acceso al catálogo Ultra Premium para comercialización externa de EURIPYS.</p>
+                        <i class="fas fa-store metric-icon"></i>
+                    </div>
+                    <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="../ventas/marketing.php" target="_blank">Ingresar al Catálogo</a>
                         <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>
@@ -460,6 +495,34 @@ if ($tipo_usuario == "admin") {
         </div>
         
     </div>
+    
+    <script>
+        function toggleMarketingState(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fetch('../acciones/toggle_marketing.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const badge = document.getElementById('marketingStatusBadge');
+                        if (data.activo) {
+                            badge.className = 'badge bg-success mb-1 d-block shadow-sm';
+                            badge.innerText = 'Público: ON';
+                            if (typeof Swal !== 'undefined') Swal.fire({icon: 'success', title: 'Marketing Activado', text: 'El catálogo ahora es visible para todo el público en index.php', timer: 2000, showConfirmButton: false});
+                        } else {
+                            badge.className = 'badge bg-danger mb-1 d-block shadow-sm';
+                            badge.innerText = 'Público: OFF';
+                            if (typeof Swal !== 'undefined') Swal.fire({icon: 'info', title: 'Marketing Oculto', text: 'El acceso público ha sido denegado con éxito.', timer: 2000, showConfirmButton: false});
+                        }
+                    } else {
+                        if (typeof Swal !== 'undefined') Swal.fire('Error', data.message || 'Error al cambiar estado.', 'error');
+                    }
+                })
+                .catch(err => {
+                    if (typeof Swal !== 'undefined') Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+                });
+        }
+    </script>
     
 <?php
 require_once("../models/footer.php");

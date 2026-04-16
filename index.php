@@ -4,6 +4,13 @@ if (isset($_SESSION['user'])) {
     header('Location: vistas/inicio.php'); 
     exit();
 }
+
+$marketing_json = 'config/marketing_status.json';
+$marketingActivo = true;
+if (file_exists($marketing_json)) {
+    $ms_data = json_decode(file_get_contents($marketing_json), true);
+    $marketingActivo = isset($ms_data['activo']) ? $ms_data['activo'] : true;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -128,7 +135,9 @@ if (isset($_SESSION['user'])) {
 
                 <!-- Desktop Menu -->
                 <div class="hidden lg:flex items-center space-x-1 xl:space-x-4">
+                    <?php if($marketingActivo): ?>
                     <a href="#marketing" class="px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Marketing</a>
+                    <?php endif; ?>
                     <a href="#servicios" class="px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Servicios</a>
                     <a href="#funcionalidades" class="px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Funcionalidades</a>
                     <a href="#historia" class="px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Historia</a>
@@ -155,7 +164,9 @@ if (isset($_SESSION['user'])) {
         <!-- Mobile Dropdown -->
         <div id="mobileMenu" class="hidden lg:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 absolute w-full shadow-lg">
             <div class="flex flex-col px-4 pt-2 pb-6 space-y-2">
+                <?php if($marketingActivo): ?>
                 <a href="#marketing" class="block px-4 py-3 rounded-xl text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800">Marketing</a>
+                <?php endif; ?>
                 <a href="#servicios" class="block px-4 py-3 rounded-xl text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800">Servicios</a>
                 <a href="#funcionalidades" class="block px-4 py-3 rounded-xl text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800">Funcionalidades</a>
                 <a href="#historia" class="block px-4 py-3 rounded-xl text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800">Historia</a>
@@ -212,6 +223,7 @@ if (isset($_SESSION['user'])) {
         </div>
     </section>
 
+    <?php if($marketingActivo): ?>
     <!-- Marketing Call to Action Area -->
     <section id="marketing" class="py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -244,6 +256,7 @@ if (isset($_SESSION['user'])) {
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- Global Grid Standard Design -->
     <section id="servicios" class="py-24 bg-white dark:bg-slate-900 transition-colors">

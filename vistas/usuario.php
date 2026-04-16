@@ -280,9 +280,32 @@ function navigateTo(url) {
     window.location.href = url;
 }
 
-function confirmDelete(url) {
-    if (confirm("¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.")) {
-        window.location.href = url;
+function confirmUserAction(url, title = 'Borrar') {
+    if (typeof Swal !== 'undefined') {
+        let msg = "¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.";
+        let iconType = "warning";
+        if (title === 'Solicitar Eliminación') {
+            msg = "¿Deseas solicitar al Super Admin Principal la eliminación de este usuario?";
+            iconType = "info";
+        }
+        Swal.fire({
+            title: title === 'Solicitar Eliminación' ? 'Solicitar Borrado' : 'Confirmar Eliminación',
+            text: msg,
+            icon: iconType,
+            showCancelButton: true,
+            confirmButtonColor: title === 'Solicitar Eliminación' ? '#3b82f6' : '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: title === 'Solicitar Eliminación' ? 'Enviar Solicitud' : 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    } else {
+        if (confirm("¿Estás seguro de continuar con esta acción?")) {
+            window.location.href = url;
+        }
     }
 }
 
@@ -480,6 +503,136 @@ function confirmDelete(url) {
             </div>
         <?php endif; ?>
 
+        <?php if ($loggedUserId == $superAdminId): ?>
+        <?php
+            // Consultar solicitudes pendientes
+            $sqlSolicitudes = "SELECT s.id_solicitud, s.fecha_solicitud, u_solicitante.nombre AS nombre_solicitante, u_objetivo.nombre AS nombre_objetivo, u_objetivo.usuario AS user_objetivo, u_objetivo.foto AS foto_objetivo
+                               FROM solicitudes_eliminacion_u s
+                               JOIN usuario u_solicitante ON s.id_solicitante = u_solicitante.id_usuario
+                               JOIN usuario u_objetivo ON s.id_objetivo = u_objetivo.id_usuario
+                               WHERE s.estado = 'pendiente'";
+            $resSolicitudes = mysqli_query($conexion, $sqlSolicitudes);
+        ?>
+            <div class="card glass-card border-0 mb-4 animate__animated animate__fadeIn">
+                <div class="card-header bg-warning text-dark p-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-bell me-2"></i> Solicitudes de Eliminación Pendientes</h5>
+                    <span class="badge bg-danger rounded-pill"><?php echo mysqli_num_rows($resSolicitudes); ?> Nuevas</span>
+                </div>
+                <div class="card-body p-3">
+                    <?php if (mysqli_num_rows($resSolicitudes) > 0): ?>
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                        <?php while ($sol = mysqli_fetch_assoc($resSolicitudes)): ?>
+                            <div class="col">
+                                <div class="border rounded-3 p-3 bg-white">
+                                    <div class="d-flex align-items-center gap-3 mb-2">
+                                        <img src="<?php echo htmlspecialchars($sol['foto_objetivo']); ?>" class="img-circular" width="40" height="40">
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-danger">Eliminar a: <?php echo htmlspecialchars($sol['nombre_objetivo']) . ' (@' . htmlspecialchars($sol['user_objetivo']) . ')'; ?></h6>
+                                            <small class="text-muted">Solicitado por: <strong><?php echo htmlspecialchars($sol['nombre_solicitante']); ?></strong> el <?php echo date('d/m/Y H:i', strtotime($sol['fecha_solicitud'])); ?></small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 justify-content-end mt-2">
+                                        <button class="btn btn-sm btn-outline-danger" data-no-preloader="true" onclick="rechazarSolicitud(<?php echo $sol['id_solicitud']; ?>)"><i class="fas fa-times me-1"></i> Rechazar</button>
+                                        <button class="btn btn-sm btn-success shadow-sm" data-no-preloader="true" onclick="iniciarAprobacion2FA(<?php echo $sol['id_solicitud']; ?>)"><i class="fas fa-check-double me-1"></i> Aprobar con 2FA</button>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    </div>
+                    <?php else: ?>
+                        <div class="text-center p-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3 opacity-50"></i>
+                            <h6 class="fw-bold mb-0 text-muted">No tienes solicitudes pendientes por el momento.</h6>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <script>
+            function rechazarSolicitud(id_solicitud) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Rechazar Solicitud',
+                        text: 'La solicitud de eliminación será descartada.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, rechazar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '../acciones/procesar_aprobacion_eliminar.php?action=rechazar&id_solicitud=' + id_solicitud;
+                        }
+                    });
+                }
+            }
+            
+            function iniciarAprobacion2FA(id_solicitud) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Confirmación Segura',
+                        text: 'Se enviará un código 2FA a tu correo electrónico para verificar tu identidad.',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Enviar Código',
+                        cancelButtonText: 'Cancelar',
+                        showLoaderOnConfirm: true,
+                        preConfirm: () => {
+                            return fetch(`../acciones/enviar_2fa_aprobacion.php?id_solicitud=${id_solicitud}`)
+                                .then(response => {
+                                    if (!response.ok) { throw new Error(response.statusText) }
+                                    return response.json();
+                                })
+                                .catch(error => { Swal.showValidationMessage(`Error en envío: ${error}`); });
+                        },
+                        allowOutsideClick: () => !Swal.isLoading()
+                    }).then((result) => {
+                        if (result.isConfirmed && result.value.status === 'success') {
+                            Swal.fire({
+                                title: 'Código Enviado',
+                                text: 'Revisa tu bandeja de entrada e ingresa el código de 6 dígitos aquí:',
+                                input: 'text',
+                                inputAttributes: {
+                                    maxlength: 6,
+                                    autocapitalize: 'off',
+                                    autocorrect: 'off'
+                                },
+                                showCancelButton: true,
+                                confirmButtonText: 'Verificar y Eliminar',
+                                preConfirm: (codigo) => {
+                                    if (!codigo || codigo.length < 6) {
+                                        Swal.showValidationMessage('Ingresa el código completo de 6 dígitos');
+                                        return false;
+                                    }
+                                    return fetch(`../acciones/procesar_aprobacion_eliminar.php`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                        body: `action=aprobar&id_solicitud=${id_solicitud}&codigo_2fa=${codigo}`
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) { throw new Error(response.statusText) }
+                                        return response.json();
+                                    })
+                                    .catch(error => { Swal.showValidationMessage(`Error: ${error}`); });
+                                },
+                                allowOutsideClick: false
+                            }).then((verifyResult) => {
+                                if (verifyResult.isConfirmed) {
+                                    if(verifyResult.value.status === 'success') {
+                                        Swal.fire('¡Eliminado!', verifyResult.value.message, 'success').then(() => { location.reload(); });
+                                    } else {
+                                        Swal.fire('Error', verifyResult.value.message, 'error').then(() => { location.reload(); });
+                                    }
+                                }
+                            });
+                        } else if(result.isConfirmed && result.value.status === 'error') {
+                            Swal.fire('Error', result.value.message, 'error');
+                        }
+                    });
+                }
+            }
+            </script>
+        <?php endif; ?>
+
         <div class="card glass-card border-0 mb-5 animate__animated animate__fadeIn">
             <div class="card-header bg-success text-white p-4 border-0">
                 <h5 class="mb-0 fw-bold"><i class="fas fa-wallet me-2"></i> Clientes UPU y Saldos</h5>
@@ -561,8 +714,16 @@ function confirmDelete(url) {
                                                         <button class="btn btn-soft-danger btn-sm rounded-3" onclick="toggleBloqueo(<?php echo $row['id_usuario']; ?>, 1)"><i class="fas fa-user-lock"></i></button>
                                                     <?php endif; ?>
                                                 <?php endif; ?>
-                                                <button class="btn btn-soft-danger btn-sm rounded-3" onclick="confirmDelete('../acciones/delete_u.php?id=<?php echo $row['id_usuario']; ?>')">
-                                                    <i class="fas fa-trash-alt"></i>
+                                                <?php 
+                                                $deleteTitleUPU = "Borrar";
+                                                $deleteUrlUPU = "../acciones/delete_u.php?id=" . $row['id_usuario'];
+                                                if ($loggedUserType == 'admin' && $loggedUserId != $superAdminId) {
+                                                    $deleteTitleUPU = "Solicitar Eliminación";
+                                                    $deleteUrlUPU = "../acciones/solicitar_delete_u.php?id=" . $row['id_usuario'];
+                                                }
+                                                ?>
+                                                <button class="btn btn-soft-danger btn-sm rounded-3" onclick="confirmUserAction('<?php echo $deleteUrlUPU; ?>', '<?php echo $deleteTitleUPU; ?>')" title="<?php echo $deleteTitleUPU; ?>">
+                                                    <i class="fas <?php echo ($deleteTitleUPU == 'Solicitar Eliminación') ? 'fa-paper-plane' : 'fa-trash-alt'; ?>"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -657,19 +818,32 @@ function confirmDelete(url) {
                                             <?php 
                                             $canDelete = true;
                                             $deleteTitle = "Borrar";
-                                            if ($tipo == 'admin' && $loggedUserId != $superAdminId) {
+                                            $deleteUrl = "../acciones/delete_u.php?id=" . $row['id_usuario'];
+                                            
+                                            // Si es Super Usuario pero NO el ID 8, toda eliminación requiere solicitar
+                                            if ($loggedUserType == 'admin' && $loggedUserId != $superAdminId) {
+                                                $deleteTitle = "Solicitar Eliminación";
+                                                $deleteUrl = "../acciones/solicitar_delete_u.php?id=" . $row['id_usuario'];
+                                            } 
+                                            // Si es un rol menor intentando eliminar a un admin (lógica pre-existente)
+                                            elseif ($loggedUserType != 'admin' && $tipo == 'admin') {
                                                 $canDelete = false;
                                                 $deleteTitle = "Solo Super Admin";
                                             }
+
                                             if ($row['id_usuario'] == $loggedUserId) {
                                                 $canDelete = false;
                                                 $deleteTitle = "Tu propia cuenta";
                                             }
+                                            if ($row['id_usuario'] == $superAdminId) {
+                                                $canDelete = false;
+                                                $deleteTitle = "No se puede borrar el admin principal";
+                                            }
                                             ?>
                                             <button class="btn btn-soft-danger btn-sm rounded-3"
-                                                <?php echo $canDelete ? 'onclick="confirmDelete(\'../acciones/delete_u.php?id=' . $row['id_usuario'] . '\')"' : 'disabled'; ?>
+                                                <?php echo $canDelete ? 'onclick="confirmUserAction(\'' . $deleteUrl . '\', \'' . $deleteTitle . '\')"' : 'disabled'; ?>
                                                 title="<?php echo $deleteTitle; ?>">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="fas <?php echo ($deleteTitle == 'Solicitar Eliminación') ? 'fa-paper-plane' : 'fa-trash'; ?>"></i>
                                             </button>
 
                                             <?php if ($loggedUserType == 'admin' && $row['id_usuario'] != $loggedUserId): ?>
