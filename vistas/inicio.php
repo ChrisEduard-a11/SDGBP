@@ -8,6 +8,28 @@ if (file_exists($marketing_status_path)) {
     $marketingEnabled = isset($ms_data['activo']) ? $ms_data['activo'] : true;
 }
 
+$maint_query = mysqli_query($conexion, "SELECT * FROM config_mantenimiento WHERE id = 1");
+$maint_data = mysqli_fetch_assoc($maint_query);
+
+$maintenanceEnabled = (bool)($maint_data['activo'] ?? false);
+$fecha_m = $maint_data['fecha'] ?? null;
+$h_inicio = substr($maint_data['hora_inicio'], 0, 5);
+$h_fin = substr($maint_data['hora_fin'], 0, 5);
+
+// Integrar lógica de horario en el estado del Dashboard
+if (!$maintenanceEnabled && !empty($h_inicio) && !empty($h_fin)) {
+    date_default_timezone_set('America/Caracas'); 
+    $f_actual = date('Y-m-d');
+    $h_actual = date('H:i');
+    if (empty($fecha_m) || $fecha_m === $f_actual) {
+        if ($h_inicio <= $h_fin) {
+            if ($h_actual >= $h_inicio && $h_actual < $h_fin) $maintenanceEnabled = true;
+        } else {
+            if ($h_actual >= $h_inicio || $h_actual < $h_fin) $maintenanceEnabled = true;
+        }
+    }
+}
+
 // Configurar la zona horaria correcta
 date_default_timezone_set('America/Caracas'); // Cambia esto según tu ubicación
 
@@ -383,6 +405,33 @@ if ($tipo_usuario == "admin") {
             </div>
 
             <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.15s;">
+                <div class="card metric-card bg-gradient-danger h-100 shadow-lg">
+                    <div class="card-body p-4 d-flex flex-column position-relative">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h4 class="card-title text-white fw-bold mb-3"><i class="fas fa-tools me-2"></i> Mantenimiento</h4>
+                            <div style="z-index:10; position:relative;" class="text-end">
+                                <span id="maintenanceStatusBadge" class="badge <?php echo $maintenanceEnabled ? 'bg-danger' : 'bg-success'; ?> mb-2 d-block shadow-sm py-2">
+                                    <?php echo $maintenanceEnabled ? '<i class="fas fa-lock me-1"></i> PLATAFORMA CERRADA' : '<i class="fas fa-check-circle me-1"></i> SISTEMA OPERATIVO'; ?>
+                                </span>
+                                
+                                <?php if ($maintenanceEnabled): ?>
+                                    <button type="button" onclick="toggleMaintenanceState(event)" class="btn btn-sm btn-light text-danger fw-bold w-100 shadow-sm mb-2" style="font-size: 0.75rem;">
+                                        <i class="fas fa-unlock me-1"></i> Abrir (Manual)
+                                    </button>
+                                <?php endif; ?>
+
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#maintenanceSettingsModal" class="btn btn-sm btn-dark text-white fw-bold w-100 shadow-sm" style="font-size: 0.75rem; background: rgba(0,0,0,0.5);">
+                                    <i class="fas fa-clock me-1"></i> <?php echo $maintenanceEnabled ? 'Ver / Ajustar' : 'Programar Cierre'; ?>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="card-text text-white opacity-75 mb-4 fw-medium">Denegar acceso a todos los usuarios no administradores inmediatamente.</p>
+                        <i class="fas fa-user-slash metric-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.18s;">
                 <div class="card metric-card bg-gradient-warning h-100 shadow-lg">
                     <div class="card-body p-4 d-flex flex-column position-relative">
                         <div class="d-flex justify-content-between align-items-start">
@@ -495,6 +544,53 @@ if ($tipo_usuario == "admin") {
         </div>
         
     </div>
+
+    <!-- Modal Ajustes Mantenimiento -->
+    <div class="modal fade" id="maintenanceSettingsModal" tabindex="-1" aria-labelledby="maintenanceSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-premium border-0 shadow-lg" style="border-radius: 1.5rem;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary" id="maintenanceSettingsModalLabel">
+                        <i class="fas fa-tools me-2"></i>Ajustes de Mantenimiento
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="maintenanceForm">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Título de la Alerta</label>
+                            <input type="text" class="form-control rounded-3" name="titulo" value="<?php echo htmlspecialchars($maint_data['titulo'] ?? 'Plataforma en Mantenimiento'); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Descripción / Motivo</label>
+                            <textarea class="form-control rounded-3" name="descripcion" rows="3" required><?php echo htmlspecialchars($maint_data['descripcion'] ?? 'Estamos realizando mejoras en la plataforma.'); ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Fecha de Mantenimiento (Opcional)</label>
+                            <input type="date" class="form-control rounded-3" name="fecha" value="<?php echo htmlspecialchars($maint_data['fecha'] ?? ''); ?>">
+                            <div class="form-text">Si se deja vacío, el horario se aplicará todos los días.</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Hora Inicio</label>
+                                <input type="time" class="form-control rounded-3" name="hora_inicio" value="<?php echo htmlspecialchars($maint_data['hora_inicio'] ?? ''); ?>">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Hora Fin</label>
+                                <input type="time" class="form-control rounded-3" name="hora_fin" value="<?php echo htmlspecialchars($maint_data['hora_fin'] ?? ''); ?>">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0 pb-4 justify-content-center">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     
     <script>
         function toggleMarketingState(e) {
@@ -522,6 +618,77 @@ if ($tipo_usuario == "admin") {
                     if (typeof Swal !== 'undefined') Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
                 });
         }
+
+        function toggleMaintenanceState(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            Swal.fire({
+                title: '¿Confirmar cambio?',
+                text: "Esto afectará el acceso de todos los usuarios no administradores.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ea580c',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, Cambiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('../acciones/toggle_maintenance.php')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const badge = document.getElementById('maintenanceStatusBadge');
+                                if (data.activo) {
+                                    badge.className = 'badge bg-danger mb-1 d-block shadow-sm';
+                                    badge.innerText = 'Estado: ON';
+                                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'warning', title: 'Mantenimiento Activado', text: 'El sistema ahora es inaccesible para los usuarios regulares.', timer: 2500, showConfirmButton: false});
+                                } else {
+                                    badge.className = 'badge bg-success mb-1 d-block shadow-sm';
+                                    badge.innerText = 'Estado: OFF';
+                                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'success', title: 'Mantenimiento Desactivado', text: 'El acceso ha sido restaurado para todos los usuarios.', timer: 2500, showConfirmButton: false});
+                                }
+                            } else {
+                                if (typeof Swal !== 'undefined') Swal.fire('Error', data.message || 'Error al cambiar estado.', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            if (typeof Swal !== 'undefined') Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+                        });
+                }
+            });
+        }
+
+        // Manejar envío del formulario de ajustes vía AJAX
+        document.getElementById('maintenanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('../acciones/actualizar_mantenimiento.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Ajustes Guardados',
+                        text: 'La configuración de mantenimiento se ha actualizado correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#maintenanceSettingsModal').modal('hide');
+                        // No recargamos para una experiencia premium, pero podrías si quieres actualizar los campos
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo guardar la configuración.', 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error de red', 'No se pudo conectar con el servidor.', 'error');
+            });
+        });
     </script>
     
 <?php

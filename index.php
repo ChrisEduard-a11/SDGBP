@@ -1,15 +1,10 @@
 <?php
 session_start();
+require_once("conexion.php");
+
 if (isset($_SESSION['user'])) {
     header('Location: vistas/inicio.php'); 
     exit();
-}
-
-$marketing_json = 'config/marketing_status.json';
-$marketingActivo = true;
-if (file_exists($marketing_json)) {
-    $ms_data = json_decode(file_get_contents($marketing_json), true);
-    $marketingActivo = isset($ms_data['activo']) ? $ms_data['activo'] : true;
 }
 ?>
 <!DOCTYPE html>

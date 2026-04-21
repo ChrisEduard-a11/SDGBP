@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user']) || $_SESSION['tipo'] !== 'admin') {
+if (!isset($_SESSION['user']) || strtolower($_SESSION['tipo'] ?? '') !== 'admin') {
     echo json_encode(['success' => false, 'message' => 'Acceso denegado']);
     exit();
 }

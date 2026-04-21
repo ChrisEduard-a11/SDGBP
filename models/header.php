@@ -9,7 +9,66 @@ $session_token = $_SESSION['session_token'] ?? '';
 if (!$usuarioid || !$session_token) {
     header("Location: ../vistas/denegado_a.php");
     exit;
-} // Consulta consolidada de seguridad y vigencia de clave
+}
+
+// =====================================================================
+// VERIFICACIÓN DE MODO MANTENIMIENTO (VERSIÓN SQL)
+// =====================================================================
+$maint_query = mysqli_query($conexion, "SELECT * FROM config_mantenimiento WHERE id = 1");
+$maintenance_data = mysqli_fetch_assoc($maint_query);
+
+if ($maintenance_data) {
+    $is_active = (bool)($maintenance_data['activo'] ?? false);
+    $fecha_maint = $maintenance_data['fecha'] ?? null;
+    $hora_inicio = $maintenance_data['hora_inicio'] ?? '';
+    $hora_fin = $maintenance_data['hora_fin'] ?? '';
+    
+    // Si no está activo manualmente, verificar horario automático
+    if (!$is_active && !empty($hora_inicio) && !empty($hora_fin)) {
+        date_default_timezone_set('America/Caracas'); 
+        $fecha_actual = date('Y-m-d');
+        $hora_actual = date('H:i');
+        
+        // Solo proceder si la fecha coincide o si no hay fecha definida (diario)
+        if (empty($fecha_maint) || $fecha_maint === $fecha_actual) {
+            // Manejar rangos que cruzan la medianoche
+            if ($hora_inicio <= $hora_fin) {
+                if ($hora_actual >= $hora_inicio && $hora_actual < $hora_fin) {
+                    $is_active = true;
+                }
+            } else {
+                // Caso ej: 22:00 a 02:00
+                if ($hora_actual >= $hora_inicio || $hora_actual < $hora_fin) {
+                    $is_active = true;
+                }
+            }
+        }
+    }
+
+    if ($is_active === true) {
+        // Verificación ULTRA-ROBUSTA: el admin siempre pasa
+        $user_role_session = strtolower($_SESSION['tipo'] ?? '');
+        
+        if ($user_role_session !== 'admin') {
+            // Si no es admin en sesión, verificamos DB por si acaso la sesión está corrupta
+            $check_admin_sql = "SELECT tipos FROM usuario WHERE id_usuario = '$usuarioid'";
+            $check_admin_res = mysqli_query($conexion, $check_admin_sql);
+            $check_admin_row = mysqli_fetch_assoc($check_admin_res);
+            $db_role = strtolower($check_admin_row['tipos'] ?? '');
+            
+            if ($db_role !== 'admin') {
+                $current_page = basename($_SERVER['PHP_SELF']);
+                if ($current_page !== 'mantenimiento.php') {
+                    header("Location: ../vistas/mantenimiento.php");
+                    exit;
+                }
+            }
+        }
+
+    }
+}
+// =====================================================================
+ // Consulta consolidada de seguridad y vigencia de clave
 // Usamos una sola consulta para optimizar y evitar inconsistencias
 $sql_seguridad = "SELECT session_token, fecha_cambio_clave, tipos, foto FROM usuario WHERE id_usuario = '$usuarioid'";
 $res_seguridad = mysqli_query($conexion, $sql_seguridad);
