@@ -2,10 +2,6 @@
 session_start();
 require_once("conexion.php");
 
-if (isset($_SESSION['user'])) {
-    header('Location: vistas/inicio.php'); 
-    exit();
-}
 ?>
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">

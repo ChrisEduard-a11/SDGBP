@@ -59,6 +59,8 @@ if ($maintenance_data) {
             if ($db_role !== 'admin') {
                 $current_page = basename($_SERVER['PHP_SELF']);
                 if ($current_page !== 'mantenimiento.php') {
+                    session_unset();
+                    session_destroy();
                     header("Location: ../vistas/mantenimiento.php");
                     exit;
                 }
