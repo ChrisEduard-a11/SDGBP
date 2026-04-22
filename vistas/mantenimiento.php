@@ -20,9 +20,9 @@ if (!$is_active && !empty($hora_inicio) && !empty($hora_fin)) {
     $hora_actual = date('H:i');
     if (empty($fecha_maint) || $fecha_maint === $fecha_actual) {
         if ($hora_inicio <= $hora_fin) {
-            if ($hora_actual >= $hora_inicio && $hora_actual < $hora_fin) $is_active = true;
+            if ($hora_actual >= $hora_inicio && $hora_actual <= $hora_fin) $is_active = true;
         } else {
-            if ($hora_actual >= $hora_inicio || $hora_actual < $hora_fin) $is_active = true;
+            if ($hora_actual >= $hora_inicio || $hora_actual <= $hora_fin) $is_active = true;
         }
     }
 }

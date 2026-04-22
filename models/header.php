@@ -33,12 +33,12 @@ if ($maintenance_data) {
         if (empty($fecha_maint) || $fecha_maint === $fecha_actual) {
             // Manejar rangos que cruzan la medianoche
             if ($hora_inicio <= $hora_fin) {
-                if ($hora_actual >= $hora_inicio && $hora_actual < $hora_fin) {
+                if ($hora_actual >= $hora_inicio && $hora_actual <= $hora_fin) {
                     $is_active = true;
                 }
             } else {
                 // Caso ej: 22:00 a 02:00
-                if ($hora_actual >= $hora_inicio || $hora_actual < $hora_fin) {
+                if ($hora_actual >= $hora_inicio || $hora_actual <= $hora_fin) {
                     $is_active = true;
                 }
             }
