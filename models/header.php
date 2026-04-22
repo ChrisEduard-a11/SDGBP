@@ -20,12 +20,12 @@ $maintenance_data = mysqli_fetch_assoc($maint_query);
 if ($maintenance_data) {
     $is_active = (bool)($maintenance_data['activo'] ?? false);
     $fecha_maint = $maintenance_data['fecha'] ?? null;
-    $hora_inicio = $maintenance_data['hora_inicio'] ?? '';
-    $hora_fin = $maintenance_data['hora_fin'] ?? '';
-    
     // Si no está activo manualmente, verificar horario automático
+    date_default_timezone_set('America/Caracas'); 
+    $hora_inicio = !empty($maintenance_data['hora_inicio']) ? date('H:i', strtotime($maintenance_data['hora_inicio'])) : '';
+    $hora_fin = !empty($maintenance_data['hora_fin']) ? date('H:i', strtotime($maintenance_data['hora_fin'])) : '';
+
     if (!$is_active && !empty($hora_inicio) && !empty($hora_fin)) {
-        date_default_timezone_set('America/Caracas'); 
         $fecha_actual = date('Y-m-d');
         $hora_actual = date('H:i');
         

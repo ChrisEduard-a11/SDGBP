@@ -1,7 +1,5 @@
 <?php
 session_start();
-session_unset();
-session_destroy();
 require_once("../conexion.php");
 $maint_query = mysqli_query($conexion, "SELECT * FROM config_mantenimiento WHERE id = 1");
 $data = mysqli_fetch_assoc($maint_query) ?: [
@@ -32,6 +30,13 @@ if (!$is_active && !empty($hora_inicio) && !empty($hora_fin)) {
 if (!$is_active) {
     header("Location: login.php");
     exit;
+} else {
+    // Si está activo, solo destruir sesión si NO es admin
+    $user_role = strtolower($_SESSION['tipo'] ?? '');
+    if ($user_role !== 'admin') {
+        session_unset();
+        session_destroy();
+    }
 }
 
 // Determinamos si mostramos "Mantenimiento" o "Sistema Operativo"
