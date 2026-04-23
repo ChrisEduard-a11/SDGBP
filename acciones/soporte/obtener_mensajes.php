@@ -51,9 +51,11 @@ $mensajes = [];
 // Chequeo estado de ticket
 $estado_ticket = 'Abierto';
 $typing_otro = false;
-$res_estado = mysqli_query($conexion, "SELECT estado, typing_guest, typing_admin FROM soporte_tickets WHERE id_ticket = '$id_ticket'");
+$calificacion_ticket = null;
+$res_estado = mysqli_query($conexion, "SELECT estado, typing_guest, typing_admin, calificacion FROM soporte_tickets WHERE id_ticket = '$id_ticket'");
 if($row_est = mysqli_fetch_assoc($res_estado)){
     $estado_ticket = $row_est['estado'];
+    $calificacion_ticket = $row_est['calificacion'];
     // El admin ve si el invitado/usuario está escribiendo; el invitado ve si el admin está escribiendo
     $col_typing = $is_admin ? 'typing_guest' : 'typing_admin';
     if (!empty($row_est[$col_typing])) {
@@ -67,10 +69,10 @@ while ($row = mysqli_fetch_assoc($result)) {
     // Si viene de gest_TICK entonces es invitado
     if (strpos($row['enviado_por'], 'guest_') === 0) {
         $emisor_tipo = "Visitante Externo";
-        $foto = '../img/default-user.png';
+        $foto = '../img/default_profile.png';
     } else {
         $emisor_tipo = ($row['enviado_por'] === 'admin') ? 'Soporte Técnico' : ($row['nombre'] ?? 'Usuario');
-        $foto = ($row['enviado_por'] === 'admin') ? '../img/Logo-OP2_V4.webp' : ($row['foto'] ?? '../img/default-user.png');
+        $foto = ($row['enviado_por'] === 'admin') ? '../img/Logo-OP2_V4.webp' : ($row['foto'] ?? '../img/default_profile.png');
     }
     
     // Determinar si yo envié el mensaje o si lo envió el otro
@@ -96,6 +98,7 @@ echo json_encode([
     'success' => true, 
     'mensajes' => $mensajes, 
     'estado' => $estado_ticket,
-    'typing' => $typing_otro
+    'typing' => $typing_otro,
+    'calificacion' => $calificacion_ticket
 ]);
 ?>

@@ -202,6 +202,30 @@ if (!$is_admin) {
                         document.getElementById('s-input-msg').placeholder = 'Ticket cerrado.';
                         document.getElementById('tk-status-bar').innerHTML = `Ticket: <b>${currentTicketId}</b> <span class="s-status-badge" style="background:#ef4444;">Resuelto</span>`;
                         clearInterval(pollInterval);
+
+                        let sbody = document.getElementById('s-chat-body');
+                        if (!document.getElementById('s-rating-box')) {
+                            if (!data.calificacion) {
+                                sbody.innerHTML += `
+                                    <div id="s-rating-box" style="text-align:center; padding:15px; margin-top:10px; background:rgba(255,255,255,0.8); border-radius:15px; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+                                        <p style="margin-bottom:10px; font-weight:bold; font-size:0.9rem; color:#1e293b;">Por favor, califica nuestra atención:</p>
+                                        <div style="display:flex; justify-content:center; gap:15px;">
+                                            <button onclick="sCalificarTicket('bien')" title="Bien" style="background:none; border:none; font-size:2rem; cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='none'">👍</button>
+                                            <button onclick="sCalificarTicket('mal')" title="Mal" style="background:none; border:none; font-size:2rem; cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='none'">👎</button>
+                                        </div>
+                                    </div>
+                                `;
+                                sbody.scrollTop = sbody.scrollHeight;
+                            } else {
+                                let cmoji = data.calificacion === 'bien' ? '👍 (Bien)' : '👎 (Mal)';
+                                sbody.innerHTML += `
+                                    <div id="s-rating-box" style="text-align:center; padding:10px; margin-top:10px; color:#64748b; font-size:0.85rem;">
+                                        Has calificado esta atención como: <strong>${cmoji}</strong>
+                                    </div>
+                                `;
+                                sbody.scrollTop = sbody.scrollHeight;
+                            }
+                        }
                     }
                 });
         }
@@ -233,6 +257,22 @@ if (!$is_admin) {
                     if(data.success) {
                         sRefreshChat();
                     } else { alert(data.message); }
+                });
+        }
+
+        function sCalificarTicket(rating) {
+            const fd = new FormData();
+            fd.append('id_ticket', currentTicketId);
+            fd.append('calificacion', rating);
+
+            fetch('../acciones/soporte/calificar_ticket.php', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success) {
+                        let box = document.getElementById('s-rating-box');
+                        let cmoji = rating === 'bien' ? '👍 (Bien)' : '👎 (Mal)';
+                        box.innerHTML = `<div style="text-align:center; padding:10px; color:#64748b; font-size:0.85rem;">Gracias. Has calificado esta atención como: <strong>${cmoji}</strong></div>`;
+                    }
                 });
         }
     </script>

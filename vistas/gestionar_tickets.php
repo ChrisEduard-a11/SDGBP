@@ -207,7 +207,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 </style>
 
 <div id="layoutSidenav_content">
-    <div class="container-fluid px-4 py-4 animate__animated animate__fadeIn">
+    <div class="container-fluid px-4 py-4" id="main-container-tk">
         <header class="page-header-standard mb-4">
             <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-headset me-2"></i>Centro de Soporte</h1>
             <p class="text-muted">Gestiona los tickets de ayuda y comunícate con los usuarios</p>
@@ -226,7 +226,8 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                             $esInvitado = is_null($t['id_usuario']);
                             $displayName = $esInvitado ? $t['nombre_visitante'] : $t['u_nombre'];
                             $displayUser = $esInvitado ? 'Visitante (CI: '.$t['cedula_visitante'].')' : '@'.$t['u_usuario'];
-                            $displayFoto = $esInvitado ? '../img/default-user.png' : $t['u_foto'];
+                            // Si es invitado usa default_profile.png, si es usuario y no tiene foto también.
+                            $displayFoto = $esInvitado ? '../img/default_profile.png' : (!empty($t['u_foto']) ? $t['u_foto'] : '../img/default_profile.png');
                         ?>
                             <div class="tk-item" onclick="loadTicket('<?php echo $t['id_ticket']; ?>', '<?php echo htmlspecialchars($displayName); ?>', '<?php echo $t['estado']; ?>', '<?php echo $displayFoto; ?>', '<?php echo $esInvitado ? '1' : '0'; ?>', '<?php echo $t['cedula_visitante']; ?>')" id="item-<?php echo $t['id_ticket']; ?>">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -236,7 +237,16 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                                     ?>
                                     <span class="badge <?php echo $bColor; ?>" style="font-size:0.65rem;"><?php echo $t['estado']; ?></span>
                                 </div>
-                                <div class="fw-bold text-truncate" style="max-width:100%; font-size:0.95rem; color:#f18000;"><?php echo htmlspecialchars($t['asunto']); ?></div>
+                                <div class="fw-bold text-truncate" style="max-width:100%; font-size:0.95rem; color:#f18000;">
+                                    <?php 
+                                        $caliEmoji = '';
+                                        if (isset($t['calificacion'])) {
+                                            if ($t['calificacion'] === 'bien') $caliEmoji = '👍';
+                                            if ($t['calificacion'] === 'mal') $caliEmoji = '👎';
+                                        }
+                                        echo htmlspecialchars($t['asunto']) . ' <span style="font-size:0.8rem;">' . $caliEmoji . '</span>'; 
+                                    ?>
+                                </div>
                                 <div class="text-muted small mt-1">
                                     <i class="fas <?php echo $esInvitado ? 'fa-user-secret' : 'fa-user'; ?> border-0 text-muted me-1"></i> 
                                     <?php echo htmlspecialchars($displayName); ?> 
@@ -259,12 +269,15 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     <p>Para ver el historial y responder al usuario.</p>
                 </div>
 
-                <div id="tk-chat-view" style="display:none; height:100%; flex-direction:column;">
+                <div id="tk-chat-view" style="display:none; height:100%; width:100%; flex:1; flex-direction:column;">
                     <div class="tk-chat-header">
                         <div class="d-flex align-items-center gap-3">
                             <img src="" id="tk-user-avatar" class="rounded-circle" width="45" height="45" style="object-fit:cover; border:2px solid #e2e8f0;">
                             <div>
-                                <h5 class="mb-0 fw-bold" id="tk-user-name">Usuario</h5>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h5 class="mb-0 fw-bold" id="tk-user-name">Usuario</h5>
+                                    <div id="tk-calificacion-admin"></div>
+                                </div>
                                 <div class="small text-muted" id="tk-id-label">TICK-XXXX</div>
                                 <div id="tk-extra-info" class="text-danger fw-bold" style="font-size: 0.75rem; display:none;"></div>
                             </div>
@@ -331,7 +344,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         
         document.getElementById('tk-user-name').innerText = userName;
         document.getElementById('tk-id-label').innerText = idTicket;
-        document.getElementById('tk-user-avatar').src = foto || '../img/default-user.png';
+        document.getElementById('tk-user-avatar').src = foto || '../img/default_profile.png';
         
         const extra = document.getElementById('tk-extra-info');
         if (isGuest == '1') {
@@ -424,15 +437,20 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     b.scrollTop = b.scrollHeight;
                     if (hasNewTheirs) {
                         try {
-                            const audio = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjE2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAJAAABXQAAxMTEw8PDx8fHx8vLy8vLy8vLy8/Pz8/P0NfX19fX2dnZ2d/f39/f4eHh4eHj4+Pj5eXl5ebm5ubm5+fn5+fn5+fo6Ojo6erq6urr6+vr6+/v7+/v7+/v7/Hx8fHy8vLy8vPz8/Pz9PT09PT19fX19fX29vb29/f39/f39/f4+Pj4+fn5+fn6+vr6+vv7+/v7/Pz8/Pz8/Pz9/f39/f7+/v7+/v7+/v7/Pz8/AAAAAAAAAAAAAAD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQwAAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqhgx+AABz/MAAAAE1h48qgVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVT/7UMAAAAwDSDAAAAABMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQwAAADANIAAAAAEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQwAAADANIAAAAAEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQwAAADANIAAAAAEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+                            const audio = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjE2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAJAAABXQAAxMTEw8PDx8fHx8vLy8vLy8vLy8/Pz8/P0NfX19fX2dnZ2d/f39/f4eHh4eHj4+Pj5eXl5ebm5ubm5+fn5+fn5+fo6Ojo6erq6urr6+vr6+/v7+/v7+/v7/Hx8fHy8vLy8vPz8/Pz9PT09PT19fX19fX29vb29/f39/f39/f4+Pj4+fn5+fn6+vr6+vv7+/v7/Pz8/Pz8/Pz9/f39/f7+/v7+/v7+/v7/Pz8/AAAAAAAAAAAAAAD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQwAAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqhgx+AABz/MAAAAE1h48qgVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVT/7UMAAAAwDSDAAAAABMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQwAAADANIAAAAAEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQwAAADANIAAAAAEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQwAAADANIAAAAAEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
                             audio.play().catch(()=>{});
                         } catch(e){}
                     }
                 }
+                
+                if (data.calificacion) {
+                    let caliText = data.calificacion === 'bien' ? '👍' : '👎';
+                    document.getElementById('tk-calificacion-admin').innerHTML = `<span style="font-size:1.1rem; line-height:1;" title="Calificación del Usuario">${caliText}</span>`;
+                } else {
+                    document.getElementById('tk-calificacion-admin').innerHTML = '';
+                }
             });
-    }
-
-    let tkTypingTimeout = null;
+    }    let tkTypingTimeout = null;
     function tkSendTyping() {
         if (!cTickId) return;
         clearTimeout(tkTypingTimeout);
@@ -465,7 +483,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                         res.innerHTML += `
                             <div class="d-flex justify-content-between align-items-center p-2 border rounded bg-white hover:bg-light" style="cursor:pointer; font-size:0.85rem;" onclick="vincularYConfirmar('${u.id_usuario}', '${u.nombre}', '${u.cedula}', '${u.usuario}')">
                                 <div class="d-flex align-items-center gap-2">
-                                    <img src="${u.foto || '../img/default-user.png'}" width="25" height="25" class="rounded-circle">
+                                    <img src="${u.foto || '../img/default_profile.png'}" width="25" height="25" class="rounded-circle">
                                     <div><strong>${u.nombre}</strong> <span class="text-muted small">(${u.cedula})</span></div>
                                 </div>
                                 <i class="fas fa-link text-success"></i>

@@ -33,13 +33,15 @@ if(mysqli_query($conexion, $sql2)) {
     echo "Error: " . mysqli_error($conexion) . "\n";
 }
 
-// Actualización para permitir invitados
+// Actualización para permitir invitados y calificación
 $sql3 = "ALTER TABLE soporte_tickets MODIFY id_usuario INT(11) NULL;";
 $sql4 = "ALTER TABLE soporte_tickets ADD COLUMN IF NOT EXISTS nombre_visitante VARCHAR(100) NULL AFTER id_usuario;";
 $sql5 = "ALTER TABLE soporte_tickets ADD COLUMN IF NOT EXISTS correo_visitante VARCHAR(100) NULL AFTER nombre_visitante;";
+$sql6 = "ALTER TABLE soporte_tickets ADD COLUMN IF NOT EXISTS calificacion ENUM('bien', 'mal') NULL AFTER estado;";
 
 mysqli_query($conexion, $sql3);
 mysqli_query($conexion, $sql4);
 mysqli_query($conexion, $sql5);
-echo "Tablas actualizadas para invitados.\n";
+mysqli_query($conexion, $sql6);
+echo "Tablas actualizadas para invitados y calificación.\n";
 ?>
