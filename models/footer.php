@@ -29,7 +29,8 @@
 include("../models/funciones.php");
 
 // MODULO DE SOPORTE TICKETS (REEMPLAZO DE TAWK.TO)
-if (file_exists("../models/chat_widget.php")) {
+// Solo se muestra el widget si NO hay sesión activa (para invitados en Login)
+if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
     include("../models/chat_widget.php");
 }
 ?>

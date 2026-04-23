@@ -65,9 +65,32 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
     
     .tk-chat-footer input { flex:1; padding: 15px 20px; border-radius: 30px; border: 1px solid #e2e8f0; background: #f8fafc; outline: none; transition: 0.3s; }
     .tk-chat-footer input:focus { border-color: #f18000; box-shadow: 0 0 0 3px rgba(241,128,0,0.1); }
-    .tk-chat-footer button { width: 50px; height: 50px; border-radius: 50%; background: #f18000; color: white; border: none; font-size: 1.2rem; cursor: pointer; transition: 0.2s; display:flex; align-items:center; justify-content:center; }
+    .tk-chat-footer button { width: 45px; height: 45px; border-radius: 50%; background: #f18000; color: white; border: none; font-size: 1.1rem; cursor: pointer; transition: 0.2s; display:flex; align-items:center; justify-content:center; }
     .tk-chat-footer button:hover { background: #ea580c; transform: scale(1.05); }
     .tk-chat-footer button:disabled { background: #cbd5e1; cursor:not-allowed; }
+
+    .tk-emoji-btn { background: none !important; color: #94a3b8 !important; font-size: 1.4rem !important; width: 40px !important; }
+    .tk-emoji-btn:hover { color: #f18000 !important; transform: scale(1.2) !important; }
+
+    /* Emoji Picker Minimalista */
+    .emoji-picker {
+        position: absolute; bottom: calc(100% + 15px); right: 0; background: white;
+        border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        border: 1px solid rgba(0,0,0,0.05); padding: 12px; display: none;
+        grid-template-columns: repeat(6, 1fr); gap: 8px; z-index: 100;
+        width: 250px;
+    }
+    @media (max-width: 500px) {
+        .emoji-picker { width: 90vw; max-width: 280px; right: -40px; grid-template-columns: repeat(5, 1fr); }
+    }
+    .emoji-picker span { font-size: 1.4rem; cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 8px; text-align: center; }
+    .emoji-picker span:hover { background: #f1f5f9; transform: scale(1.2); }
+
+    .tk-delete-btn { color: #f87171; cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .tk-delete-btn:hover { background: rgba(248, 113, 113, 0.1); color: #ef4444; transform: scale(1.1); }
+    
+    .tk-list-delete { position: absolute; top: 10px; right: 10px; opacity: 0; transition: 0.2s; z-index: 5; }
+    .tk-item:hover .tk-list-delete { opacity: 1; }
 
     /* Typing indicator (admin panel) */
     .tk-typing-bubble { display: none; align-items: center; gap: 4px; padding: 10px 14px; background: #f1f5f9; border-radius: 18px; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: fit-content; max-width: 65px; margin-bottom: 5px; }
@@ -229,8 +252,11 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                             // Si es invitado usa default_profile.png, si es usuario y no tiene foto también.
                             $displayFoto = $esInvitado ? '../img/default_profile.png' : (!empty($t['u_foto']) ? $t['u_foto'] : '../img/default_profile.png');
                         ?>
-                            <div class="tk-item" onclick="loadTicket('<?php echo $t['id_ticket']; ?>', '<?php echo htmlspecialchars($displayName); ?>', '<?php echo $t['estado']; ?>', '<?php echo $displayFoto; ?>', '<?php echo $esInvitado ? '1' : '0'; ?>', '<?php echo $t['cedula_visitante']; ?>')" id="item-<?php echo $t['id_ticket']; ?>">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="tk-item position-relative" onclick="loadTicket('<?php echo $t['id_ticket']; ?>', '<?php echo htmlspecialchars($displayName); ?>', '<?php echo $t['estado']; ?>', '<?php echo $displayFoto; ?>', '<?php echo $esInvitado ? '1' : '0'; ?>', '<?php echo $t['cedula_visitante']; ?>')" id="item-<?php echo $t['id_ticket']; ?>">
+                                <div class="tk-list-delete" onclick="borrarTicketDirecto(event, '<?php echo $t['id_ticket']; ?>')">
+                                    <i class="fas fa-trash-alt tk-delete-btn" style="font-size:0.85rem;"></i>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2 pe-4">
                                     <span class="fw-bold fs-0-9"><?php echo $t['id_ticket']; ?></span>
                                     <?php 
                                         $bColor = $t['estado']=='Abierto' ? 'bg-success' : ($t['estado']=='En Proceso' ? 'bg-warning text-dark' : 'bg-secondary');
@@ -293,7 +319,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                             <button class="btn btn-success btn-sm rounded-pill px-3 fw-bold" id="btn-confirm-id" style="display:none;" onclick="toggleSearchPanel()">
                                 <i class="fas fa-id-card me-1"></i> Confirmar y Seleccionar Usuario
                             </button>
-                            <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" id="btn-eliminar-tk" style="display:none;" onclick="borrarTicket()">
+                            <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" id="btn-eliminar-tk" onclick="borrarTicket()">
                                 <i class="fas fa-trash me-1"></i> Eliminar Ticket
                             </button>
                         </div>
@@ -313,7 +339,15 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                         <div id="tk-search-results" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;"></div>
                     </div>
                     
-                    <div class="tk-chat-footer">
+                    <div class="tk-chat-footer" style="position:relative;">
+                        <button class="tk-emoji-btn" onclick="toggleEmojiPicker()"><i class="far fa-smile"></i></button>
+                        <div class="emoji-picker" id="emoji-picker">
+                            <span onclick="addEmoji('😀')">😀</span><span onclick="addEmoji('😃')">😃</span><span onclick="addEmoji('😄')">😄</span><span onclick="addEmoji('😁')">😁</span><span onclick="addEmoji('😆')">😆</span><span onclick="addEmoji('😅')">😅</span>
+                            <span onclick="addEmoji('😂')">😂</span><span onclick="addEmoji('😉')">😉</span><span onclick="addEmoji('😊')">😊</span><span onclick="addEmoji('😇')">😇</span><span onclick="addEmoji('🥰')">🥰</span><span onclick="addEmoji('😍')">😍</span>
+                            <span onclick="addEmoji('🤩')">🤩</span><span onclick="addEmoji('😘')">😘</span><span onclick="addEmoji('😜')">😜</span><span onclick="addEmoji('🤑')">🤑</span><span onclick="addEmoji('🤔')">🤔</span><span onclick="addEmoji('🤫')">🤫</span>
+                            <span onclick="addEmoji('🧐')">🧐</span><span onclick="addEmoji('😏')">😏</span><span onclick="addEmoji('🥳')">🥳</span><span onclick="addEmoji('😎')">😎</span><span onclick="addEmoji('🥺')">🥺</span><span onclick="addEmoji('😭')">😭</span>
+                            <span onclick="addEmoji('👍')">👍</span><span onclick="addEmoji('👎')">👎</span><span onclick="addEmoji('👏')">👏</span><span onclick="addEmoji('🙌')">🙌</span><span onclick="addEmoji('🔥')">🔥</span><span onclick="addEmoji('✨')">✨</span>
+                        </div>
                         <input type="text" id="tk-chat-input" placeholder="Escribe tu respuesta como Administrador..." onkeypress="if(event.key==='Enter') enviarMensajeAdmin()" oninput="tkSendTyping()">
                         <button id="tk-chat-send" onclick="enviarMensajeAdmin()"><i class="fas fa-paper-plane"></i></button>
                     </div>
@@ -328,6 +362,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
     let cUserName = '';
     let cCedula = '';
     let pollInterval = null;
+    let isFetching = false;
 
     function loadTicket(idTicket, userName, estado, foto, isGuest, cedula) {
         cTickId = idTicket;
@@ -368,7 +403,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
             document.getElementById('tk-chat-send').disabled = false;
             document.getElementById('btn-cerrar-tk').style.display = 'inline-block';
             document.getElementById('btn-confirm-id').style.display = isGuest == '1' ? 'inline-block' : 'none';
-            document.getElementById('btn-eliminar-tk').style.display = 'none';
+            document.getElementById('btn-eliminar-tk').style.display = 'inline-block';
             document.getElementById('tk-chat-input').placeholder = 'Escribe tu respuesta...';
         }
 
@@ -410,10 +445,12 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
     });
 
     function fetchMsgsAdmin() {
-        if(!cTickId) return;
+        if(!cTickId || isFetching) return;
+        isFetching = true;
         fetch(`../acciones/soporte/obtener_mensajes.php?id_ticket=${cTickId}&last_id=${cLastMsgId}`)
             .then(r=>r.json())
             .then(data=>{
+                isFetching = false;
                 // Typing indicator
                 const typingEl = document.getElementById('tk-typing-indicator');
                 if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
@@ -600,6 +637,17 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
     }
 
     function borrarTicket() {
+        if(!cTickId) return;
+        borrarTicketDirecto(null, cTickId);
+    }
+
+    function borrarTicketDirecto(e, id) {
+        if(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if(!id) return;
+
         Swal.fire({
             title: '¿Eliminar Ticket?',
             text: "Esta acción borrará definitivamente este ticket y todos sus mensajes. ¡No se puede deshacer!",
@@ -612,7 +660,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         }).then((result) => {
             if (result.isConfirmed) {
                 const fd = new FormData();
-                fd.append('id_ticket', cTickId);
+                fd.append('id_ticket', id);
                 fetch('../acciones/soporte/borrar_ticket.php', { method:'POST', body:fd })
                     .then(r=>r.json())
                     .then(data => {
@@ -624,6 +672,19 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     });
             }
         });
+    }
+
+    function toggleEmojiPicker() {
+        const p = document.getElementById('emoji-picker');
+        p.style.display = p.style.display === 'grid' ? 'none' : 'grid';
+    }
+
+    function addEmoji(e) {
+        const inp = document.getElementById('tk-chat-input');
+        inp.value += e;
+        inp.focus();
+        document.getElementById('emoji-picker').style.display = 'none';
+        tkSendTyping();
     }
 </script>
 

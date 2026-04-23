@@ -1,5 +1,8 @@
 <?php
-session_start();
+error_reporting(0);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once("../../conexion.php");
 
 header('Content-Type: application/json');
@@ -40,8 +43,8 @@ if (!$is_admin) {
 }
 
 // Buscar mensajes nuevos
-$sql = "SELECT m.*, u.nombre, u.foto FROM soporte_mensajes m 
-        LEFT JOIN usuario u ON (m.enviado_por = u.id_usuario AND m.enviado_por != 'admin')
+$sql = "SELECT m.*, u.nombre, u.foto, u.tipos FROM soporte_mensajes m 
+        LEFT JOIN usuario u ON (m.enviado_por = CAST(u.id_usuario AS CHAR))
         WHERE m.id_ticket = '$id_ticket' AND m.id_mensaje > $last_id 
         ORDER BY m.id_mensaje ASC";
 
@@ -70,18 +73,37 @@ while ($row = mysqli_fetch_assoc($result)) {
     if (strpos($row['enviado_por'], 'guest_') === 0) {
         $emisor_tipo = "Visitante Externo";
         $foto = '../img/default_profile.png';
+    } else if ($row['enviado_por'] === 'admin') {
+        $emisor_tipo = 'Soporte Técnico'; // Mensajes antiguos o del bot
+        $foto = '../img/Logo-OP2_V4.webp';
     } else {
-        $emisor_tipo = ($row['enviado_por'] === 'admin') ? 'Soporte Técnico' : ($row['nombre'] ?? 'Usuario');
-        $foto = ($row['enviado_por'] === 'admin') ? '../img/Logo-OP2_V4.webp' : ($row['foto'] ?? '../img/default_profile.png');
+        $is_sender_admin = (isset($row['tipos']) && $row['tipos'] === 'admin');
+        if ($is_sender_admin) {
+            $emisor_tipo = 'Soporte Técnico (' . ($row['nombre'] ?? 'Admin') . ')';
+        } else {
+            $emisor_tipo = $row['nombre'] ?? 'Usuario';
+        }
+        $foto = $row['foto'] ?? '../img/default_profile.png';
     }
     
     // Determinar si yo envié el mensaje o si lo envió el otro
     $es_mio = false;
-    if ($is_admin && $row['enviado_por'] === 'admin') {
-        $es_mio = true;
-    } elseif (!$is_admin && $row['enviado_por'] !== 'admin') {
-        // Si no es admin y el mensaje no es del admin, asumimos que es mio, esto sirve también para el guest.
-        $es_mio = true; 
+    if ($is_admin) {
+        // Para administradores, todo mensaje enviado por un admin se muestra como "suyo" (del lado derecho)
+        if ($row['enviado_por'] === 'admin' || (isset($row['tipos']) && $row['tipos'] === 'admin')) {
+            $es_mio = true;
+        }
+    } else {
+        // Para visitantes/usuarios normales
+        if ($is_guest) {
+            if (isset($_SESSION['guest_ticket_id']) && $row['enviado_por'] === 'guest_' . $_SESSION['guest_ticket_id']) {
+                $es_mio = true;
+            }
+        } else {
+            if ($row['enviado_por'] == $_SESSION['id']) {
+                $es_mio = true;
+            }
+        }
     }
 
     $mensajes[] = [
@@ -94,11 +116,18 @@ while ($row = mysqli_fetch_assoc($result)) {
     ];
 }
 
-echo json_encode([
+$response = [
     'success' => true, 
     'mensajes' => $mensajes, 
     'estado' => $estado_ticket,
     'typing' => $typing_otro,
     'calificacion' => $calificacion_ticket
-]);
+];
+
+$json = json_encode($response, JSON_INVALID_UTF8_SUBSTITUTE);
+if ($json === false) {
+    echo json_encode(['success' => false, 'message' => 'Error de codificación JSON: ' . json_last_error_msg()]);
+} else {
+    echo $json;
+}
 ?>

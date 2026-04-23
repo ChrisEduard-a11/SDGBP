@@ -54,6 +54,11 @@ if (mysqli_query($conexion, $sql_ticket)) {
     $sql_msg = "INSERT INTO soporte_mensajes (id_ticket, enviado_por, mensaje) VALUES ('$id_ticket', '$enviado_por', '$mensaje_inicial')";
     mysqli_query($conexion, $sql_msg);
     
+    // Mensaje automático de bienvenida del bot de soporte
+    $bot_msg = "¡Hola! Bienvenido(a) al centro de soporte de SDGBP. Hemos recibido tu solicitud. Nuestro equipo de soporte técnico te atenderá lo más pronto posible. Por favor, mantente en línea.";
+    $sql_bot = "INSERT INTO soporte_mensajes (id_ticket, enviado_por, mensaje) VALUES ('$id_ticket', 'admin', '$bot_msg')";
+    mysqli_query($conexion, $sql_bot);
+    
     if ($is_guest) {
         $_SESSION['guest_ticket_id'] = $id_ticket;
     }

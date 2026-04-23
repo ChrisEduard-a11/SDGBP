@@ -1,11 +1,206 @@
 <?php
-if (!isset($_SESSION['id'])) return;
+$is_guest = !isset($_SESSION['id']);
+$is_admin = (!$is_guest && $_SESSION['tipo'] === 'admin');
 
-$is_admin = ($_SESSION['tipo'] === 'admin');
+if ($is_guest) {
+    // Guest Widget (Login Page)
+?>
+    <style>
+    #soporte-window {
+        position: fixed; bottom: 30px; right: 25px; width: 360px; height: 500px; max-height: calc(100vh - 120px);
+        background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(0,0,0,0.05); border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        z-index: 10000; display: flex; flex-direction: column; overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        opacity: 0; transform: translateY(30px); pointer-events: none;
+    }
+    #soporte-window.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    
+    .s-header { flex-shrink: 0; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f18000; }
+    .s-header-title { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px; }
+    .s-header-close { cursor: pointer; opacity: 0.7; transition: 0.2s; font-size: 1.2rem; }
+    .s-header-close:hover { opacity: 1; transform: rotate(90deg); }
+    
+    #s-view-init, #s-view-chat { display: none; flex: 1; min-height: 0; flex-direction: column; overflow: hidden; }
+    #s-view-init.active, #s-view-chat.active { display: flex; }
+    #s-view-init { padding: 30px 20px; text-align: center; justify-content: center; overflow-y: auto; }
+    
+    .s-body { flex: 1; min-height: 0; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: rgba(241, 245, 249, 0.5); }
+    .s-footer { flex-shrink: 0; padding: 12px 15px; border-top: 1px solid rgba(0,0,0,0.05); background: white; display: flex; gap: 8px; align-items: center; position: relative; }
+    .s-footer input { flex: 1; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 20px; padding: 10px 15px; font-size: 0.95rem; outline: none; transition: 0.3s; }
+    .s-footer input:focus { border-color: #f18000; box-shadow: 0 0 0 3px rgba(241,128,0,0.1); }
+    .s-footer button { border: none; background: #f18000; color: white; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+    .s-footer button:hover { background: #ea580c; transform: scale(1.05); }
+    
+    .s-emoji-btn { background: none !important; color: #94a3b8 !important; font-size: 1.3rem !important; width: 35px !important; }
+    .s-emoji-btn:hover { color: #f18000 !important; transform: scale(1.1) !important; }
+
+    .emoji-picker-s {
+        position: absolute; bottom: 75px; left: 10px; right: 10px; background: white;
+        border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        border: 1px solid rgba(0,0,0,0.05); padding: 10px; display: none;
+        grid-template-columns: repeat(6, 1fr); gap: 5px; z-index: 100;
+    }
+    .emoji-picker-s span { font-size: 1.3rem; cursor: pointer; transition: 0.1s; padding: 4px; border-radius: 6px; text-align: center; }
+    .emoji-picker-s span:hover { background: #f1f5f9; transform: scale(1.2); }
+
+    .msg-b { max-width: 85%; padding: 10px 14px; border-radius: 18px; font-size: 0.88rem; line-height: 1.4; animation: sFadeIn 0.3s ease; position: relative; }
+    @keyframes sFadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+    .msg-mine { background: linear-gradient(135deg, #f18000, #ea580c); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg-theirs { background: #ffffff; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(0,0,0,0.03); }
+    .s-typing-bubble { display: none; align-items: center; gap: 4px; padding: 10px 14px; background: #ffffff; border-radius: 18px; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); width: fit-content; }
+    .s-typing-bubble span { width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: sTypingDot 1.2s infinite ease-in-out; }
+    @keyframes sTypingDot { 0%, 80%, 100% { transform: translateY(0); opacity:0.5; } 40% { transform: translateY(-4px); opacity:1; } }
+
+    @media (max-width: 480px) {
+        #soporte-window { width: 100%; right: 0; bottom: 0; border-radius: 0; height: 100%; max-height: 100%; }
+    }
+    </style>
+
+    <div id="soporte-window">
+        <div class="s-header">
+            <div>
+                <div class="s-header-title"><i class="fas fa-headset text-brand-400 me-2"></i>Soporte Express</div>
+                <div id="tk-status-bar" style="font-size: 0.7rem; color: #cbd5e1;">Invitado</div>
+            </div>
+            <div class="s-header-close" onclick="toggleSoporteWindow()"><i class="fas fa-times"></i></div>
+        </div>
+        
+        <div id="s-view-init" class="active">
+            <h5 class="fw-bold mb-2">¿Cómo podemos ayudarte?</h5>
+            <p class="text-muted small mb-4">Ingresa tus datos para iniciar un chat con soporte técnico.</p>
+            <input type="text" id="s-visitante-nombre" placeholder="Nombre completo" class="form-control mb-2 rounded-pill">
+            <input type="text" id="s-visitante-cedula" placeholder="Cédula / ID" class="form-control mb-2 rounded-pill">
+            <input type="text" id="s-asunto-nuevo" placeholder="Asunto" class="form-control mb-3 rounded-pill">
+            <button onclick="sCrearTicketGuest()" class="btn btn-primary w-100 rounded-pill fw-bold">Iniciar Chat</button>
+        </div>
+
+        <div id="s-view-chat">
+            <div class="s-body" id="s-chat-body">
+                <div class="s-typing-bubble" id="s-typing-indicator"><span></span><span></span><span></span></div>
+            </div>
+            <div class="s-footer">
+                <button class="s-emoji-btn" onclick="toggleEmojiPickerS()"><i class="far fa-smile"></i></button>
+                <div class="emoji-picker-s" id="emoji-picker-s">
+                    <span onclick="addEmojiS('😀')">😀</span><span onclick="addEmojiS('😃')">😃</span><span onclick="addEmojiS('😄')">😄</span><span onclick="addEmojiS('😁')">😁</span><span onclick="addEmojiS('😂')">😂</span><span onclick="addEmojiS('😉')">😉</span>
+                    <span onclick="addEmojiS('🥰')">🥰</span><span onclick="addEmojiS('😍')">😍</span><span onclick="addEmojiS('🤔')">🤔</span><span onclick="addEmojiS('🥳')">🥳</span><span onclick="addEmojiS('🥺')">🥺</span><span onclick="addEmojiS('😭')">😭</span>
+                    <span onclick="addEmojiS('👍')">👍</span><span onclick="addEmojiS('👎')">👎</span><span onclick="addEmojiS('🔥')">🔥</span><span onclick="addEmojiS('✨')">✨</span><span onclick="addEmojiS('👋')">👋</span><span onclick="addEmojiS('🙏')">🙏</span>
+                </div>
+                <input type="text" id="s-input-msg" placeholder="Escribe..." onkeypress="if(event.key === 'Enter') sEnviarMensajeGuest()">
+                <button onclick="sEnviarMensajeGuest()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acceso flotante para el login (Si no está activo, puedes dispararlo con un botón) -->
+    <div id="btn-soporte-flotante" onclick="toggleSoporteWindow()" style="position:fixed; bottom:25px; right:25px; width:60px; height:60px; background:#f18000; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem; cursor:pointer; box-shadow:0 10px 20px rgba(241,128,0,0.3); z-index:9999;">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <script>
+        var currentTicketId = "<?php echo $_SESSION['guest_ticket_id'] ?? ''; ?>";
+        var lastMessageId = 0;
+        var pollInterval = null;
+        var isFetchingS = false;
+
+        function toggleSoporteWindow() {
+            const w = document.getElementById('soporte-window');
+            w.classList.toggle('active');
+            if (w.classList.contains('active')) {
+                if (currentTicketId) {
+                    switchToChat();
+                }
+            } else {
+                if (pollInterval) clearInterval(pollInterval);
+            }
+        }
+
+        function switchToChat() {
+            document.getElementById('s-view-init').classList.remove('active');
+            document.getElementById('s-view-chat').classList.add('active');
+            document.getElementById('tk-status-bar').innerHTML = `Ticket: <b>${currentTicketId}</b>`;
+            sRefreshChat();
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(sRefreshChat, 3000);
+        }
+
+        function sCrearTicketGuest() {
+            const nom = document.getElementById('s-visitante-nombre').value;
+            const ced = document.getElementById('s-visitante-cedula').value;
+            const asu = document.getElementById('s-asunto-nuevo').value;
+            if (!nom || !ced || !asu) { alert('Por favor llena todos los campos'); return; }
+
+            const fd = new FormData();
+            fd.append('nombre', nom);
+            fd.append('cedula', ced);
+            fd.append('asunto', asu);
+            fd.append('mensaje', 'Hola, necesito ayuda.');
+
+            fetch('../acciones/soporte/crear_ticket.php', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        currentTicketId = data.id_ticket;
+                        switchToChat();
+                    } else { alert(data.message); }
+                });
+        }
+
+        function sRefreshChat() {
+            if(!currentTicketId || isFetchingS) return;
+            isFetchingS = true;
+            fetch(`../acciones/soporte/obtener_mensajes.php?id_ticket=${currentTicketId}&last_id=${lastMessageId}`)
+                .then(r => r.json())
+                .then(data => {
+                    isFetchingS = false;
+                    const typingEl = document.getElementById('s-typing-indicator');
+                    if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
+                    if(data.success && data.mensajes.length > 0) {
+                        const body = document.getElementById('s-chat-body');
+                        data.mensajes.forEach(m => {
+                            const c = m.es_mio ? 'msg-mine' : 'msg-theirs';
+                            const msgDiv = document.createElement('div');
+                            msgDiv.className = `msg-b ${c}`;
+                            msgDiv.innerHTML = `<div>${m.mensaje}</div><div style="font-size:0.6rem; opacity:0.7; margin-top:3px; text-align:${m.es_mio?'right':'left'}">${m.fecha}</div>`;
+                            body.appendChild(msgDiv);
+                            lastMessageId = m.id_mensaje;
+                        });
+                        body.scrollTop = body.scrollHeight;
+                    }
+                });
+        }
+
+        function sEnviarMensajeGuest() {
+            const input = document.getElementById('s-input-msg');
+            const msg = input.value.trim();
+            if(!msg || !currentTicketId) return;
+            input.value = '';
+            const fd = new FormData();
+            fd.append('id_ticket', currentTicketId);
+            fd.append('mensaje', msg);
+            fetch('../acciones/soporte/enviar_mensaje.php', { method:'POST', body: fd }).then(() => { isFetchingS = false; sRefreshChat(); });
+        }
+
+        function toggleEmojiPickerS() {
+            const p = document.getElementById('emoji-picker-s');
+            p.style.display = p.style.display === 'grid' ? 'none' : 'grid';
+        }
+
+        function addEmojiS(e) {
+            const inp = document.getElementById('s-input-msg');
+            inp.value += e;
+            inp.focus();
+            document.getElementById('emoji-picker-s').style.display = 'none';
+        }
+    </script>
+<?php
+    return;
+}
 
 if (!$is_admin) {
-    // User Widget
+    // Authenticated User Widget (Fallback or Legacy, but currently we use soporte_usuario.php)
 ?>
+
     <style>
     /* Support window hidden until triggered by sidebar */
     
@@ -21,6 +216,7 @@ if (!$is_admin) {
     
     /* Header */
     .s-header {
+        flex-shrink: 0;
         background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 18px 20px;
         display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f18000;
     }
@@ -29,14 +225,14 @@ if (!$is_admin) {
     .s-header-close:hover { opacity: 1; transform: rotate(90deg); }
     
     /* Views */
-    #s-view-init { padding: 30px 20px; text-align: center; display: none; height: 100%; flex-direction: column; justify-content: center; }
+    #s-view-init { padding: 30px 20px; text-align: center; display: none; flex: 1; min-height: 0; overflow-y: auto; flex-direction: column; justify-content: center; }
     #s-view-init.active { display: flex; }
-    #s-view-chat { display: none; height: 100%; flex-direction: column; }
+    #s-view-chat { display: none; flex: 1; min-height: 0; overflow: hidden; flex-direction: column; }
     #s-view-chat.active { display: flex; }
     
-    .s-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: rgba(241, 245, 249, 0.5); }
+    .s-body { flex: 1; min-height: 0; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: rgba(241, 245, 249, 0.5); }
     
-    .s-footer { padding: 12px 15px; border-top: 1px solid rgba(0,0,0,0.05); background: white; display: flex; gap: 10px; align-items: center; }
+    .s-footer { flex-shrink: 0; padding: 12px 15px; border-top: 1px solid rgba(0,0,0,0.05); background: white; display: flex; gap: 10px; align-items: center; }
     .s-footer input { flex: 1; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 20px; padding: 10px 15px; font-size: 0.95rem; outline: none; transition: 0.3s; }
     .s-footer input:focus { border-color: #f18000; box-shadow: 0 0 0 3px rgba(241,128,0,0.1); }
     .s-footer button { border: none; background: #f18000; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
@@ -102,9 +298,10 @@ if (!$is_admin) {
     </div>
 
     <script>
-        let currentTicketId = null;
-        let lastMessageId = 0;
-        let pollInterval = null;
+        var currentTicketId = null;
+        var lastMessageId = 0;
+        var pollInterval = null;
+        var isFetchingS = false;
 
         function toggleSoporteWindow() {
             const w = document.getElementById('soporte-window');
@@ -162,10 +359,12 @@ if (!$is_admin) {
         }
 
         function sRefreshChat() {
-            if(!currentTicketId) return;
+            if(!currentTicketId || isFetchingS) return;
+            isFetchingS = true;
             fetch(`../acciones/soporte/obtener_mensajes.php?id_ticket=${currentTicketId}&last_id=${lastMessageId}`)
                 .then(r => r.json())
                 .then(data => {
+                    isFetchingS = false;
                     // Typing indicator
                     const typingEl = document.getElementById('s-typing-indicator');
                     if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
@@ -178,13 +377,14 @@ if (!$is_admin) {
                             const sender = m.es_mio ? 'Yo' : m.emisor_nombre;
                             if (!m.es_mio && lastMessageId > 0) hasNewTheirs = true;
 
-                            body.innerHTML += `
-                                <div class="msg-b ${c}">
-                                    <div style="font-weight:700; font-size:0.75rem; margin-bottom:3px; opacity:0.8;">${sender}</div>
-                                    <div>${m.mensaje}</div>
-                                    <div class="msg-meta">${m.fecha}</div>
-                                </div>
+                            const msgDiv = document.createElement('div');
+                            msgDiv.className = `msg-b ${c}`;
+                            msgDiv.innerHTML = `
+                                <div style="font-weight:700; font-size:0.75rem; margin-bottom:3px; opacity:0.8;">${sender}</div>
+                                <div>${m.mensaje}</div>
+                                <div class="msg-meta">${m.fecha}</div>
                             `;
+                            body.appendChild(msgDiv);
                             lastMessageId = m.id_mensaje;
                         });
                         body.scrollTop = body.scrollHeight;

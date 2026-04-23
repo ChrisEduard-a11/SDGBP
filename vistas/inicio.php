@@ -324,37 +324,37 @@ if ($tipo_usuario == "admin") {
                 <div class="d-flex flex-column align-items-lg-end gap-3">
                     <div class="action-bar-premium flex-wrap justify-content-lg-end">
                         <?php if ($_SESSION["tipo"] == "admin") { ?>
-                            <a href="javascript:void(0);" onclick="navigateTo('registro_u.php')" class="shortcut-chip chip-primary text-decoration-none">
+                            <a href="registro_u.php" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-user-plus"></i>Nuevo Usuario
                             </a>
-                            <a href="javascript:void(0);" onclick="navigateTo('registro_bien.php')" class="shortcut-chip chip-secondary text-decoration-none">
+                            <a href="registro_bien.php" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-box-open"></i>Nuevo Bien
                             </a>
-                            <a href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')" class="shortcut-chip chip-secondary text-decoration-none">
+                            <a href="registro_pagos_egresos.php" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-file-invoice-dollar"></i>Reg. Egreso
                             </a>
                             <a href="../ventas/marketing.php" target="_blank" class="shortcut-chip chip-secondary text-decoration-none" style="border-color: #f18000; color: #f18000 !important;">
                                 <i class="fas fa-bullhorn"></i>Marketing
                             </a>
                         <?php } elseif ($_SESSION["tipo"] == "cont") { ?>
-                            <a href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')" class="shortcut-chip chip-primary text-decoration-none">
+                            <a href="registro_pagos_egresos.php" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-plus-circle"></i>Registrar Egreso
                             </a>
-                            <a href="javascript:void(0);" onclick="navigateTo('ver_pagos_cont.php')" class="shortcut-chip chip-secondary text-decoration-none">
+                            <a href="ver_pagos_cont.php" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-search-dollar"></i>Revisar Pagos
                             </a>
                         <?php } elseif ($_SESSION["tipo"] == "inv") { ?>
-                            <a href="javascript:void(0);" onclick="navigateTo('registro_bien.php')" class="shortcut-chip chip-primary text-decoration-none">
+                            <a href="registro_bien.php" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-plus-circle"></i>Registrar Bien
                             </a>
-                            <a href="javascript:void(0);" onclick="navigateTo('lista_bienes.php')" class="shortcut-chip chip-secondary text-decoration-none">
+                            <a href="lista_bienes.php" class="shortcut-chip chip-secondary text-decoration-none">
                                 <i class="fas fa-list"></i>Ver Inventario
                             </a>
                         <?php } elseif ($_SESSION["tipo"] == "upu") { ?>
-                            <a href="javascript:void(0);" onclick="navigateTo('registro_pagos.php')" class="shortcut-chip chip-primary text-decoration-none">
+                            <a href="registro_pagos.php" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-download"></i>Reportar Pago
                             </a>
-                            <a href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')" class="shortcut-chip chip-primary text-decoration-none">
+                            <a href="registro_pagos_egresos.php" class="shortcut-chip chip-primary text-decoration-none">
                                 <i class="fas fa-upload"></i>Reportar Egreso
                             </a>
                         <?php } ?>
@@ -382,7 +382,7 @@ if ($tipo_usuario == "admin") {
                         <i class="fas fa-box-open metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="javascript:void(0);" onclick="navigateTo('lista_bienes.php')">Acceder a Inventarios</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="lista_bienes.php">Acceder a Inventarios</a>
                         <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>
@@ -398,7 +398,7 @@ if ($tipo_usuario == "admin") {
                         <i class="fas fa-users-cog metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="javascript:void(0);" onclick="navigateTo('usuario.php')">Administrar Usuarios</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="usuario.php">Administrar Usuarios</a>
                         <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>
@@ -471,7 +471,7 @@ if ($tipo_usuario == "admin") {
                         <i class="fas fa-money-check-alt metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="javascript:void(0);" onclick="navigateTo('<?php echo $link; ?>')"><?php echo $texto_link; ?></a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="<?php echo $link; ?>"><?php echo $texto_link; ?></a>
                         <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>
@@ -487,7 +487,7 @@ if ($tipo_usuario == "admin") {
                         <i class="fas fa-user-cog metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="javascript:void(0);" onclick="navigateTo('configuracion_usuario.php')">Ajustar Cuenta</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="configuracion_usuario.php">Ajustar Cuenta</a>
                         <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>
@@ -536,8 +536,8 @@ if ($tipo_usuario == "admin") {
                         <i class="fas fa-comments metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="javascript:void(0);" onclick="abrirSoporte()">Chatear con Soporte</a>
-                        <div class="small text-white"><i class="fas fa-comment-dots"></i></div>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="soporte_usuario.php">Ingresar al Centro de Soporte</a>
+                        <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>
             </div>

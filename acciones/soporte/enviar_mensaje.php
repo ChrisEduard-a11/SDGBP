@@ -1,5 +1,8 @@
 <?php
-session_start();
+error_reporting(0);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once("../../conexion.php");
 
 header('Content-Type: application/json');
@@ -19,7 +22,7 @@ if ($is_guest) {
     }
     $enviado_por = 'guest_' . $id_ticket;
 } else {
-    $enviado_por = $is_admin ? 'admin' : $_SESSION['id'];
+    $enviado_por = $_SESSION['id'];
 }
 
 if (empty($id_ticket) || empty($mensaje)) {

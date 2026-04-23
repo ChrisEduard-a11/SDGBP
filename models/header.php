@@ -195,10 +195,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
 // RBAC (ROLE-BASED ACCESS CONTROL) ESTRICTO
 // =====================================================================
 $vistas_permitidas = [
-    'admin' => ['usuario.php', 'usuarios_a.php', 'edit_u.php', 'gestionar_flyers.php', 'aprobar_marketing.php', 'agregar_producto.php', 'productos.php', 'editar_producto.php', 'registro_bien.php', 'lista_bienes.php', 'categorias.php', 'agregar_categoria_producto.php', 'editar_categoria_producto.php', 'formulario_comprobante.php', 'listar_comprobantes.php', 'editar_comprobante.php', 'aprobar_pago.php', 'registro_pagos_egresos.php', 'ver_pagos_cont.php', 'backup_db.php', 'exportar_excel_pagos.php'],
-    'upu' => ['ver_clientes.php', 'agregar_cliente.php', 'editar_cliente.php', 'registro_pagos.php', 'registro_pagos_egresos.php', 'ver_pagos.php'],
-    'cont' => ['formulario_comprobante.php', 'listar_comprobantes.php', 'editar_comprobante.php', 'aprobar_pago.php', 'registro_pagos_egresos.php', 'ver_pagos_cont.php', 'exportar_excel_pagos.php'],
-    'inv' => ['registro_bien.php', 'lista_bienes.php', 'categorias.php', 'agregar_categoria_producto.php', 'editar_categoria_producto.php']
+    'admin' => ['usuario.php', 'usuarios_a.php', 'edit_u.php', 'gestionar_flyers.php', 'aprobar_marketing.php', 'agregar_producto.php', 'productos.php', 'editar_producto.php', 'registro_bien.php', 'lista_bienes.php', 'categorias.php', 'agregar_categoria_producto.php', 'editar_categoria_producto.php', 'formulario_comprobante.php', 'listar_comprobantes.php', 'editar_comprobante.php', 'aprobar_pago.php', 'registro_pagos_egresos.php', 'ver_pagos_cont.php', 'backup_db.php', 'exportar_excel_pagos.php', 'gestionar_tickets.php', 'soporte_usuario.php'],
+    'upu' => ['ver_clientes.php', 'agregar_cliente.php', 'editar_cliente.php', 'registro_pagos.php', 'registro_pagos_egresos.php', 'ver_pagos.php', 'soporte_usuario.php'],
+    'cont' => ['formulario_comprobante.php', 'listar_comprobantes.php', 'editar_comprobante.php', 'aprobar_pago.php', 'registro_pagos_egresos.php', 'ver_pagos_cont.php', 'exportar_excel_pagos.php', 'soporte_usuario.php'],
+    'inv' => ['registro_bien.php', 'lista_bienes.php', 'categorias.php', 'agregar_categoria_producto.php', 'editar_categoria_producto.php', 'soporte_usuario.php']
 ];
 
 $vistas_restringidas = array_unique(array_merge($vistas_permitidas['admin'], $vistas_permitidas['upu'], $vistas_permitidas['cont'], $vistas_permitidas['inv']));
@@ -1287,16 +1287,15 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
 }?>
                             <div class="sb-sidenav-menu-heading">Ayuda y Soporte</div>
                             <?php if ($_SESSION["tipo"] == "admin") { ?>
-                            <a class="nav-link" href="../vistas/gestionar_tickets.php">
+                                <a class="nav-link" href="../vistas/gestionar_tickets.php">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-ticket-alt"></i></div>
+                                    Gestión de Soporte
+                                </a>
+                            <?php } ?>
+                            <a class="nav-link" href="../vistas/soporte_usuario.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-headset fa-fw"></i></div>
                                 Centro de Soporte
                             </a>
-                            <?php } else { ?>
-                            <a class="nav-link" href="javascript:void(0);" onclick="toggleSoporteWindow()">
-                                <div class="sb-nav-link-icon"><i class="fas fa-headset fa-fw"></i></div>
-                                Soporte Técnico
-                            </a>
-                            <?php } ?>
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">

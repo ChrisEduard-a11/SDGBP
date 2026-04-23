@@ -21,6 +21,7 @@
 
 /* Header */
 .g-header {
+    flex-shrink: 0;
     background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 18px 20px;
     display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f18000;
 }
@@ -29,19 +30,32 @@
 .g-header-close:hover { opacity: 1; transform: rotate(90deg); }
 
 /* Views */
-#g-view-init { padding: 15px; text-align: center; display: none; height: auto; min-height: 100%; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+#g-view-init { padding: 15px; text-align: center; display: none; flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
 #g-view-init.active { display: flex; }
-#g-view-chat { display: none; height: 100%; flex-direction: column; }
+#g-view-chat { display: none; flex: 1; min-height: 0; overflow: hidden; flex-direction: column; }
 #g-view-chat.active { display: flex; }
 
-.g-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: rgba(241, 245, 249, 0.5); }
+.g-body { flex: 1; min-height: 0; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: rgba(241, 245, 249, 0.5); }
 
-.g-footer { padding: 12px 15px; border-top: 1px solid rgba(0,0,0,0.05); background: white; display: flex; gap: 10px; align-items: center; }
+.g-footer { flex-shrink: 0; padding: 12px 15px; border-top: 1px solid rgba(0,0,0,0.05); background: white; display: flex; gap: 8px; align-items: center; position: relative; }
 .g-footer input { flex: 1; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 20px; padding: 10px 15px; font-size: 0.95rem; outline: none; transition: 0.3s; }
 .g-footer input:focus { border-color: #f18000; box-shadow: 0 0 0 3px rgba(241,128,0,0.1); }
-.g-footer button { border: none; background: #f18000; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+.g-footer button { border: none; background: #f18000; color: white; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink:0; }
 .g-footer button:hover { background: #ea580c; transform: scale(1.05); }
 .g-footer button:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+
+.g-emoji-btn { background: none !important; color: #94a3b8 !important; font-size: 1.3rem !important; width: 35px !important; }
+.g-emoji-btn:hover { color: #f18000 !important; transform: scale(1.1) !important; }
+
+/* Emoji Picker Minimalista */
+.emoji-picker-g {
+    position: absolute; bottom: 75px; left: 10px; right: 10px; background: white;
+    border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border: 1px solid rgba(0,0,0,0.05); padding: 10px; display: none;
+    grid-template-columns: repeat(6, 1fr); gap: 5px; z-index: 100;
+}
+.emoji-picker-g span { font-size: 1.3rem; cursor: pointer; transition: 0.1s; padding: 4px; border-radius: 6px; text-align: center; }
+.emoji-picker-g span:hover { background: #f1f5f9; transform: scale(1.2); }
 
 /* Bubbles */
 .msg-b { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 0.9rem; line-height: 1.4; animation: gFadeIn 0.3s ease; position: relative; }
@@ -106,7 +120,13 @@
             <!-- Mensajes dinámicos -->
             <div class="typing-bubble" id="g-typing-indicator"><span></span><span></span><span></span></div>
         </div>
-        <div class="g-footer">
+        <div class="g-footer" style="position:relative;">
+            <button class="g-emoji-btn" onclick="toggleEmojiPickerG()"><i class="far fa-smile"></i></button>
+            <div class="emoji-picker-g" id="emoji-picker-g">
+                <span onclick="addEmojiG('😀')">😀</span><span onclick="addEmojiG('😃')">😃</span><span onclick="addEmojiG('😄')">😄</span><span onclick="addEmojiG('😁')">😁</span><span onclick="addEmojiG('😂')">😂</span><span onclick="addEmojiG('😉')">😉</span>
+                <span onclick="addEmojiG('🥰')">🥰</span><span onclick="addEmojiG('😍')">😍</span><span onclick="addEmojiG('🤔')">🤔</span><span onclick="addEmojiG('🥳')">🥳</span><span onclick="addEmojiG('🥺')">🥺</span><span onclick="addEmojiG('😭')">😭</span>
+                <span onclick="addEmojiG('👍')">👍</span><span onclick="addEmojiG('👎')">👎</span><span onclick="addEmojiG('🔥')">🔥</span><span onclick="addEmojiG('✨')">✨</span><span onclick="addEmojiG('👋')">👋</span><span onclick="addEmojiG('🙏')">🙏</span>
+            </div>
             <input type="text" id="g-input-msg" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') gEnviarMensaje()" oninput="gSendTyping()">
             <button id="g-btn-send" onclick="gEnviarMensaje()"><i class="fas fa-paper-plane"></i></button>
         </div>
@@ -117,6 +137,7 @@
     let gCurrentTicketId = null;
     let gLastMessageId = 0;
     let gPollInterval = null;
+    let isFetchingG = false;
 
     function tgGuestSoporteWindow() {
         const w = document.getElementById('soporte-window-guest');
@@ -189,29 +210,38 @@
     }
 
     function gRefreshChat() {
-        if(!gCurrentTicketId) return;
+        if(!gCurrentTicketId || isFetchingG) return;
+        isFetchingG = true;
         fetch(`../acciones/soporte/obtener_mensajes.php?id_ticket=${gCurrentTicketId}&last_id=${gLastMessageId}`)
             .then(r => r.json())
             .then(data => {
+                isFetchingG = false;
+                if (!data.success) {
+                    console.error("Error en el chat:", data.message);
+                    return;
+                }
+
                 // Typing indicator
                 const typingEl = document.getElementById('g-typing-indicator');
                 if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
 
-                if(data.success && data.mensajes.length > 0) {
+                if(data.mensajes.length > 0) {
                     let hasNewTheirs = false;
                     const body = document.getElementById('g-chat-body');
+                    
                     data.mensajes.forEach(m => {
                         const c = m.es_mio ? 'msg-mine' : 'msg-theirs';
                         const sender = m.es_mio ? 'Yo' : m.emisor_nombre;
                         if (!m.es_mio && gLastMessageId > 0) hasNewTheirs = true;
 
-                        body.innerHTML += `
-                            <div class="msg-b ${c}">
-                                <div style="font-weight:700; font-size:0.75rem; margin-bottom:3px; opacity:0.8;">${sender}</div>
-                                <div>${m.mensaje}</div>
-                                <div class="msg-meta">${m.fecha}</div>
-                            </div>
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = `msg-b ${c}`;
+                        msgDiv.innerHTML = `
+                            <div style="font-weight:700; font-size:0.75rem; margin-bottom:3px; opacity:0.8;">${sender}</div>
+                            <div>${m.mensaje}</div>
+                            <div class="msg-meta">${m.fecha}</div>
                         `;
+                        body.appendChild(msgDiv);
                         gLastMessageId = m.id_mensaje;
                     });
                     body.scrollTop = body.scrollHeight;
@@ -302,5 +332,18 @@
                     box.innerHTML = `<div style="text-align:center; padding:10px; color:#64748b; font-size:0.85rem;">Gracias. Has calificado esta atención como: <strong>${cmoji}</strong></div>`;
                 }
             });
+    }
+
+    function toggleEmojiPickerG() {
+        const p = document.getElementById('emoji-picker-g');
+        p.style.display = p.style.display === 'grid' ? 'none' : 'grid';
+    }
+
+    function addEmojiG(e) {
+        const inp = document.getElementById('g-input-msg');
+        inp.value += e;
+        inp.focus();
+        document.getElementById('emoji-picker-g').style.display = 'none';
+        gSendTyping();
     }
 </script>
