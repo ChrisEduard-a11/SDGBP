@@ -148,8 +148,8 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                             <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" id="btn-cerrar-tk" onclick="cerrarTicket()">
                                 <i class="fas fa-lock me-1"></i> Marcar Resuelto
                             </button>
-                            <button class="btn btn-success btn-sm rounded-pill px-3 fw-bold" id="btn-confirm-id" style="display:none;" onclick="confirmarIdentidad()">
-                                <i class="fas fa-id-card me-1"></i> Confirmar Identidad
+                            <button class="btn btn-success btn-sm rounded-pill px-3 fw-bold" id="btn-confirm-id" style="display:none;" onclick="toggleSearchPanel()">
+                                <i class="fas fa-id-card me-1"></i> Confirmar y Seleccionar Usuario
                             </button>
                             <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" id="btn-eliminar-tk" style="display:none;" onclick="borrarTicket()">
                                 <i class="fas fa-trash me-1"></i> Eliminar Ticket
@@ -158,6 +158,16 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     </div>
                     
                     <div class="tk-chat-body" id="tk-chat-msgs"></div>
+                    
+                    <!-- Panel de Búsqueda de Usuario (Solo para Invitados) -->
+                    <div id="tk-search-panel" style="display:none; padding: 15px; background: #fff8f0; border-top: 1px solid #f18000; border-bottom: 1px solid #f18000;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold small text-primary"><i class="fas fa-search me-1"></i> Vincular Usuario del Sistema</span>
+                            <button class="btn-close small" style="font-size:0.7rem;" onclick="toggleSearchPanel()"></button>
+                        </div>
+                        <input type="text" id="tk-search-input" class="form-control form-control-sm mb-2 rounded-pill" placeholder="Buscar por Nombre o Cédula..." onkeyup="searchSystemUser()">
+                        <div id="tk-search-results" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;"></div>
+                    </div>
                     
                     <div class="tk-chat-footer">
                         <input type="text" id="tk-chat-input" placeholder="Escribe tu respuesta como Administrador..." onkeypress="if(event.key==='Enter') enviarMensajeAdmin()">
@@ -255,6 +265,81 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     }
                 }
             });
+    }
+
+    function toggleSearchPanel() {
+        const p = document.getElementById('tk-search-panel');
+        p.style.display = p.style.display === 'none' ? 'block' : 'none';
+        if (p.style.display === 'block') document.getElementById('tk-search-input').focus();
+    }
+
+    function searchSystemUser() {
+        const q = document.getElementById('tk-search-input').value;
+        const res = document.getElementById('tk-search-results');
+        if (q.length < 3) {
+            res.innerHTML = '';
+            return;
+        }
+
+        fetch(`../acciones/soporte/buscar_usuario.php?q=${q}`)
+            .then(r=>r.json())
+            .then(data => {
+                if(data.success) {
+                    res.innerHTML = '';
+                    data.usuarios.forEach(u => {
+                        res.innerHTML += `
+                            <div class="d-flex justify-content-between align-items-center p-2 border rounded bg-white hover:bg-light" style="cursor:pointer; font-size:0.85rem;" onclick="vincularYConfirmar('${u.id_usuario}', '${u.nombre}', '${u.cedula}', '${u.usuario}')">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="${u.foto || '../img/default-user.png'}" width="25" height="25" class="rounded-circle">
+                                    <div><strong>${u.nombre}</strong> <span class="text-muted small">(${u.cedula})</span></div>
+                                </div>
+                                <i class="fas fa-link text-success"></i>
+                            </div>
+                        `;
+                    });
+                    if(data.usuarios.length === 0) res.innerHTML = '<div class="text-muted small text-center p-2">No se encontraron coincidencias.</div>';
+                }
+            });
+    }
+
+    function vincularYConfirmar(idU, nombreU, cedulaU, userU) {
+        Swal.fire({
+            title: '¿Confirmar Identidad?',
+            text: `Se vinculará este ticket a la cuenta de ${nombreU} (@${userU}) y se enviará el mensaje de confirmación.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            confirmButtonText: 'Sí, Vincular y Confirmar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // 1. Vincular en DB
+                const fd = new FormData();
+                fd.append('id_ticket', cTickId);
+                fd.append('id_usuario', idU);
+                
+                fetch('../acciones/soporte/vincular_usuario_ticket.php', { method:'POST', body:fd })
+                    .then(r=>r.json())
+                    .then(data => {
+                        if(data.success) {
+                            // 2. Enviar mensaje de confirmación
+                            const msgText = `✅ IDENTIDAD CONFIRMADA Y VINCULADA.\nEl Centro de Soporte ha verificado que usted es el usuario: ${nombreU}\nID de Sistema: @${userU}\nCédula: ${cedulaU}`;
+                            const fdMsg = new FormData();
+                            fdMsg.append('id_ticket', cTickId);
+                            fdMsg.append('mensaje', msgText);
+                            
+                            fetch('../acciones/soporte/enviar_mensaje.php', { method:'POST', body:fdMsg })
+                                .then(rr=>rr.json())
+                                .then(dataMsg => {
+                                    if(dataMsg.success) {
+                                        Swal.fire('¡Éxito!', 'Usuario vinculado e identidad confirmada.', 'success').then(() => location.reload());
+                                    }
+                                });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    });
+            }
+        });
     }
 
     function confirmarIdentidad() {
