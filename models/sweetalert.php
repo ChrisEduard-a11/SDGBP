@@ -28,151 +28,358 @@
 
 <?php if (isset($_SESSION['type']) && isset($_SESSION['alert'])): ?>
     <style>
-        .premium-swal-popup {
-            border-radius: 1.5rem !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            background: var(--glass-bg, #ffffff) !important;
-            backdrop-filter: blur(15px) !important;
-            -webkit-backdrop-filter: blur(15px) !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-            padding-bottom: 2rem !important;
+        /* Revolutionary Welcome Modal Styles */
+        .premium-welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 999999;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        [data-theme="dark"] .premium-swal-popup, body.dark-mode .premium-swal-popup {
-            background: rgba(30, 41, 59, 0.95) !important;
-            color: #f8fafc !important;
-            border: 1px solid rgba(255,255,255,0.05) !important;
+
+        .premium-welcome-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
-        .custom-swal-img {
-            border: 4px solid #17a2b8 !important;
-            padding: 4px !important;
-            background: white !important;
-            box-shadow: 0 10px 25px rgba(23, 162, 184, 0.3) !important;
+
+        .premium-welcome-modal {
+            position: relative;
+            width: 92%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.95) translateY(20px);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            text-align: center;
+            padding: 2.5rem 2rem;
         }
-        [data-theme="dark"] .custom-swal-img, body.dark-mode .custom-swal-img {
-            background: #1e293b !important;
-            border-color: #4facfe !important;
+
+        [data-theme="dark"] .premium-welcome-modal, body.dark-mode .premium-welcome-modal {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .custom-swal-title {
-            color: #17a2b8 !important;
-            font-weight: 800 !important;
-            margin-bottom: 0 !important;
+
+        .premium-welcome-overlay.active .premium-welcome-modal {
+            transform: scale(1) translateY(0);
+            opacity: 1;
         }
-        [data-theme="dark"] .custom-swal-title, body.dark-mode .custom-swal-title {
-            color: #4facfe !important;
+
+        /* Animated Top Border */
+        .welcome-top-glow {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3b82f6, #f18000, #3b82f6, #f18000);
+            background-size: 300% 100%;
+            animation: gradientShift 3s linear infinite;
         }
-        .swal-shortcut-btn {
-            border-radius: 50px !important;
-            padding: 0.6rem 1.5rem !important;
-            font-weight: 600 !important;
-            transition: all 0.3s ease !important;
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* Avatar Container */
+        .welcome-avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-avatar-glow {
+            position: absolute;
+            top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #f18000);
+            filter: blur(12px);
+            opacity: 0.6;
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.4; transform: scale(0.95); }
+            100% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .welcome-avatar {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            object-fit: cover;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+
+        [data-theme="dark"] .welcome-avatar { border-color: #0f172a; }
+
+        /* Text Styles */
+        .welcome-heading {
+            font-size: 2rem;
+            font-weight: 900;
             margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #1e293b, #64748b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        [data-theme="dark"] .welcome-heading { background: linear-gradient(135deg, #ffffff, #cbd5e1); -webkit-background-clip: text; background-clip: text; }
+
+        .welcome-subheading {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        [data-theme="dark"] .welcome-subheading { color: #94a3b8; }
+
+        .welcome-grid-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        /* Grid Actions */
+        .welcome-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-action-card {
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        [data-theme="dark"] .welcome-action-card {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: rgba(255,255,255,0.05);
+        }
+
+        .welcome-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(241, 128, 0, 0.15);
+            border-color: rgba(f,128,0,0.3);
+        }
+
+        .welcome-icon-box {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(241, 128, 0, 0.08); /* Brand clear orange */
+            color: #f18000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .welcome-action-card:hover .welcome-icon-box {
+            background: #f18000;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .welcome-action-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .welcome-action-title { color: #f8fafc; }
+
+        /* Dismiss Button */
+        .welcome-dismiss-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 1rem;
+            border: none;
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            text-transform: none !important;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4);
         }
-        .swal-shortcut-btn:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
-        }
-        /* Fix text colors for dark mode context inside the modal */
-        [data-theme="dark"] .swal2-html-container .text-muted, body.dark-mode .swal2-html-container .text-muted {
-            color: #94a3b8 !important;
-        }
-        [data-theme="dark"] .swal2-html-container .alert-text, body.dark-mode .swal2-html-container .alert-text {
-            color: #cbd5e1 !important;
-        }
-    </style>    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const preloader = document.getElementById('custom-global-preloader');
-            const delay = 0;
 
-            const userType = "<?php echo $_SESSION['tipo'] ?? ''; ?>";
+        [data-theme="dark"] .welcome-dismiss-btn {
+            background: #f18000;
+            box-shadow: 0 10px 25px -5px rgba(241, 128, 0, 0.4);
+        }
+
+        .welcome-dismiss-btn:hover {
+            transform: translateY(-2px);
+            background: #f18000;
+            box-shadow: 0 15px 30px -5px rgba(241, 128, 0, 0.5);
+        }
+        
+        [data-theme="dark"] .welcome-dismiss-btn:hover { background: #ea580c; }
+
+        .welcome-dismiss-btn i { transition: transform 0.3s; }
+        .welcome-dismiss-btn:hover i { transform: translateX(4px); }
+
+        /* Floating background elements */
+        .welcome-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.3;
+            animation: floatOrb 10s infinite ease-in-out alternate;
+        }
+        
+        .orb-1 { width: 300px; height: 300px; background: #3b82f6; top: -100px; left: -100px; }
+        .orb-2 { width: 400px; height: 400px; background: #f18000; bottom: -150px; right: -150px; animation-delay: -5s; }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 40px) scale(1.2); }
+        }
+    </style>
+
+    <!-- Custom HTML Structure -->
+    <div id="premiumWelcomeOverlay" class="premium-welcome-overlay">
+        
+        <div class="welcome-orb orb-1"></div>
+        <div class="welcome-orb orb-2"></div>
+        
+        <div class="premium-welcome-modal">
+            <div class="welcome-top-glow"></div>
             
-            const welcomeData = {
-                title: '¡Bienvenido!',
-                alert: `<?php echo $_SESSION["alert"]; ?>`,
-                type: "<?php echo $_SESSION['type']; ?>",
-                tipo_usuario: userType,
-                foto: '<?php echo isset($_SESSION["foto"]) && !empty($_SESSION["foto"]) ? $_SESSION["foto"] : "../img/default-user.png"; ?>'
-            };
+            <div class="welcome-avatar-wrapper">
+                <div class="welcome-avatar-glow"></div>
+                <?php $foto_src = (isset($_SESSION["foto"]) && !empty($_SESSION["foto"])) ? $_SESSION["foto"] : "../img/default-user.png"; ?>
+                <img src="<?php echo htmlspecialchars($foto_src); ?>" alt="Avatar" class="welcome-avatar">
+            </div>
 
-            // Mostramos normalmente
+            <h2 class="welcome-heading">¡Bienvenido!</h2>
+            <p class="welcome-subheading"><?php echo htmlspecialchars($_SESSION["alert"]); ?></p>
+
+            <p class="welcome-grid-title">¿Qué te gustaría hacer ahora?</p>
+
+            <div class="welcome-actions-grid">
+                <?php 
+                $tipo = $_SESSION['tipo'] ?? '';
+                if ($tipo == 'admin') {
+                    echo '<div onclick="closeWelcomeGo(\'registro_u.php\')" class="welcome-action-card">
+                            <div class="welcome-icon-box"><i class="fas fa-user-plus"></i></div>
+                            <span class="welcome-action-title">Nuevo Usuario</span>
+                          </div>';
+                    echo '<div onclick="closeWelcomeGo(\'registro_bien.php\')" class="welcome-action-card">
+                            <div class="welcome-icon-box" style="color:#0ea5e9; background:rgba(14,165,233,0.1);"><i class="fas fa-box-open"></i></div>
+                            <span class="welcome-action-title">Nuevo Bien</span>
+                          </div>';
+                } elseif ($tipo == 'cont') {
+                    echo '<div onclick="closeWelcomeGo(\'registro_pagos_egresos.php\')" class="welcome-action-card">
+                            <div class="welcome-icon-box"><i class="fas fa-file-invoice-dollar"></i></div>
+                            <span class="welcome-action-title">Nueva Comisión</span>
+                          </div>';
+                    echo '<div onclick="closeWelcomeGo(\'ver_pagos_cont.php\')" class="welcome-action-card">
+                            <div class="welcome-icon-box" style="color:#0ea5e9; background:rgba(14,165,233,0.1);"><i class="fas fa-search-dollar"></i></div>
+                            <span class="welcome-action-title">Revisar Pagos</span>
+                          </div>';
+                } elseif ($tipo == 'inv') {
+                    echo '<div onclick="closeWelcomeGo(\'registro_bien.php\')" class="welcome-action-card">
+                            <div class="welcome-icon-box"><i class="fas fa-plus-circle"></i></div>
+                            <span class="welcome-action-title">Registrar Bien</span>
+                          </div>';
+                    echo '<div onclick="closeWelcomeGo(\'lista_bienes.php\')" class="welcome-action-card">
+                            <div class="welcome-icon-box" style="color:#0ea5e9; background:rgba(14,165,233,0.1);"><i class="fas fa-list"></i></div>
+                            <span class="welcome-action-title">Ver Inventario</span>
+                          </div>';
+                } elseif ($tipo == 'upu') {
+                    echo '<div onclick="closeWelcomeGo(\'registro_pagos.php\')" class="welcome-action-card">
+                            <div class="welcome-icon-box" style="color:#10b981; background:rgba(16,185,129,0.1);"><i class="fas fa-download"></i></div>
+                            <span class="welcome-action-title">Ingreso</span>
+                          </div>';
+                    echo '<div onclick="closeWelcomeGo(\'registro_pagos_egresos.php\')" class="welcome-action-card">
+                            <div class="welcome-icon-box" style="color:#ef4444; background:rgba(239,68,68,0.1);"><i class="fas fa-upload"></i></div>
+                            <span class="welcome-action-title">Egreso</span>
+                          </div>';
+                    echo '<div onclick="closeWelcomeGo(\'ver_pagos.php\')" class="welcome-action-card" style="grid-column: span 2; display: flex; flex-direction: row; gap: 10px;">
+                            <div class="welcome-icon-box" style="width:35px; height:35px; margin:0;"><i class="fas fa-history" style="font-size:1rem;"></i></div>
+                            <span class="welcome-action-title">Ver Mi Historial</span>
+                          </div>';
+                }
+                ?>
+            </div>
+
+            <button class="welcome-dismiss-btn" onclick="closePremiumWelcome()">
+                Ir al Panel Principal <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.getElementById('premiumWelcomeOverlay');
+            // Retraso para que la animación de entrada se vea elegante tras la carga
             setTimeout(() => {
-                showPremiumWelcome(welcomeData);
-            }, delay);
+                if(overlay) overlay.classList.add('active');
+            }, 100);
         });
 
-        // Función global para mostrar el saludo (se usará también en el footer tras aceptar)
-        function showPremiumWelcome(data) {
-            let shortcuts = '';
-            if (data.tipo_usuario == "admin") {
-                shortcuts = `
-                    <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_u.php');">
-                        <i class="fas fa-user-plus"></i> Registrar Nuevo Usuario
-                    </button>
-
-                    <button class="btn btn-outline-info swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_bien.php');">
-                        <i class="fas fa-box-open"></i> Registrar Nuevo Bien
-                    </button>`;
-            } else if (data.tipo_usuario == "cont") {
-                shortcuts = `
-                    <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_pagos_egresos.php');">
-                        <i class="fas fa-file-invoice-dollar"></i> Registrar Nueva Comisión Bancaria
-                    </button>
-                    <button class="btn btn-outline-info swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('ver_pagos_cont.php');">
-                        <i class="fas fa-search-dollar"></i> Revisar Pagos
-                    </button>`;
-            } else if (data.tipo_usuario == "inv") {
-                shortcuts = `
-                    <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_bien.php');">
-                        <i class="fas fa-plus-circle"></i> Registrar Bien
-                    </button>
-                    <button class="btn btn-outline-info swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('lista_bienes.php');">
-                        <i class="fas fa-list"></i> Ver Inventario
-                    </button>`;
-            } else if (data.tipo_usuario == "upu") {
-                shortcuts = `
-                    <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_pagos.php');">
-                        <i class="fas fa-download"></i> Reportar Nuevo Ingreso
-                    </button>
-                    <button class="btn btn-primary swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('registro_pagos_egresos.php');">
-                        <i class="fas fa-upload"></i> Reportar Nuevo Egreso
-                    </button>                    
-                    <button class="btn btn-outline-info swal-shortcut-btn w-100" onclick="Swal.close(); navigateTo('ver_pagos.php');">
-                        <i class="fas fa-history"></i> Ver Mi Historial de Pagos
-                    </button>`;
+        function closePremiumWelcome() {
+            const overlay = document.getElementById('premiumWelcomeOverlay');
+            if(overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    overlay.remove();
+                }, 600); // Esperar que termine la transición CSS
             }
+        }
 
-            Swal.fire({
-                title: `<h2 class="custom-swal-title">${data.title}</h2>`,
-                html: `
-                    <div class="alert-text" style="font-size: 1.15rem; font-weight: 600; color: #6c757d; margin-bottom: 25px;">
-                        ${data.alert}
-                    </div>
-                    <div class="px-3">
-                        <p class="text-muted mb-3" style="font-size: 0.95rem; font-weight: 500;">¿Qué te gustaría hacer ahora?</p>
-                        ${shortcuts}
-                    </div>
-                `,
-                imageUrl: data.foto,
-                imageWidth: 90,
-                imageHeight: 90,
-                imageAlt: 'Foto de perfil',
-                showConfirmButton: true,
-                confirmButtonText: 'Ir al Panel Principal <i class="fas fa-arrow-right ms-2"></i>',
-                confirmButtonColor: '#6c757d',
-                customClass: {
-                    popup: 'premium-swal-popup',
-                    image: 'rounded-circle shadow-sm custom-swal-img',
-                    confirmButton: 'btn btn-secondary rounded-pill px-4 fw-bold mt-3 shadow-sm'
-                },
-                backdrop: 'rgba(15, 23, 42, 0.75)'
-            });
+        function closeWelcomeGo(url) {
+            closePremiumWelcome();
+            setTimeout(() => {
+                if (typeof navigateTo === 'function') {
+                    navigateTo(url);
+                } else {
+                    window.location.href = url;
+                }
+            }, 300);
         }
     </script>
+
     <?php
     // Limpiar las variables de sesión después de mostrar la alerta
     unset($_SESSION['type']);

@@ -2,6 +2,14 @@
 session_start();
 require_once("conexion.php");
 
+$configFile = 'config/marketing_status.json';
+$marketingActivo = true; // default
+if (file_exists($configFile)) {
+    $ms_data = json_decode(file_get_contents($configFile), true);
+    if (isset($ms_data['activo'])) {
+        $marketingActivo = ($ms_data['activo'] === true || $ms_data['activo'] === "true" || $ms_data['activo'] == 1);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">

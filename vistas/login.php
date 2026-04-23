@@ -382,7 +382,7 @@ $mostrar_aviso = ($aviso_activo && $dias_transcurridos <= 90);
                             <div class="p-3 border-b border-slate-50 bg-slate-50 rounded-t-2xl">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ayuda en Línea</span>
                             </div>
-                            <button onclick="abrirSoporte()" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-orange-50 hover:text-primary transition-colors rounded-b-2xl flex items-center gap-2">
+                            <button onclick="tgGuestSoporteWindow()" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-orange-50 hover:text-primary transition-colors rounded-b-2xl flex items-center gap-2">
                                 <i class="fas fa-comments text-primary"></i> Chat con Soporte
                             </button>
                         </div>
@@ -417,40 +417,8 @@ $mostrar_aviso = ($aviso_activo && $dias_transcurridos <= 90);
     <!-- Scripts -->
     <script src="../js/vali_login.js?v=<?php echo time(); ?>"></script>
     
-    <!-- Tawk.to Script -->
-    <style>
-        #tawk-chatwidget-container, .tawk-min-container { display: none !important; }
-    </style>
-    <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-
-    Tawk_API.onLoad = function(){
-        Tawk_API.hideWidget();
-    };
-
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/69222aed34679319611b35ee/1jamnfbva';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-
-    function abrirSoporte() {
-        const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
-        if (tawkContainer) tawkContainer.style.setProperty('display', 'block', 'important');
-        
-        Tawk_API.showWidget();
-        Tawk_API.maximize();
-    }
-
-    Tawk_API.onChatMinimized = function(){
-        Tawk_API.hideWidget();
-        const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
-        if (tawkContainer) tawkContainer.style.setProperty('display', 'none', 'important');
-    };
-    </script>
+    <!-- Chat Nativo para Visitantes/Login -->
+    <?php include('../models/chat_widget_guest.php'); ?>
 </body>
 </html>
 <?php

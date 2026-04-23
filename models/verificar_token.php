@@ -17,6 +17,10 @@ $row = mysqli_fetch_assoc($res);
 if (!$row || $row['session_token'] !== $session_token) {
     echo json_encode(['status' => 'logout']);
 } else {
+    // Mantener la sesión viva
+    $update_sql = "UPDATE usuario SET ultima_actividad = NOW() WHERE id_usuario = '$usuarioid'";
+    mysqli_query($conexion, $update_sql);
+    
     echo json_encode(['status' => 'active']);
 }
 exit;

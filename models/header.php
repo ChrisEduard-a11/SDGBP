@@ -153,7 +153,7 @@ if ($tipo_usuario == 'upu' && (empty($row['foto']) || strpos($row['foto'], 'defa
     $notificaciones[] = [
         'id' => null,
         'titulo' => 'Personaliza tu Perfil',
-        'mensaje' => '¡Hola! Te recomendamos subir una foto de perfil desde el menú "Perfil & Seguridad" > <a href="javascript:void(0);" onclick="navigateTo(\'configuracion_usuario.php\')" class="fw-bold text-primary">Configuración</a> para identificar mejor tus registros.',
+        'mensaje' => '¡Hola! Te recomendamos subir una foto de perfil desde el menú "Perfil & Seguridad" > <a href="configuracion_usuario.php" class="fw-bold text-primary">Configuración</a> para identificar mejor tus registros.',
         'tipo' => 'warning',
         'icono' => 'fas fa-user-edit',
         'leida' => 0,
@@ -975,7 +975,7 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
             <?php include("../models/preloader.php"); ?>
             <!-- END GLOBAL PRELOADER -->
         <nav class="sb-topnav navbar navbar-expand navbar-dark" style="background-color: #f18000 !important;">
-            <a class="navbar-brand ps-3 d-flex align-items-center gap-2" href="javascript:void(0);" onclick="navigateTo('inicio.php')">
+            <a class="navbar-brand ps-3 d-flex align-items-center gap-2" href="inicio.php">
                 <img src="../img/Logo-OP2_V4.webp" alt="Logo" style="width: 40px; height: 40px; object-fit: contain;"> 
                 <span class="text-white fw-bold">SDGBP</span>
             </a>
@@ -1067,7 +1067,7 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             <span class="small text-muted"><?php echo ucfirst($tipo_usuario); ?></span>
                         </li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item py-2" onclick="navigateTo('configuracion_usuario.php')"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Configuración</a></li>
+                        <li><a class="dropdown-item py-2" href="configuracion_usuario.php"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Configuración</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li class="px-3 py-1">
                             <button class="btn btn-danger btn-sm w-100 rounded-pill" onclick="confsalir(event)" data-no-preloader="true">
@@ -1086,7 +1086,7 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                         <div class="nav">
                             
                             <div class="sb-sidenav-menu-heading">Navegación General</div>
-                            <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/inicio.php')">
+                            <a class="nav-link" href="../vistas/inicio.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-house-chimney fa-fw"></i></div>
                                 Dashboard
                             </a>
@@ -1099,19 +1099,19 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </a>
                             <div class="collapse" id="collapseUsuario" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('bitacora.php')">
+                                    <a class="nav-link" href="bitacora.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
                                         Bitácora
                                     </a>
                                     <?php if ($_SESSION["tipo"] == "admin") { ?>
-                                        <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('usuario.php')">
+                                        <a class="nav-link" href="usuario.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-user-gear"></i></div>
                                             Administrar Usuarios
                                         </a>
                                     <?php
 }?>
                                     <?php if ($_SESSION["tipo"] == "upu" || $_SESSION["tipo"] == "cont" || $_SESSION["tipo"] == "inv") { ?>
-                                        <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('configuracion_usuario.php')">
+                                        <a class="nav-link" href="configuracion_usuario.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-sliders-h"></i></div>
                                             Configuración
                                         </a>
@@ -1133,15 +1133,15 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </a>
                             <div class="collapse" id="collapseBienes" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/registro_bien.php')">
+                                    <a class="nav-link" href="../vistas/registro_bien.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-plus-circle"></i></div>
                                         Registrar Bien
                                     </a>
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/lista_bienes.php')">
+                                    <a class="nav-link" href="../vistas/lista_bienes.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-clipboard-list"></i></div>
                                         Lista de Bienes
                                     </a>
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/categorias.php')">
+                                    <a class="nav-link" href="../vistas/categorias.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-tags"></i></div>
                                         Gestión de Categorías
                                     </a>
@@ -1158,15 +1158,15 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </a>
                             <div class="collapse" id="collapseMarketing" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/agregar_producto.php')">
+                                    <a class="nav-link" href="../vistas/agregar_producto.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-cart-plus"></i></div>
                                         Registrar Producto
                                     </a>
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/productos.php')">
+                                    <a class="nav-link" href="../vistas/productos.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-store-alt"></i></div>
                                         Ver Productos
                                     </a>
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/aprobar_marketing.php')">
+                                    <a class="nav-link" href="../vistas/aprobar_marketing.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-check-circle"></i></div>
                                         Aprobar Pagos Marketing
                                     </a>
@@ -1183,7 +1183,7 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </a>
                             <div class="collapse" id="collapseInfoEmpresa" aria-labelledby="headingInfo" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/gestionar_flyers.php')">
+                                    <a class="nav-link" href="../vistas/gestionar_flyers.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-images"></i></div>
                                         Banners Informativos
                                     </a>
@@ -1200,11 +1200,11 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </a>
                             <div class="collapse" id="collapseClientes" aria-labelledby="headingClientes" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/ver_clientes.php')">
+                                    <a class="nav-link" href="../vistas/ver_clientes.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                                         Directorio de Clie/Prov
                                     </a>
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/agregar_cliente.php')">
+                                    <a class="nav-link" href="../vistas/agregar_cliente.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-user-plus"></i></div>
                                         Agregar Nuevo
                                     </a>
@@ -1226,11 +1226,11 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </a>
                             <div class="collapse" id="collapseComprobante" aria-labelledby="headingComprobante" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/formulario_comprobante.php')">
+                                    <a class="nav-link" href="../vistas/formulario_comprobante.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-file-circle-plus"></i></div>
                                         Crear Nuevo
                                     </a>
-                                    <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('../vistas/listar_comprobantes.php')">
+                                    <a class="nav-link" href="../vistas/listar_comprobantes.php">
                                         <div class="sb-nav-link-icon"><i class="fas fa-list-check"></i></div>
                                         Revisar Comprobantes
                                     </a>
@@ -1248,34 +1248,34 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             <div class="collapse" id="collapsePagos" aria-labelledby="headingPagos" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
                                     <?php if ($_SESSION["tipo"] == "upu") { ?>
-                                        <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('registro_pagos.php')">
+                                        <a class="nav-link" href="registro_pagos.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-arrow-up-right-from-square"></i></div>
                                             Registrar Ingreso
                                         </a>
-                                        <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')">
+                                        <a class="nav-link" href="registro_pagos_egresos.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-arrow-down-wide-short"></i></div>
                                             Registrar Egreso
                                         </a>
-                                        <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('ver_pagos.php')">
+                                        <a class="nav-link" href="ver_pagos.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-clock-rotate-left"></i></div>
                                             Historial de Pagos
                                         </a>
                                     <?php
     }?>
                                     <?php if ($_SESSION["tipo"] == "cont" || $_SESSION["tipo"] == "admin") { ?>
-                                        <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('aprobar_pago.php')">
+                                        <a class="nav-link" href="aprobar_pago.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-circle-check"></i></div>
                                             Aprobar Pagos
                                         </a>
-                                        <!--<a class="nav-link" href="javascript:void(0);" onclick="navigateTo('registro_pagos.php')">
+                                        <!--<a class="nav-link" href="registro_pagos.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-arrow-up-right-from-square"></i></div>
                                             Registrar Ingresos Bancarios
                                         </a>-->
-                                        <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('registro_pagos_egresos.php')">
+                                        <a class="nav-link" href="registro_pagos_egresos.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-arrow-down-wide-short"></i></div>
                                             Registrar Comiciones Bancarias
                                         </a>
-                                        <a class="nav-link" href="javascript:void(0);" onclick="navigateTo('ver_pagos_cont.php')">
+                                        <a class="nav-link" href="ver_pagos_cont.php">
                                             <div class="sb-nav-link-icon"><i class="fas fa-table-list"></i></div>
                                             Reporte de Pagos
                                         </a>
@@ -1286,10 +1286,17 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             <?php
 }?>
                             <div class="sb-sidenav-menu-heading">Ayuda y Soporte</div>
-                            <a class="nav-link" href="javascript:void(0);" onclick="abrirSoporte()">
+                            <?php if ($_SESSION["tipo"] == "admin") { ?>
+                            <a class="nav-link" href="../vistas/gestionar_tickets.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-headset fa-fw"></i></div>
-                                Soporte en Línea
+                                Centro de Soporte
                             </a>
+                            <?php } else { ?>
+                            <a class="nav-link" href="javascript:void(0);" onclick="toggleSoporteWindow()">
+                                <div class="sb-nav-link-icon"><i class="fas fa-headset fa-fw"></i></div>
+                                Soporte Técnico
+                            </a>
+                            <?php } ?>
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">
@@ -1298,45 +1305,8 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                     </div>
                 </nav>
             </div>
-            <!--Start of Tawk.to Script-->
-            <style>
-                /* Ocultar el contenedor de Tawk.to por CSS para evitar el "parpadeo" al cargar */
-                #tawk-chatwidget-container, .tawk-min-container { display: none !important; }
-            </style>
-            <script type="text/javascript">
-            var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-
-            // Configurar el comportamiento antes de cargar el script
-            Tawk_API.onLoad = function(){
-                Tawk_API.hideWidget();
-            };
-
-            (function(){
-            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-            s1.async=true;
-            s1.src='https://embed.tawk.to/69222aed34679319611b35ee/1jamnfbva';
-            s1.charset='UTF-8';
-            s1.setAttribute('crossorigin','*');
-            s0.parentNode.insertBefore(s1,s0);
-            })();
-
-            // Función para abrir el chat desde el sidebar
-            function abrirSoporte() {
-                // Forzar visibilidad antes de maximizar
-                const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
-                if (tawkContainer) tawkContainer.style.setProperty('display', 'block', 'important');
-                
-                Tawk_API.showWidget();
-                Tawk_API.maximize();
-            }
-
-            // Ocultar de nuevo si el usuario minimiza el chat
-            Tawk_API.onChatMinimized = function(){
-                Tawk_API.hideWidget();
-                const tawkContainer = document.querySelector('#tawk-chatwidget-container') || document.querySelector('.tawk-min-container');
-                if (tawkContainer) tawkContainer.style.setProperty('display', 'none', 'important');
-            };
-
+            <!-- Soporte Widget Handler integrado arriba -->
+            <script>
                 function borrarTodasNotificacionesHeader() {
                     Swal.fire({
                         title: '¿Borrar todas las notificaciones?',
@@ -1366,11 +1336,10 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                     });
                 }
             </script>
-            <!--End of Tawk.to Script-->
-            <?php
+            <script>
 // Inicia el contenedor de contenido principal (layoutSidenav_content)
-include("../models/sweetalert.php");
-?>
+</script>
+<?php include("../models/sweetalert.php"); ?>
 
             <script>
                 // Aplicar el tema inmediatamente para evitar parpadeo blanco

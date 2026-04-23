@@ -60,6 +60,19 @@ if ($count == 1) {
         exit();
     }
 
+    // Verificar sesión concurrente activa
+    if (!empty($row['session_token']) && !empty($row['ultima_actividad'])) {
+        $ultima_actividad_time = strtotime($row['ultima_actividad']);
+        $tiempo_inactivo = time() - $ultima_actividad_time;
+        // Si el usuario tuvo actividad hace menos de 30 segundos
+        if ($tiempo_inactivo <= 30) {
+            $_SESSION['estatus'] = 'error';
+            $_SESSION['mensaje'] = 'Esta cuenta está actualmente en uso en otro dispositivo o ventana. Cierra dicha sesión o espera 30 segundos. Para tu seguridad, no permitimos accesos múltiples al mismo tiempo.';
+            header("Location: ../vistas/login.php");
+            exit();
+        }
+    }
+
     // Generar y guardar el token de sesión único
     $token = bin2hex(random_bytes(16));
     $_SESSION['session_token'] = $token;
