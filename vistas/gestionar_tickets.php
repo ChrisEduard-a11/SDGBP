@@ -22,7 +22,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 <style>
     /* Estilos Premium para Ventana de Tickets */
     .tk-container {
-        display: flex; height: calc(100vh - 120px); min-height: 600px;
+        display: flex; height: calc(100vh - 120px); min-height: 500px;
         background: var(--glass-bg, #fff);
         border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
         border: 1px solid rgba(0,0,0,0.05); overflow: hidden;
@@ -86,6 +86,124 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
     [data-theme="dark"] .tk-chat-panel, [data-theme="dark"] .tk-chat-footer { background: #0f172a; border-color: #334155; }
     [data-theme="dark"] .tk-chat-footer input { background: #1e293b; border-color: #334155; color: #fff; }
     [data-theme="dark"] .c-theirs { background: #1e293b; color: #f8fafc; border-color: #334155; }
+
+    /* =============================================
+       TABLET: < 900px — Panel izquierdo más compacto
+    ============================================= */
+    @media (max-width: 900px) {
+        .tk-list-panel { width: 240px; }
+        .tk-chat-body { padding: 15px; gap: 10px; }
+        .tk-chat-header { padding: 12px 18px; height: auto; flex-wrap: wrap; gap: 6px; }
+        .tk-chat-footer input { padding: 12px 15px; }
+        .c-bubble { max-width: 85%; }
+    }
+
+    /* =============================================
+       MOBILE: < 680px — Chat como OVERLAY FIJO
+    ============================================= */
+    @media (max-width: 680px) {
+
+        /* El contenedor muestra SOLO la lista */
+        .tk-container {
+            height: calc(100dvh - 100px);
+            min-height: unset;
+            border-radius: 14px;
+        }
+        .tk-list-panel {
+            width: 100%;
+            border-right: none;
+            height: 100%;
+            flex: 1 1 auto;
+        }
+        .tk-list-header { padding: 14px 16px; }
+        .tk-list-body { padding: 8px; }
+        .tk-item { padding: 12px; margin-bottom: 6px; }
+
+        /* El panel de chat SALE DEL LAYOUT — es un overlay fijo */
+        .tk-chat-panel {
+            position: fixed !important;
+            inset: 0 !important;           /* top:0; right:0; bottom:0; left:0 */
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 99999 !important;
+            border-radius: 0 !important;
+            transform: translateX(100%);
+            transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fff;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        [data-theme="dark"] .tk-chat-panel { background: #0f172a !important; }
+
+        .tk-chat-panel.mobile-open {
+            transform: translateX(0) !important;
+        }
+
+        /* Botón "← Atrás" */
+        #btn-back-mobile {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            color: #f18000;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        /* Header del chat en móvil: fila compacta con atrás + avatar + acciones */
+        .tk-chat-header {
+            padding: 10px 14px;
+            height: auto;
+            flex-wrap: wrap;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .tk-chat-header > div:last-child {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .tk-chat-header .btn {
+            font-size: 0.72rem;
+            padding: 4px 10px;
+        }
+        #tk-user-avatar { width: 36px !important; height: 36px !important; }
+        #tk-user-name { font-size: 0.95rem; }
+
+        /* Mensajes — ocupa todo el espacio restante con scroll */
+        .tk-chat-body {
+            flex: 1 1 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 14px 12px;
+            gap: 10px;
+        }
+        .c-bubble { max-width: 88%; padding: 10px 13px; font-size: 0.88rem; }
+
+        /* Footer pegado abajo */
+        .tk-chat-footer {
+            padding: 10px 12px;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .tk-chat-footer input {
+            padding: 11px 14px;
+            font-size: 0.9rem;
+        }
+        .tk-chat-footer button {
+            width: 44px;
+            height: 44px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+    }
 </style>
 
 <div id="layoutSidenav_content">
@@ -151,7 +269,11 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                                 <div id="tk-extra-info" class="text-danger fw-bold" style="font-size: 0.75rem; display:none;"></div>
                             </div>
                         </div>
-                        <div>
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                            <!-- Botón de volver (solo visible en móvil) -->
+                            <button id="btn-back-mobile" style="display:none; padding: 4px 10px; font-size: 0.8rem; background: #fff8f0; border: 1px solid #f18000; border-radius: 20px;" onclick="closeMobileChat()">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </button>
                             <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" id="btn-cerrar-tk" onclick="cerrarTicket()">
                                 <i class="fas fa-lock me-1"></i> Marcar Resuelto
                             </button>
@@ -242,7 +364,37 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         if(estado !== 'Resuelto'){
             pollInterval = setInterval(fetchMsgsAdmin, 3000);
         }
+
+        // En móvil, deslizar el panel de chat
+        openMobileChat();
     }
+
+    function openMobileChat() {
+        if (window.innerWidth <= 680) {
+            document.querySelector('.tk-chat-panel').classList.add('mobile-open');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll on mobile
+            const backBtn = document.getElementById('btn-back-mobile');
+            if (backBtn) backBtn.style.display = 'inline-flex';
+        }
+    }
+
+    function closeMobileChat() {
+        document.querySelector('.tk-chat-panel').classList.remove('mobile-open');
+        document.body.style.overflow = ''; // Restore scroll
+        const backBtn = document.getElementById('btn-back-mobile');
+        if (backBtn) backBtn.style.display = 'none';
+        if (pollInterval) clearInterval(pollInterval);
+    }
+
+    // On resize to desktop, always reset the mobile overlay state
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 680) {
+            document.querySelector('.tk-chat-panel').classList.remove('mobile-open');
+            document.body.style.overflow = '';
+            const backBtn = document.getElementById('btn-back-mobile');
+            if (backBtn) backBtn.style.display = 'none';
+        }
+    });
 
     function fetchMsgsAdmin() {
         if(!cTickId) return;
