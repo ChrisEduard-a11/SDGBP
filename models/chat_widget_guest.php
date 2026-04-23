@@ -60,6 +60,13 @@
 #g-view-init::-webkit-scrollbar { width: 5px; }
 #g-view-init::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
+/* Typing indicator */
+.typing-bubble { display: none; align-items: center; gap: 4px; padding: 10px 14px; background: #ffffff; border-radius: 18px; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); width: fit-content; max-width: 65px; }
+.typing-bubble span { width: 7px; height: 7px; background: #94a3b8; border-radius: 50%; animation: typingDot 1.2s infinite ease-in-out; }
+.typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+.typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot { 0%, 80%, 100% { transform: translateY(0); opacity:0.5; } 40% { transform: translateY(-6px); opacity:1; } }
+
 @media (max-width: 600px) {
     #soporte-window-guest {
         width: 100%; right: 0; bottom: 0; border-radius: 0; height: 100%; max-height: 100%;
@@ -97,9 +104,10 @@
     <div id="g-view-chat">
         <div class="g-body" id="g-chat-body">
             <!-- Mensajes dinámicos -->
+            <div class="typing-bubble" id="g-typing-indicator"><span></span><span></span><span></span></div>
         </div>
         <div class="g-footer">
-            <input type="text" id="g-input-msg" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') gEnviarMensaje()">
+            <input type="text" id="g-input-msg" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') gEnviarMensaje()" oninput="gSendTyping()">
             <button id="g-btn-send" onclick="gEnviarMensaje()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
@@ -185,6 +193,10 @@
         fetch(`../acciones/soporte/obtener_mensajes.php?id_ticket=${gCurrentTicketId}&last_id=${gLastMessageId}`)
             .then(r => r.json())
             .then(data => {
+                // Typing indicator
+                const typingEl = document.getElementById('g-typing-indicator');
+                if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
+
                 if(data.success && data.mensajes.length > 0) {
                     let hasNewTheirs = false;
                     const body = document.getElementById('g-chat-body');
@@ -219,6 +231,17 @@
                     clearInterval(gPollInterval);
                 }
             });
+    }
+
+    let gTypingTimeout = null;
+    function gSendTyping() {
+        if (!gCurrentTicketId) return;
+        clearTimeout(gTypingTimeout);
+        const fd = new FormData();
+        fd.append('id_ticket', gCurrentTicketId);
+        fd.append('rol', 'guest');
+        fetch('../acciones/soporte/typing.php', { method: 'POST', body: fd });
+        // Si deja de escribir por 4s lo reseteamos en DB (simplemente no actualizamos, y el backend lo detecta como inactivo)
     }
 
     function gEnviarMensaje() {

@@ -57,6 +57,13 @@ if (!$is_admin) {
     /* Scrollbar */
     .s-body::-webkit-scrollbar { width: 5px; }
     .s-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    /* Typing indicator */
+    .s-typing-bubble { display: none; align-items: center; gap: 4px; padding: 10px 14px; background: #ffffff; border-radius: 18px; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); width: fit-content; max-width: 65px; }
+    .s-typing-bubble span { width: 7px; height: 7px; background: #94a3b8; border-radius: 50%; animation: sTypingDot 1.2s infinite ease-in-out; }
+    .s-typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+    .s-typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes sTypingDot { 0%, 80%, 100% { transform: translateY(0); opacity:0.5; } 40% { transform: translateY(-6px); opacity:1; } }
     </style>
 
     <!-- Triggers outside from Sidebar Toggle -->
@@ -85,9 +92,10 @@ if (!$is_admin) {
         <div id="s-view-chat">
             <div class="s-body" id="s-chat-body">
                 <!-- Mensajes dinámicos -->
+                <div class="s-typing-bubble" id="s-typing-indicator"><span></span><span></span><span></span></div>
             </div>
             <div class="s-footer">
-                <input type="text" id="s-input-msg" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sEnviarMensaje()">
+                <input type="text" id="s-input-msg" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sEnviarMensaje()" oninput="sSendTyping()">
                 <button id="s-btn-send" onclick="sEnviarMensaje()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -158,6 +166,10 @@ if (!$is_admin) {
             fetch(`../acciones/soporte/obtener_mensajes.php?id_ticket=${currentTicketId}&last_id=${lastMessageId}`)
                 .then(r => r.json())
                 .then(data => {
+                    // Typing indicator
+                    const typingEl = document.getElementById('s-typing-indicator');
+                    if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
+
                     if(data.success && data.mensajes.length > 0) {
                         let hasNewTheirs = false;
                         const body = document.getElementById('s-chat-body');
@@ -192,6 +204,16 @@ if (!$is_admin) {
                         clearInterval(pollInterval);
                     }
                 });
+        }
+
+        let sTypingTimeout = null;
+        function sSendTyping() {
+            if (!currentTicketId) return;
+            clearTimeout(sTypingTimeout);
+            const fd = new FormData();
+            fd.append('id_ticket', currentTicketId);
+            fd.append('rol', 'guest'); // El usuario registrado es el 'guest' desde la perspectiva del admin
+            fetch('../acciones/soporte/typing.php', { method: 'POST', body: fd });
         }
 
         function sEnviarMensaje() {

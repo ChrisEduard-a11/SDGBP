@@ -48,11 +48,18 @@ $sql = "SELECT m.*, u.nombre, u.foto FROM soporte_mensajes m
 $result = mysqli_query($conexion, $sql);
 $mensajes = [];
 
-// Chequeo estado de ticket (para deshabilitar input en UI)
+// Chequeo estado de ticket
 $estado_ticket = 'Abierto';
-$res_estado = mysqli_query($conexion, "SELECT estado FROM soporte_tickets WHERE id_ticket = '$id_ticket'");
+$typing_otro = false;
+$res_estado = mysqli_query($conexion, "SELECT estado, typing_guest, typing_admin FROM soporte_tickets WHERE id_ticket = '$id_ticket'");
 if($row_est = mysqli_fetch_assoc($res_estado)){
     $estado_ticket = $row_est['estado'];
+    // El admin ve si el invitado/usuario está escribiendo; el invitado ve si el admin está escribiendo
+    $col_typing = $is_admin ? 'typing_guest' : 'typing_admin';
+    if (!empty($row_est[$col_typing])) {
+        $diff = time() - strtotime($row_est[$col_typing]);
+        $typing_otro = $diff <= 5; // Si actualizó en los últimos 5 segundos, está escribiendo
+    }
 }
 
 while ($row = mysqli_fetch_assoc($result)) {
@@ -88,6 +95,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 echo json_encode([
     'success' => true, 
     'mensajes' => $mensajes, 
-    'estado' => $estado_ticket
+    'estado' => $estado_ticket,
+    'typing' => $typing_otro
 ]);
 ?>

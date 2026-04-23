@@ -69,6 +69,13 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
     .tk-chat-footer button:hover { background: #ea580c; transform: scale(1.05); }
     .tk-chat-footer button:disabled { background: #cbd5e1; cursor:not-allowed; }
 
+    /* Typing indicator (admin panel) */
+    .tk-typing-bubble { display: none; align-items: center; gap: 4px; padding: 10px 14px; background: #f1f5f9; border-radius: 18px; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: fit-content; max-width: 65px; margin-bottom: 5px; }
+    .tk-typing-bubble span { width: 7px; height: 7px; background: #94a3b8; border-radius: 50%; animation: tkTypingDot 1.2s infinite ease-in-out; }
+    .tk-typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+    .tk-typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes tkTypingDot { 0%, 80%, 100% { transform: translateY(0); opacity:0.5; } 40% { transform: translateY(-6px); opacity:1; } }
+
     /* Dark Mode Support */
     [data-theme="dark"] .tk-container { background: #0f172a; border-color: #1e293b; }
     [data-theme="dark"] .tk-list-panel { background: #1e293b; border-color: #334155; }
@@ -157,7 +164,9 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                         </div>
                     </div>
                     
-                    <div class="tk-chat-body" id="tk-chat-msgs"></div>
+                    <div class="tk-chat-body" id="tk-chat-msgs">
+                        <div class="tk-typing-bubble" id="tk-typing-indicator"><span></span><span></span><span></span></div>
+                    </div>
                     
                     <!-- Panel de Búsqueda de Usuario (Solo para Invitados) -->
                     <div id="tk-search-panel" style="display:none; padding: 15px; background: #fff8f0; border-top: 1px solid #f18000; border-bottom: 1px solid #f18000;">
@@ -170,7 +179,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     </div>
                     
                     <div class="tk-chat-footer">
-                        <input type="text" id="tk-chat-input" placeholder="Escribe tu respuesta como Administrador..." onkeypress="if(event.key==='Enter') enviarMensajeAdmin()">
+                        <input type="text" id="tk-chat-input" placeholder="Escribe tu respuesta como Administrador..." onkeypress="if(event.key==='Enter') enviarMensajeAdmin()" oninput="tkSendTyping()">
                         <button id="tk-chat-send" onclick="enviarMensajeAdmin()"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </div>
@@ -240,6 +249,10 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         fetch(`../acciones/soporte/obtener_mensajes.php?id_ticket=${cTickId}&last_id=${cLastMsgId}`)
             .then(r=>r.json())
             .then(data=>{
+                // Typing indicator
+                const typingEl = document.getElementById('tk-typing-indicator');
+                if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
+
                 if(data.success && data.mensajes.length>0){
                     let hasNewTheirs = false;
                     const b = document.getElementById('tk-chat-msgs');
@@ -265,6 +278,16 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     }
                 }
             });
+    }
+
+    let tkTypingTimeout = null;
+    function tkSendTyping() {
+        if (!cTickId) return;
+        clearTimeout(tkTypingTimeout);
+        const fd = new FormData();
+        fd.append('id_ticket', cTickId);
+        fd.append('rol', 'admin');
+        fetch('../acciones/soporte/typing.php', { method: 'POST', body: fd });
     }
 
     function toggleSearchPanel() {
