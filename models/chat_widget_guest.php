@@ -3,29 +3,9 @@
 // Usado en el login para visitantes y usuarios no autenticados
 ?>
 <style>
-/* Botón flotante para el invitado */
+/* El botón flotante ha sido removido a petición del usuario para usar el botón integrado en el formulario */
 #guest-soporte-trigger {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #f18000, #ea580c);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.8rem;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(241,128,0,0.4);
-    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-    z-index: 9999;
-    border: 2px solid rgba(255,255,255,0.2);
-}
-#guest-soporte-trigger:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 15px 25px rgba(241,128,0,0.5);
+    display: none;
 }
 
 /* Support window */
@@ -81,9 +61,7 @@
 #g-view-init::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 </style>
 
-<div id="guest-soporte-trigger" onclick="tgGuestSoporteWindow()">
-    <i class="fas fa-comment-dots"></i>
-</div>
+<!-- El botón gatillo flotante ha sido eliminado -->
 
 <div id="soporte-window-guest">
     <div class="g-header">
