@@ -10,8 +10,8 @@
 
 /* Support window */
 #soporte-window-guest {
-    position: fixed; bottom: 100px; right: 25px; width: 360px; height: 500px; max-height: calc(100vh - 120px);
-    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    position: fixed; bottom: 100px; right: 25px; width: 360px; height: 600px; max-height: calc(100vh - 120px);
+    background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(0,0,0,0.05); border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
     z-index: 10000; display: flex; flex-direction: column; overflow: hidden;
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -29,7 +29,7 @@
 .g-header-close:hover { opacity: 1; transform: rotate(90deg); }
 
 /* Views */
-#g-view-init { padding: 30px 20px; text-align: center; display: none; height: 100%; flex-direction: column; justify-content: flex-start; overflow-y: auto; }
+#g-view-init { padding: 15px; text-align: center; display: none; height: auto; min-height: 100%; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
 #g-view-init.active { display: flex; }
 #g-view-chat { display: none; height: 100%; flex-direction: column; }
 #g-view-chat.active { display: flex; }
@@ -59,6 +59,12 @@
 .g-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 #g-view-init::-webkit-scrollbar { width: 5px; }
 #g-view-init::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+@media (max-width: 600px) {
+    #soporte-window-guest {
+        width: 100%; right: 0; bottom: 0; border-radius: 0; height: 100%; max-height: 100%;
+    }
+}
 </style>
 
 <!-- El botón gatillo flotante ha sido eliminado -->
@@ -74,16 +80,15 @@
     
     <!-- View: Iniciar Ticket Invitado -->
     <div id="g-view-init">
-        <h4 style="font-weight: 800; color: #1e293b; margin-bottom: 5px;">¡Hola!</h4>
-        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Por favor indícanos tus datos para iniciar la atención.</p>
+        <h4 style="font-weight: 800; color: #1e293b; margin-bottom: 5px; font-size: 1.1rem;">¡Hola!</h4>
+        <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 15px;">Por favor indícanos tus datos para iniciar la atención.</p>
         
-        <input type="text" id="g-nombre-nuevo" placeholder="Nombre completo" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; outline:none;" required>
-        <input type="text" id="g-cedula-nuevo" placeholder="Nro de Cédula" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; outline:none;" required>
-        <input type="email" id="g-correo-nuevo" placeholder="Correo electrónico" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; outline:none;" required>
-        <input type="text" id="g-asunto-nuevo" placeholder="Asunto (Ej: Problema con cuenta)" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; outline:none;" required>
-        <textarea id="g-mensaje-nuevo" placeholder="Describe tu problema con detalle..." rows="3" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 20px; outline:none; resize:none;" required></textarea>
+        <input type="text" id="g-nombre-nuevo" placeholder="Nombre completo" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 8px; font-size: 0.95rem; outline:none;" required>
+        <input type="text" id="g-cedula-nuevo" placeholder="Nro de Cédula" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 8px; font-size: 0.95rem; outline:none;" required>
+        <input type="email" id="g-correo-nuevo" placeholder="Correo electrónico" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 8px; font-size: 0.95rem; outline:none;" required>
+        <textarea id="g-mensaje-nuevo" placeholder="¿En qué podemos ayudarte? Escribe tu mensaje aquí..." rows="4" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 0.95rem; outline:none; resize:none; background: #fff;" required></textarea>
         
-        <button onclick="gCrearTicket()" style="width: 100%; background: #f18000; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; box-shadow: 0 4px 10px rgba(241,128,0,0.3); transition: 0.3s; cursor:pointer;" onmouseover="this.style.background='#ea580c'" onmouseout="this.style.background='#f18000'">
+        <button onclick="gCrearTicket()" style="width: 100%; background: #f18000; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(241,128,0,0.2); transition: 0.3s; cursor:pointer;" onmouseover="this.style.background='#ea580c'" onmouseout="this.style.background='#f18000'">
             Iniciar Chat
         </button>
     </div>
@@ -139,10 +144,9 @@
         const nom = document.getElementById('g-nombre-nuevo').value;
         const ced = document.getElementById('g-cedula-nuevo').value;
         const cor = document.getElementById('g-correo-nuevo').value;
-        const asm = document.getElementById('g-asunto-nuevo').value;
         const msg = document.getElementById('g-mensaje-nuevo').value;
         
-        if (!nom || !ced || !cor || !asm || !msg) { 
+        if (!nom || !ced || !cor || !msg) { 
             /* Se asume el uso de SweetAlert porque el usuario lo mencionó para otras cosas, pero usemos un alert básico si no está seguro, o Swal si login lo tiene */
             if (typeof Swal !== 'undefined') {
                 Swal.fire({icon: 'warning', title: 'Campos Vacíos', text: 'Debes completar todos tus datos para iniciar el chat.'});
@@ -156,7 +160,7 @@
         fd.append('nombre', nom);
         fd.append('cedula', ced);
         fd.append('correo', cor);
-        fd.append('asunto', asm);
+        fd.append('asunto', 'Soporte Invitado');
         fd.append('mensaje', msg);
 
         fetch('../acciones/soporte/crear_ticket.php', { method: 'POST', body: fd })
