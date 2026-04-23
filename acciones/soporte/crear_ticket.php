@@ -7,10 +7,11 @@ header('Content-Type: application/json');
 $is_guest = !isset($_SESSION['id']);
 $id_usuario = $is_guest ? 'NULL' : "'" . $_SESSION['id'] . "'";
 $nombre_visitante = $is_guest && isset($_POST['nombre']) ? "'" . mysqli_real_escape_string($conexion, trim($_POST['nombre'])) . "'" : 'NULL';
+$cedula_visitante = $is_guest && isset($_POST['cedula']) ? "'" . mysqli_real_escape_string($conexion, trim($_POST['cedula'])) . "'" : 'NULL';
 $correo_visitante = $is_guest && isset($_POST['correo']) ? "'" . mysqli_real_escape_string($conexion, trim($_POST['correo'])) . "'" : 'NULL';
 
-if ($is_guest && (!isset($_POST['nombre']) || !isset($_POST['correo']))) {
-    echo json_encode(['success' => false, 'message' => 'Los visitantes deben proporcionar nombre y correo.']);
+if ($is_guest && (!isset($_POST['nombre']) || !isset($_POST['correo']) || !isset($_POST['cedula']))) {
+    echo json_encode(['success' => false, 'message' => 'Los visitantes deben proporcionar nombre, cédula y correo.']);
     exit;
 }
 
@@ -45,7 +46,7 @@ $unique_str = strtoupper(substr(uniqid(), -6));
 $id_ticket = 'TICK-' . date('y') . $unique_str;
 
 // 3. Crear el ticket
-$sql_ticket = "INSERT INTO soporte_tickets (id_ticket, id_usuario, nombre_visitante, correo_visitante, asunto, estado, prioridad) VALUES ('$id_ticket', $id_usuario, $nombre_visitante, $correo_visitante, '$asunto', 'Abierto', 'Normal')";
+$sql_ticket = "INSERT INTO soporte_tickets (id_ticket, id_usuario, nombre_visitante, cedula_visitante, correo_visitante, asunto, estado, prioridad) VALUES ('$id_ticket', $id_usuario, $nombre_visitante, $cedula_visitante, $correo_visitante, '$asunto', 'Abierto', 'Normal')";
 
 if (mysqli_query($conexion, $sql_ticket)) {
     // Para el invitado, el id_usuario es NULL pero guardaremos enviado_por="guest" o algo que sepamos que es él. 

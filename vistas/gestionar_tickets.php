@@ -8,9 +8,9 @@ if ($_SESSION['tipo'] !== 'admin') {
     exit();
 }
 
-$sqlTickets = "SELECT t.*, u.nombre, u.usuario, u.foto 
+$sqlTickets = "SELECT t.*, u.nombre AS u_nombre, u.usuario AS u_usuario, u.foto AS u_foto 
                FROM soporte_tickets t 
-               JOIN usuario u ON t.id_usuario = u.id_usuario 
+               LEFT JOIN usuario u ON t.id_usuario = u.id_usuario 
                ORDER BY t.estado ASC, t.fecha_apertura DESC";
 $resTickets = mysqli_query($conexion, $sqlTickets);
 $tickets = [];
@@ -97,8 +97,13 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                 </div>
                 <div class="tk-list-body">
                     <?php if(count($tickets)>0): ?>
-                        <?php foreach($tickets as $t): ?>
-                            <div class="tk-item" onclick="loadTicket('<?php echo $t['id_ticket']; ?>', '<?php echo htmlspecialchars($t['nombre']); ?>', '<?php echo $t['estado']; ?>', '<?php echo $t['foto']; ?>')" id="item-<?php echo $t['id_ticket']; ?>">
+                        <?php foreach($tickets as $t): 
+                            $esInvitado = is_null($t['id_usuario']);
+                            $displayName = $esInvitado ? $t['nombre_visitante'] : $t['u_nombre'];
+                            $displayUser = $esInvitado ? 'Visitante (CI: '.$t['cedula_visitante'].')' : '@'.$t['u_usuario'];
+                            $displayFoto = $esInvitado ? '../img/default-user.png' : $t['u_foto'];
+                        ?>
+                            <div class="tk-item" onclick="loadTicket('<?php echo $t['id_ticket']; ?>', '<?php echo htmlspecialchars($displayName); ?>', '<?php echo $t['estado']; ?>', '<?php echo $displayFoto; ?>', '<?php echo $esInvitado ? '1' : '0'; ?>', '<?php echo $t['cedula_visitante']; ?>')" id="item-<?php echo $t['id_ticket']; ?>">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-bold fs-0-9"><?php echo $t['id_ticket']; ?></span>
                                     <?php 
@@ -107,7 +112,11 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                                     <span class="badge <?php echo $bColor; ?>" style="font-size:0.65rem;"><?php echo $t['estado']; ?></span>
                                 </div>
                                 <div class="fw-bold text-truncate" style="max-width:100%; font-size:0.95rem; color:#f18000;"><?php echo htmlspecialchars($t['asunto']); ?></div>
-                                <div class="text-muted small mt-1"><i class="fas fa-user border-0 text-muted me-1"></i> <?php echo htmlspecialchars($t['nombre']); ?> (@<?php echo htmlspecialchars($t['usuario']); ?>)</div>
+                                <div class="text-muted small mt-1">
+                                    <i class="fas <?php echo $esInvitado ? 'fa-user-secret' : 'fa-user'; ?> border-0 text-muted me-1"></i> 
+                                    <?php echo htmlspecialchars($displayName); ?> 
+                                    <span class="ms-1 <?php echo $esInvitado ? 'text-danger fw-bold' : 'text-muted'; ?>">(<?php echo htmlspecialchars($displayUser); ?>)</span>
+                                </div>
                                 <div class="text-muted" style="font-size: 0.7rem; text-align:right; margin-top:5px; border-top:1px solid rgba(0,0,0,0.05); padding-top:5px;"><?php echo date('d/m/y H:i', strtotime($t['fecha_apertura'])); ?></div>
                             </div>
                         <?php endforeach; ?>
@@ -132,11 +141,15 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                             <div>
                                 <h5 class="mb-0 fw-bold" id="tk-user-name">Usuario</h5>
                                 <div class="small text-muted" id="tk-id-label">TICK-XXXX</div>
+                                <div id="tk-extra-info" class="text-danger fw-bold" style="font-size: 0.75rem; display:none;"></div>
                             </div>
                         </div>
                         <div>
                             <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" id="btn-cerrar-tk" onclick="cerrarTicket()">
                                 <i class="fas fa-lock me-1"></i> Marcar Resuelto
+                            </button>
+                            <button class="btn btn-success btn-sm rounded-pill px-3 fw-bold" id="btn-confirm-id" style="display:none;" onclick="confirmarIdentidad()">
+                                <i class="fas fa-id-card me-1"></i> Confirmar Identidad
                             </button>
                             <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" id="btn-eliminar-tk" style="display:none;" onclick="borrarTicket()">
                                 <i class="fas fa-trash me-1"></i> Eliminar Ticket
@@ -158,11 +171,15 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 <script>
     let cTickId = null;
     let cLastMsgId = 0;
+    let cUserName = '';
+    let cCedula = '';
     let pollInterval = null;
 
-    function loadTicket(idTicket, userName, estado, foto) {
+    function loadTicket(idTicket, userName, estado, foto, isGuest, cedula) {
         cTickId = idTicket;
         cLastMsgId = 0;
+        cUserName = userName;
+        cCedula = cedula;
         
         // UI Updates
         document.querySelectorAll('.tk-item').forEach(el => el.classList.remove('active'));
@@ -174,18 +191,29 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         document.getElementById('tk-user-name').innerText = userName;
         document.getElementById('tk-id-label').innerText = idTicket;
         document.getElementById('tk-user-avatar').src = foto || '../img/default-user.png';
+        
+        const extra = document.getElementById('tk-extra-info');
+        if (isGuest == '1') {
+            extra.innerText = 'CÉDULA: ' + cedula;
+            extra.style.display = 'block';
+        } else {
+            extra.style.display = 'none';
+        }
+        
         document.getElementById('tk-chat-msgs').innerHTML = ''; // clear
 
         if(estado === 'Resuelto') {
             document.getElementById('tk-chat-input').disabled = true;
             document.getElementById('tk-chat-send').disabled = true;
             document.getElementById('btn-cerrar-tk').style.display = 'none';
+            document.getElementById('btn-confirm-id').style.display = 'none';
             document.getElementById('btn-eliminar-tk').style.display = 'inline-block';
             document.getElementById('tk-chat-input').placeholder = 'Ticket Cerrado. No se pueden enviar mensajes.';
         } else {
             document.getElementById('tk-chat-input').disabled = false;
             document.getElementById('tk-chat-send').disabled = false;
             document.getElementById('btn-cerrar-tk').style.display = 'inline-block';
+            document.getElementById('btn-confirm-id').style.display = isGuest == '1' ? 'inline-block' : 'none';
             document.getElementById('btn-eliminar-tk').style.display = 'none';
             document.getElementById('tk-chat-input').placeholder = 'Escribe tu respuesta...';
         }
@@ -226,6 +254,25 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                         } catch(e){}
                     }
                 }
+            });
+    }
+
+    function confirmarIdentidad() {
+        if(!cTickId || !cCedula) return;
+        const msg = `✅ EL CENTRO DE SOPORTE HA CONFIRMADO SU IDENTIDAD.\nUsuario: ${cUserName}\nCédula: ${cCedula}`;
+        
+        const fd = new FormData();
+        fd.append('id_ticket', cTickId);
+        fd.append('mensaje', msg);
+
+        fetch('../acciones/soporte/enviar_mensaje.php', { method:'POST', body:fd })
+            .then(r=>r.json())
+            .then(data=>{
+                if(data.success) {
+                    fetchMsgsAdmin();
+                    Swal.fire({icon:'success', title:'Identidad Confirmada', text:'Se ha enviado el mensaje de confirmación al usuario.', confirmButtonColor:'#f18000'});
+                }
+                else alert(data.message);
             });
     }
 

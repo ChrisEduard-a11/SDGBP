@@ -78,6 +78,7 @@
         <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Por favor indícanos tus datos para iniciar la atención.</p>
         
         <input type="text" id="g-nombre-nuevo" placeholder="Nombre completo" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; outline:none;" required>
+        <input type="text" id="g-cedula-nuevo" placeholder="Nro de Cédula" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; outline:none;" required>
         <input type="email" id="g-correo-nuevo" placeholder="Correo electrónico" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; outline:none;" required>
         <input type="text" id="g-asunto-nuevo" placeholder="Asunto (Ej: Problema con cuenta)" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; outline:none;" required>
         <textarea id="g-mensaje-nuevo" placeholder="Describe tu problema con detalle..." rows="3" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 20px; outline:none; resize:none;" required></textarea>
@@ -136,11 +137,12 @@
 
     function gCrearTicket() {
         const nom = document.getElementById('g-nombre-nuevo').value;
+        const ced = document.getElementById('g-cedula-nuevo').value;
         const cor = document.getElementById('g-correo-nuevo').value;
         const asm = document.getElementById('g-asunto-nuevo').value;
         const msg = document.getElementById('g-mensaje-nuevo').value;
         
-        if (!nom || !cor || !asm || !msg) { 
+        if (!nom || !ced || !cor || !asm || !msg) { 
             /* Se asume el uso de SweetAlert porque el usuario lo mencionó para otras cosas, pero usemos un alert básico si no está seguro, o Swal si login lo tiene */
             if (typeof Swal !== 'undefined') {
                 Swal.fire({icon: 'warning', title: 'Campos Vacíos', text: 'Debes completar todos tus datos para iniciar el chat.'});
@@ -152,6 +154,7 @@
 
         const fd = new FormData();
         fd.append('nombre', nom);
+        fd.append('cedula', ced);
         fd.append('correo', cor);
         fd.append('asunto', asm);
         fd.append('mensaje', msg);
