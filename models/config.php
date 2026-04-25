@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $session_timeout = 180; // 3 minutos en segundos
 
 if (isset($_SESSION['tipo']) && $_SESSION['tipo'] === 'admin') {
-    $session_timeout = 31536000; // 1 año (Infinito) para Admins
+    $session_timeout = 3600; // 1 hora para Admins
 }
 
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $session_timeout)) {

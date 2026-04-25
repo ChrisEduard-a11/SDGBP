@@ -305,6 +305,9 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                                     <div id="tk-calificacion-admin"></div>
                                 </div>
                                 <div class="small text-muted" id="tk-id-label">TICK-XXXX</div>
+                                <div id="tk-timer-wrapper" class="mt-1" style="display:none; font-size:0.75rem;">
+                                    <span class="badge bg-light text-dark border"><i class="far fa-clock me-1 text-primary"></i>Cierra en: <span id="tk-timer-val" class="fw-bold text-danger">30:00</span></span>
+                                </div>
                                 <div id="tk-extra-info" class="text-danger fw-bold" style="font-size: 0.75rem; display:none;"></div>
                             </div>
                         </div>
@@ -326,8 +329,9 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     </div>
                     
                     <div class="tk-chat-body" id="tk-chat-msgs">
-                        <div class="tk-typing-bubble" id="tk-typing-indicator"><span></span><span></span><span></span></div>
+                        <!-- Mensajes aquí -->
                     </div>
+                    <div id="tk-typing-indicator" class="tk-typing-bubble mx-3 my-2" style="display:none; align-self:flex-start;"><span></span><span></span><span></span></div>
                     
                     <!-- Panel de Búsqueda de Usuario (Solo para Invitados) -->
                     <div id="tk-search-panel" style="display:none; padding: 15px; background: #fff8f0; border-top: 1px solid #f18000; border-bottom: 1px solid #f18000;">
@@ -340,6 +344,8 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     </div>
                     
                     <div class="tk-chat-footer" style="position:relative;">
+                        <input type="file" id="tk-image-input" accept="image/jpeg,image/png,image/jpg" style="display:none;" onchange="handleImageSelect()">
+                        <button class="tk-emoji-btn" onclick="document.getElementById('tk-image-input').click()" title="Adjuntar Imagen"><i class="fas fa-image"></i></button>
                         <button class="tk-emoji-btn" onclick="toggleEmojiPicker()"><i class="far fa-smile"></i></button>
                         <div class="emoji-picker" id="emoji-picker">
                             <span onclick="addEmoji('😀')">😀</span><span onclick="addEmoji('😃')">😃</span><span onclick="addEmoji('😄')">😄</span><span onclick="addEmoji('😁')">😁</span><span onclick="addEmoji('😆')">😆</span><span onclick="addEmoji('😅')">😅</span>
@@ -359,10 +365,29 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 <script>
     let cTickId = null;
     let cLastMsgId = 0;
-    let cUserName = '';
-    let cCedula = '';
     let pollInterval = null;
     let isFetching = false;
+    let remainingSecs = 0;
+    let timerInterval = null;
+
+    function formatTime(s) {
+        if (s <= 0) return "00:00";
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return (m < 10 ? '0' : '') + m + ":" + (sec < 10 ? '0' : '') + sec;
+    }
+
+    function runLocalTimer() {
+        if (remainingSecs > 0) {
+            remainingSecs--;
+            document.getElementById('tk-timer-val').innerText = formatTime(remainingSecs);
+            if (remainingSecs <= 0) {
+                document.getElementById('tk-chat-input').disabled = true;
+                document.getElementById('tk-chat-send').disabled = true;
+                document.getElementById('btn-cerrar-tk').style.display = 'none';
+            }
+        }
+    }
 
     function loadTicket(idTicket, userName, estado, foto, isGuest, cedula) {
         cTickId = idTicket;
@@ -409,8 +434,13 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 
         fetchMsgsAdmin();
         if(pollInterval) clearInterval(pollInterval);
+        if(timerInterval) clearInterval(timerInterval);
+
         if(estado !== 'Resuelto'){
             pollInterval = setInterval(fetchMsgsAdmin, 3000);
+            timerInterval = setInterval(runLocalTimer, 1000);
+        } else {
+            document.getElementById('tk-timer-wrapper').style.display = 'none';
         }
 
         // En móvil, deslizar el panel de chat
@@ -455,20 +485,55 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                 const typingEl = document.getElementById('tk-typing-indicator');
                 if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
 
+                // Update Timer
+                if (data.tiempo_restante !== undefined) {
+                    remainingSecs = data.tiempo_restante;
+                    document.getElementById('tk-timer-wrapper').style.display = 'block';
+                    document.getElementById('tk-timer-val').innerText = formatTime(remainingSecs);
+                }
+
+                // Sincronizar estados de lectura (leído = ✓✓)
+                if (data.id_leidos && data.id_leidos.length > 0) {
+                    data.id_leidos.forEach(id => {
+                        const tickSpan = document.getElementById(`tick-${id}`);
+                        if (tickSpan && tickSpan.querySelector('.fa-check')) {
+                            tickSpan.innerHTML = '<i class="fas fa-check-double"></i>';
+                            tickSpan.style.color = '#34b7f1';
+                            tickSpan.title = 'Leído';
+                        }
+                    });
+                }
+
                 if(data.success && data.mensajes.length>0){
                     let hasNewTheirs = false;
                     const b = document.getElementById('tk-chat-msgs');
+                    const indicator = document.getElementById('tk-typing-indicator');
+
                     data.mensajes.forEach(m => {
                         const isAdmin = m.es_mio;
                         if (!isAdmin && cLastMsgId > 0) hasNewTheirs = true;
 
                         const c = isAdmin ? 'c-mine' : 'c-theirs';
-                        b.innerHTML += `
-                            <div class="c-bubble ${c}">
-                                <div style="font-size:0.95rem;">${m.mensaje}</div>
-                                <div style="font-size:0.65rem; opacity:0.7; margin-top:5px; text-align:${isAdmin?'right':'left'}">${m.fecha}</div>
+                        const statusTicks = m.leido === 1 
+                            ? `<span id="tick-${m.id_mensaje}" style="color: #34b7f1; margin-left: 3px;" title="Leído"><i class="fas fa-check-double"></i></span>`
+                            : `<span id="tick-${m.id_mensaje}" style="margin-left: 3px;" title="Enviado"><i class="fas fa-check"></i></span>`;
+
+                        let imgHtml = '';
+                        if (m.archivo_adjunto) {
+                            imgHtml = `<div class="mt-2"><img src="../${m.archivo_adjunto}" style="max-width:100%; border-radius:10px; cursor:pointer;" onclick="window.open('../${m.archivo_adjunto}')"></div>`;
+                        }
+
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = `c-bubble ${c}`;
+                        msgDiv.setAttribute('data-id', m.id_mensaje);
+                        msgDiv.innerHTML = `
+                            <div style="font-size:0.95rem;">${m.mensaje}</div>
+                            ${imgHtml}
+                            <div style="font-size:0.65rem; opacity:0.7; margin-top:5px; display: flex; align-items: center; justify-content: ${isAdmin?'flex-end':'flex-start'}">
+                                ${m.fecha} ${isAdmin ? statusTicks : ''}
                             </div>
                         `;
+                        b.appendChild(msgDiv);
                         cLastMsgId = m.id_mensaje;
                     });
                     b.scrollTop = b.scrollHeight;
@@ -593,13 +658,19 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 
     function enviarMensajeAdmin() {
         const inp = document.getElementById('tk-chat-input');
+        const imgInput = document.getElementById('tk-image-input');
         const txt = inp.value.trim();
-        if(!txt || !cTickId) return;
+        const hasFile = imgInput.files.length > 0;
 
-        inp.value = '';
+        if (!txt && !hasFile) return;
+
         const fd = new FormData();
         fd.append('id_ticket', cTickId);
         fd.append('mensaje', txt);
+        if (hasFile) fd.append('imagen', imgInput.files[0]);
+
+        inp.value = '';
+        imgInput.value = '';
 
         fetch('../acciones/soporte/enviar_mensaje.php', { method:'POST', body:fd })
             .then(r=>r.json())
@@ -607,6 +678,25 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                 if(data.success) fetchMsgsAdmin();
                 else alert(data.message);
             });
+    }
+
+    function handleImageSelect() {
+        Swal.fire({
+            title: '¿Enviar imagen?',
+            text: "Se enviará la imagen seleccionada al chat.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#f18000',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Sí, enviar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                enviarMensajeAdmin();
+            } else {
+                document.getElementById('tk-image-input').value = '';
+            }
+        });
     }
 
     function cerrarTicket() {

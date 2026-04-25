@@ -62,6 +62,7 @@ if ($is_guest) {
             <div>
                 <div class="s-header-title"><i class="fas fa-headset text-brand-400 me-2"></i>Soporte Express</div>
                 <div id="tk-status-bar" style="font-size: 0.7rem; color: #cbd5e1;">Invitado</div>
+                <div id="s-timer-wrapper" style="display:none; font-size:0.65rem; color:#f87171; font-weight:bold;"><i class="far fa-clock me-1"></i>Expira: <span id="s-timer-val">30:00</span></div>
             </div>
             <div class="s-header-close" onclick="toggleSoporteWindow()"><i class="fas fa-times"></i></div>
         </div>
@@ -77,9 +78,11 @@ if ($is_guest) {
 
         <div id="s-view-chat">
             <div class="s-body" id="s-chat-body">
-                <div class="s-typing-bubble" id="s-typing-indicator"><span></span><span></span><span></span></div>
             </div>
+            <div class="s-typing-bubble mx-3 mb-2" id="s-typing-indicator" style="display:none; align-self:flex-start;"><span></span><span></span><span></span></div>
             <div class="s-footer">
+                <input type="file" id="s-image-input" accept="image/jpeg,image/png,image/jpg" style="display:none;" onchange="handleImageSelectS()">
+                <button class="s-emoji-btn" onclick="document.getElementById('s-image-input').click()" title="Adjuntar Imagen"><i class="fas fa-image"></i></button>
                 <button class="s-emoji-btn" onclick="toggleEmojiPickerS()"><i class="far fa-smile"></i></button>
                 <div class="emoji-picker-s" id="emoji-picker-s">
                     <span onclick="addEmojiS('😀')">😀</span><span onclick="addEmojiS('😃')">😃</span><span onclick="addEmojiS('😄')">😄</span><span onclick="addEmojiS('😁')">😁</span><span onclick="addEmojiS('😂')">😂</span><span onclick="addEmojiS('😉')">😉</span>
@@ -269,6 +272,7 @@ if (!$is_admin) {
             <div>
                 <div class="s-header-title"><i class="fas fa-robot text-brand-400 me-2"></i>Soporte SDGBP</div>
                 <div id="tk-status-bar" style="font-size: 0.75rem; color: #cbd5e1;">Conectando...</div>
+                <div id="s-timer-wrapper" style="display:none; font-size:0.65rem; color:#f87171; font-weight:bold;"><i class="far fa-clock me-1"></i>Expira: <span id="s-timer-val">30:00</span></div>
             </div>
             <div class="s-header-close" onclick="toggleSoporteWindow()"><i class="fas fa-times"></i></div>
         </div>
@@ -288,9 +292,11 @@ if (!$is_admin) {
         <div id="s-view-chat">
             <div class="s-body" id="s-chat-body">
                 <!-- Mensajes dinámicos -->
-                <div class="s-typing-bubble" id="s-typing-indicator"><span></span><span></span><span></span></div>
             </div>
+            <div class="s-typing-bubble mx-3 mb-2" id="s-typing-indicator" style="display:none; align-self:flex-start;"><span></span><span></span><span></span></div>
             <div class="s-footer">
+                <input type="file" id="s-image-input" accept="image/jpeg,image/png,image/jpg" style="display:none;" onchange="handleImageSelectS()">
+                <button class="s-emoji-btn" onclick="document.getElementById('s-image-input').click()" title="Adjuntar Imagen" style="background:none; color:#1e293b;"><i class="fas fa-image"></i></button>
                 <input type="text" id="s-input-msg" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sEnviarMensaje()" oninput="sSendTyping()">
                 <button id="s-btn-send" onclick="sEnviarMensaje()"><i class="fas fa-paper-plane"></i></button>
             </div>
@@ -302,6 +308,27 @@ if (!$is_admin) {
         var lastMessageId = 0;
         var pollInterval = null;
         var isFetchingS = false;
+        var remainingSecsS = 0;
+        var timerIntervalS = null;
+
+        function formatTime(s) {
+            if (s <= 0) return "00:00";
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return (m < 10 ? '0' : '') + m + ":" + (sec < 10 ? '0' : '') + sec;
+        }
+
+        function runLocalTimerS() {
+            if (remainingSecsS > 0) {
+                remainingSecsS--;
+                const el = document.getElementById('s-timer-val');
+                if (el) el.innerText = formatTime(remainingSecsS);
+                if (remainingSecsS <= 0) {
+                    const inp = document.getElementById('s-input-msg');
+                    if (inp) inp.disabled = true;
+                }
+            }
+        }
 
         function toggleSoporteWindow() {
             const w = document.getElementById('soporte-window');
@@ -325,6 +352,8 @@ if (!$is_admin) {
                         document.getElementById('tk-status-bar').innerHTML = `Ticket: <b>${currentTicketId}</b> <span class="s-status-badge">${data.estado}</span>`;
                         sRefreshChat();
                         startPolling();
+                        if (timerInterval) clearInterval(timerInterval);
+                        timerInterval = setInterval(runLocalTimerS, 1000);
                     } else {
                         document.getElementById('tk-status-bar').innerText = 'Listo.';
                         document.getElementById('s-view-init').classList.add('active');
@@ -365,9 +394,31 @@ if (!$is_admin) {
                 .then(r => r.json())
                 .then(data => {
                     isFetchingS = false;
-                    // Typing indicator
                     const typingEl = document.getElementById('s-typing-indicator');
                     if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
+
+                    // Update Timer
+                    if (data.tiempo_restante !== undefined) {
+                        remainingSecsS = data.tiempo_restante;
+                        const tw = document.getElementById('s-timer-wrapper');
+                        if (tw) tw.style.display = 'block';
+                        const tv = document.getElementById('s-timer-val');
+                        if (tv) {
+                            tv.innerText = formatTime(remainingSecsS);
+                        }
+                    }
+
+                    // Sincronizar estados de lectura (leído = ✓✓)
+                    if (data.id_leidos && data.id_leidos.length > 0) {
+                        data.id_leidos.forEach(id => {
+                            const tickSpan = document.getElementById(`tick-${id}`);
+                            if (tickSpan && tickSpan.querySelector('.fa-check')) {
+                                tickSpan.innerHTML = '<i class="fas fa-check-double"></i>';
+                                tickSpan.style.color = '#34b7f1';
+                                tickSpan.title = 'Leído';
+                            }
+                        });
+                    }
 
                     if(data.success && data.mensajes.length > 0) {
                         let hasNewTheirs = false;
@@ -377,13 +428,26 @@ if (!$is_admin) {
                             const sender = m.es_mio ? 'Yo' : m.emisor_nombre;
                             if (!m.es_mio && lastMessageId > 0) hasNewTheirs = true;
 
-                            const msgDiv = document.createElement('div');
-                            msgDiv.className = `msg-b ${c}`;
-                            msgDiv.innerHTML = `
-                                <div style="font-weight:700; font-size:0.75rem; margin-bottom:3px; opacity:0.8;">${sender}</div>
-                                <div>${m.mensaje}</div>
-                                <div class="msg-meta">${m.fecha}</div>
-                            `;
+                                const statusTicks = m.leido === 1 
+                                    ? `<span id="tick-${m.id_mensaje}" style="color: #34b7f1; margin-left: 3px;" title="Leído"><i class="fas fa-check-double"></i></span>`
+                                    : `<span id="tick-${m.id_mensaje}" style="margin-left: 3px;" title="Enviado"><i class="fas fa-check"></i></span>`;
+
+                                let imgHtml = '';
+                                if (m.archivo_adjunto) {
+                                    imgHtml = `<div class="mt-2"><img src="../${m.archivo_adjunto}" style="max-width:100%; border-radius:10px; cursor:pointer;" onclick="window.open('../${m.archivo_adjunto}')"></div>`;
+                                }
+
+                                const msgDiv = document.createElement('div');
+                                msgDiv.className = `msg-b ${c}`;
+                                msgDiv.setAttribute('data-id', m.id_mensaje);
+                                msgDiv.innerHTML = `
+                                    <div style="font-weight:700; font-size:0.75rem; margin-bottom:3px; opacity:0.8;">${sender}</div>
+                                    <div>${m.mensaje}</div>
+                                    ${imgHtml}
+                                    <div class="msg-meta" style="display: flex; align-items: center; justify-content: ${m.es_mio?'flex-end':'flex-start'}">
+                                        ${m.fecha} ${m.es_mio ? statusTicks : ''}
+                                    </div>
+                                `;
                             body.appendChild(msgDiv);
                             lastMessageId = m.id_mensaje;
                         });
@@ -442,22 +506,50 @@ if (!$is_admin) {
 
         function sEnviarMensaje() {
             const input = document.getElementById('s-input-msg');
+            const imgInput = document.getElementById('s-image-input');
             const msg = input.value.trim();
-            if(!msg || !currentTicketId) return;
+            const hasFile = imgInput.files.length > 0;
 
-            input.value = '';
-            
+            if(!msg && !hasFile || !currentTicketId) return;
+
             const fd = new FormData();
             fd.append('id_ticket', currentTicketId);
             fd.append('mensaje', msg);
+            if (hasFile) fd.append('imagen', imgInput.files[0]);
 
-            fetch('../acciones/soporte/enviar_mensaje.php', { method:('POST'), body: fd })
+            input.value = '';
+            imgInput.value = '';
+            
+            fetch('../acciones/soporte/enviar_mensaje.php', { method:'POST', body: fd })
                 .then(r => r.json())
                 .then(data => {
                     if(data.success) {
                         sRefreshChat();
                     } else { alert(data.message); }
                 });
+        }
+
+        function handleImageSelectS() {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: '¿Enviar imagen?',
+                    text: "Se enviará la imagen seleccionada al chat.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f18000',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Sí, enviar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        sEnviarMensaje();
+                    } else {
+                        document.getElementById('s-image-input').value = '';
+                    }
+                });
+            } else {
+                if (confirm("¿Enviar imagen seleccionada?")) sEnviarMensaje();
+            }
         }
 
         function sCalificarTicket(rating) {

@@ -26,6 +26,13 @@ if ($tipo_usuario !== 'admin') {
     }
 }
 
+// Eliminar imágenes adjuntas antes de borrar
+$res_imgs = mysqli_query($conexion, "SELECT archivo_adjunto FROM soporte_mensajes WHERE id_ticket = '$id_ticket' AND archivo_adjunto IS NOT NULL");
+while ($ri = mysqli_fetch_assoc($res_imgs)) {
+    $fpath = "../../" . $ri['archivo_adjunto'];
+    if (file_exists($fpath)) unlink($fpath);
+}
+
 // Eliminar mensajes asociados primero
 mysqli_query($conexion, "DELETE FROM soporte_mensajes WHERE id_ticket = '$id_ticket'");
 

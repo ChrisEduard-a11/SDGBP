@@ -536,7 +536,7 @@ if ($tipo_usuario == "admin") {
                         <i class="fas fa-comments metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="soporte_usuario.php">Ingresar al Centro de Soporte</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="gestionar_tickets.php">Ingresar al Centro de Soporte</a>
                         <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>

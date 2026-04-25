@@ -16,6 +16,13 @@ if (empty($id_ticket)) {
     exit;
 }
 
+// Eliminar imágenes adjuntas antes de cerrar
+$res_imgs = mysqli_query($conexion, "SELECT archivo_adjunto FROM soporte_mensajes WHERE id_ticket = '$id_ticket' AND archivo_adjunto IS NOT NULL");
+while ($ri = mysqli_fetch_assoc($res_imgs)) {
+    $fpath = "../../" . $ri['archivo_adjunto'];
+    if (file_exists($fpath)) unlink($fpath);
+}
+
 $q = "UPDATE soporte_tickets SET estado = 'Resuelto' WHERE id_ticket = '$id_ticket'";
 if(mysqli_query($conexion, $q)){
     echo json_encode(['success' => true]);

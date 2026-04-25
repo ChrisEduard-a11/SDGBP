@@ -95,6 +95,7 @@
         <div>
             <div class="g-header-title"><i class="fas fa-headset text-brand-400 me-2"></i>Centro de Soporte</div>
             <div id="gtk-status-bar" style="font-size: 0.75rem; color: #cbd5e1;">Conectando...</div>
+            <div id="g-timer-wrapper" style="display:none; font-size:0.65rem; color:#f87171; font-weight:bold;"><i class="far fa-clock me-1"></i>Expira: <span id="g-timer-val">30:00</span></div>
         </div>
         <div class="g-header-close" onclick="tgGuestSoporteWindow()"><i class="fas fa-times"></i></div>
     </div>
@@ -117,10 +118,11 @@
     <!-- View: Chat Activo -->
     <div id="g-view-chat">
         <div class="g-body" id="g-chat-body">
-            <!-- Mensajes dinámicos -->
-            <div class="typing-bubble" id="g-typing-indicator"><span></span><span></span><span></span></div>
+            <div id="g-typing-indicator" class="typing-bubble" style="display:none; align-self:flex-start;"><span></span><span></span><span></span></div>
         </div>
-        <div class="g-footer" style="position:relative;">
+        <div class="g-footer">
+            <input type="file" id="g-image-input" accept="image/jpeg,image/png,image/jpg" style="display:none;" onchange="handleImageSelectG()">
+            <button class="g-emoji-btn" onclick="document.getElementById('g-image-input').click()" title="Adjuntar Imagen" style="background:none; color:#1e293b;"><i class="fas fa-image"></i></button>
             <button class="g-emoji-btn" onclick="toggleEmojiPickerG()"><i class="far fa-smile"></i></button>
             <div class="emoji-picker-g" id="emoji-picker-g">
                 <span onclick="addEmojiG('😀')">😀</span><span onclick="addEmojiG('😃')">😃</span><span onclick="addEmojiG('😄')">😄</span><span onclick="addEmojiG('😁')">😁</span><span onclick="addEmojiG('😂')">😂</span><span onclick="addEmojiG('😉')">😉</span>
@@ -134,10 +136,31 @@
 </div>
 
 <script>
-    let gCurrentTicketId = null;
-    let gLastMessageId = 0;
-    let gPollInterval = null;
-    let isFetchingG = false;
+    var gCurrentTicketId = null;
+    var gLastMessageId = 0;
+    var gPollInterval = null;
+    var isFetchingG = false;
+    var remainingSecsG = 0;
+    var timerIntervalG = null;
+
+    function formatTimeG(s) {
+        if (s <= 0) return "00:00";
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return (m < 10 ? '0' : '') + m + ":" + (sec < 10 ? '0' : '') + sec;
+    }
+
+    function runLocalTimerG() {
+        if (remainingSecsG > 0) {
+            remainingSecsG--;
+            const el = document.getElementById('g-timer-val');
+            if (el) el.innerText = formatTimeG(remainingSecsG);
+            if (remainingSecsG <= 0) {
+                const inp = document.getElementById('g-input-msg');
+                if (inp) inp.disabled = true;
+            }
+        }
+    }
 
     function tgGuestSoporteWindow() {
         const w = document.getElementById('soporte-window-guest');
@@ -161,6 +184,8 @@
                     document.getElementById('gtk-status-bar').innerHTML = `Ticket: <b>${gCurrentTicketId}</b> <span class="g-status-badge">${data.estado}</span>`;
                     gRefreshChat();
                     gStartPolling();
+                    if (timerIntervalG) clearInterval(timerIntervalG);
+                    timerIntervalG = setInterval(runLocalTimerG, 1000);
                 } else {
                     document.getElementById('gtk-status-bar').innerText = 'Listo.';
                     document.getElementById('g-view-init').classList.add('active');
@@ -225,6 +250,27 @@
                 const typingEl = document.getElementById('g-typing-indicator');
                 if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
 
+                // Update Timer
+                if (data.tiempo_restante !== undefined) {
+                    remainingSecsG = data.tiempo_restante;
+                    const tw = document.getElementById('g-timer-wrapper');
+                    if (tw) tw.style.display = 'block';
+                    const tv = document.getElementById('g-timer-val');
+                    if (tv) tv.innerText = formatTimeG(remainingSecsG);
+                }
+
+                // Sincronizar estados de lectura (leído = ✓✓)
+                if (data.id_leidos && data.id_leidos.length > 0) {
+                    data.id_leidos.forEach(id => {
+                        const tickSpan = document.getElementById(`tick-g-${id}`);
+                        if (tickSpan && tickSpan.querySelector('.fa-check')) {
+                            tickSpan.innerHTML = '<i class="fas fa-check-double"></i>';
+                            tickSpan.style.color = '#34b7f1';
+                            tickSpan.title = 'Leído';
+                        }
+                    });
+                }
+
                 if(data.mensajes.length > 0) {
                     let hasNewTheirs = false;
                     const body = document.getElementById('g-chat-body');
@@ -234,12 +280,25 @@
                         const sender = m.es_mio ? 'Yo' : m.emisor_nombre;
                         if (!m.es_mio && gLastMessageId > 0) hasNewTheirs = true;
 
+                        const statusTicks = m.leido === 1 
+                            ? `<span id="tick-g-${m.id_mensaje}" style="color: #34b7f1; margin-left: 3px;" title="Leído"><i class="fas fa-check-double"></i></span>`
+                            : `<span id="tick-g-${m.id_mensaje}" style="margin-left: 3px;" title="Enviado"><i class="fas fa-check"></i></span>`;
+
+                        let imgHtml = '';
+                        if (m.archivo_adjunto) {
+                            imgHtml = `<div class="mt-2"><img src="../${m.archivo_adjunto}" style="max-width:100%; border-radius:10px; cursor:pointer;" onclick="window.open('../${m.archivo_adjunto}')"></div>`;
+                        }
+
                         const msgDiv = document.createElement('div');
                         msgDiv.className = `msg-b ${c}`;
+                        msgDiv.setAttribute('data-id', m.id_mensaje);
                         msgDiv.innerHTML = `
                             <div style="font-weight:700; font-size:0.75rem; margin-bottom:3px; opacity:0.8;">${sender}</div>
                             <div>${m.mensaje}</div>
-                            <div class="msg-meta">${m.fecha}</div>
+                            ${imgHtml}
+                            <div class="msg-meta" style="display: flex; align-items: center; justify-content: ${m.es_mio?'flex-end':'flex-start'}">
+                                ${m.fecha} ${m.es_mio ? statusTicks : ''}
+                            </div>
                         `;
                         body.appendChild(msgDiv);
                         gLastMessageId = m.id_mensaje;
@@ -300,22 +359,51 @@
 
     function gEnviarMensaje() {
         const input = document.getElementById('g-input-msg');
+        const imgInput = document.getElementById('g-image-input');
         const msg = input.value.trim();
-        if(!msg || !gCurrentTicketId) return;
+        const hasFile = imgInput.files.length > 0;
 
-        input.value = '';
-        
+        if (!msg && !hasFile || !gCurrentTicketId) return;
+
         const fd = new FormData();
         fd.append('id_ticket', gCurrentTicketId);
         fd.append('mensaje', msg);
+        if (hasFile) fd.append('imagen', imgInput.files[0]);
 
-        fetch('../acciones/soporte/enviar_mensaje.php', { method:('POST'), body: fd })
+        input.value = '';
+        imgInput.value = '';
+        isFetchingG = false;
+        
+        fetch('../acciones/soporte/enviar_mensaje.php', { method: 'POST', body: fd })
             .then(r => r.json())
             .then(data => {
-                if(data.success) {
+                if (data.success) {
                     gRefreshChat();
                 } else { alert(data.message); }
             });
+    }
+
+    function handleImageSelectG() {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Enviar imagen?',
+                text: "Se enviará la imagen seleccionada al chat.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#f18000',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    gEnviarMensaje();
+                } else {
+                    document.getElementById('g-image-input').value = '';
+                }
+            });
+        } else {
+            if (confirm("¿Enviar imagen seleccionada?")) gEnviarMensaje();
+        }
     }
 
     function gCalificarTicket(rating) {

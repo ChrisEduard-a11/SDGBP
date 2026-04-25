@@ -1291,11 +1291,12 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                                     <div class="sb-nav-link-icon"><i class="fas fa-ticket-alt"></i></div>
                                     Gestión de Soporte
                                 </a>
-                            <?php } ?>
+                            <?php } elseif ($_SESSION["tipo"] == "upu" || $_SESSION["tipo"] == "cont" || $_SESSION["tipo"] == "inv") { ?>
                             <a class="nav-link" href="../vistas/soporte_usuario.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-headset fa-fw"></i></div>
                                 Centro de Soporte
                             </a>
+                            <?php }?>
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">

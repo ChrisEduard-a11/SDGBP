@@ -41,6 +41,19 @@ if (!$is_admin) {
         }
     }
 }
+// MARCAR COMO LEÍDOS los mensajes que NO fueron enviados por el usuario actual
+$condicion_no_mio = "";
+if ($is_admin) {
+    // Si soy admin, marco como leídos los mensajes que NO vienen de admins
+    $condicion_no_mio = "enviado_por NOT IN (SELECT CAST(id_usuario AS CHAR) FROM usuario WHERE tipos = 'admin') AND enviado_por != 'admin'";
+} else {
+    // Si soy usuario/invitado, marco como leídos los mensajes que vienen de admins
+    $condicion_no_mio = "(enviado_por IN (SELECT CAST(id_usuario AS CHAR) FROM usuario WHERE tipos = 'admin') OR enviado_por = 'admin')";
+}
+
+$update_leido = "UPDATE soporte_mensajes SET leido = 1, leido_at = NOW() 
+                 WHERE id_ticket = '$id_ticket' AND leido = 0 AND $condicion_no_mio";
+mysqli_query($conexion, $update_leido);
 
 // Buscar mensajes nuevos
 $sql = "SELECT m.*, u.nombre, u.foto, u.tipos FROM soporte_mensajes m 
@@ -51,14 +64,39 @@ $sql = "SELECT m.*, u.nombre, u.foto, u.tipos FROM soporte_mensajes m
 $result = mysqli_query($conexion, $sql);
 $mensajes = [];
 
-// Chequeo estado de ticket
+// Chequeo estado de ticket y tiempo restante
 $estado_ticket = 'Abierto';
 $typing_otro = false;
 $calificacion_ticket = null;
-$res_estado = mysqli_query($conexion, "SELECT estado, typing_guest, typing_admin, calificacion FROM soporte_tickets WHERE id_ticket = '$id_ticket'");
+$tiempo_restante = 1800; // Default 30 min (1800s)
+
+$res_estado = mysqli_query($conexion, "SELECT estado, typing_guest, typing_admin, calificacion, fecha_apertura FROM soporte_tickets WHERE id_ticket = '$id_ticket'");
 if($row_est = mysqli_fetch_assoc($res_estado)){
     $estado_ticket = $row_est['estado'];
     $calificacion_ticket = $row_est['calificacion'];
+    
+    // Cálculo de tiempo restante (Vida útil de 30 min = 1800 segundos)
+    $apertura_time = strtotime($row_est['fecha_apertura']);
+    $ahora = time();
+    $transcurrido = $ahora - $apertura_time;
+    $tiempo_restante = 1800 - $transcurrido;
+    
+    // Auto-resolución si el tiempo expiró
+    if ($tiempo_restante <= 0 && $estado_ticket !== 'Resuelto') {
+        // Eliminar imágenes antes de resolver
+        $res_imgs = mysqli_query($conexion, "SELECT archivo_adjunto FROM soporte_mensajes WHERE id_ticket = '$id_ticket' AND archivo_adjunto IS NOT NULL");
+        while ($ri = mysqli_fetch_assoc($res_imgs)) {
+            $fpath = "../../" . $ri['archivo_adjunto'];
+            if (file_exists($fpath)) unlink($fpath);
+        }
+        
+        mysqli_query($conexion, "UPDATE soporte_tickets SET estado = 'Resuelto', ultima_actualizacion = NOW() WHERE id_ticket = '$id_ticket'");
+        $estado_ticket = 'Resuelto';
+        $tiempo_restante = 0;
+    }
+
+    if ($tiempo_restante < 0) $tiempo_restante = 0;
+
     // El admin ve si el invitado/usuario está escribiendo; el invitado ve si el admin está escribiendo
     $col_typing = $is_admin ? 'typing_guest' : 'typing_admin';
     if (!empty($row_est[$col_typing])) {
@@ -109,19 +147,30 @@ while ($row = mysqli_fetch_assoc($result)) {
     $mensajes[] = [
         'id_mensaje' => (int)$row['id_mensaje'],
         'mensaje' => htmlspecialchars($row['mensaje']),
+        'archivo_adjunto' => $row['archivo_adjunto'],
         'fecha' => date('h:i A - d/m/y', strtotime($row['fecha_envio'])),
         'es_mio' => $es_mio,
         'emisor_nombre' => $emisor_tipo,
-        'foto' => $foto
+        'foto' => $foto,
+        'leido' => (int)($row['leido'] ?? 0)
     ];
+}
+
+// Obtener IDs de todos los mensajes leídos de este ticket para sincronizar ticks en tiempo real
+$id_leidos = [];
+$res_leidos = mysqli_query($conexion, "SELECT id_mensaje FROM soporte_mensajes WHERE id_ticket = '$id_ticket' AND leido = 1");
+while($rl = mysqli_fetch_assoc($res_leidos)){
+    $id_leidos[] = (int)$rl['id_mensaje'];
 }
 
 $response = [
     'success' => true, 
     'mensajes' => $mensajes, 
+    'id_leidos' => $id_leidos,
     'estado' => $estado_ticket,
     'typing' => $typing_otro,
-    'calificacion' => $calificacion_ticket
+    'calificacion' => $calificacion_ticket,
+    'tiempo_restante' => $tiempo_restante
 ];
 
 $json = json_encode($response, JSON_INVALID_UTF8_SUBSTITUTE);
