@@ -58,6 +58,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fecha_pago = mysqli_real_escape_string($conexion, $_POST["fecha_pago"]);
     $cliente_id = mysqli_real_escape_string($conexion, $_POST["cliente"]); // ID del cliente seleccionado
 
+    // --- VALIDACIÓN DE CIERRE DE MES ---
+    $fecha_obj = new DateTime($fecha_pago);
+    $mes_pago = (int)$fecha_obj->format('m');
+    $anio_pago = (int)$fecha_obj->format('Y');
+
+    // Validar si EL MES DEL PAGO está cerrado
+    $sql_cierre_actual = "SELECT estado FROM cierres_mensuales WHERE mes = ? AND anio = ?";
+    $stmt_cierre_actual = $conexion->prepare($sql_cierre_actual);
+    $stmt_cierre_actual->bind_param("ii", $mes_pago, $anio_pago);
+    $stmt_cierre_actual->execute();
+    $res_cierre_actual = $stmt_cierre_actual->get_result();
+    if ($res_cierre_actual->num_rows > 0) {
+        $row_cierre = $res_cierre_actual->fetch_assoc();
+        if ($row_cierre['estado'] === 'cerrado') {
+            respond("warning", "Error: No se pueden registrar pagos en un mes que ya ha sido cerrado.", "../vistas/registro_pagos.php");
+        }
+    }
+
+    // Validar si EL MES ANTERIOR está cerrado
+    $mes_anterior = $mes_pago - 1;
+    $anio_anterior = $anio_pago;
+    if ($mes_anterior == 0) {
+        $mes_anterior = 12;
+        $anio_anterior--;
+    }
+    $sql_cierre_ant = "SELECT estado FROM cierres_mensuales WHERE mes = ? AND anio = ? AND estado = 'cerrado'";
+    $stmt_cierre_ant = $conexion->prepare($sql_cierre_ant);
+    $stmt_cierre_ant->bind_param("ii", $mes_anterior, $anio_anterior);
+    $stmt_cierre_ant->execute();
+    $res_cierre_ant = $stmt_cierre_ant->get_result();
+    if ($res_cierre_ant->num_rows === 0) {
+        respond("warning", "Error: No puedes cargar pagos para este mes. El departamento contable aún no ha cerrado el mes anterior.", "../vistas/registro_pagos.php");
+    }
+    // -----------------------------------
+
     // Verificar si el cliente está relacionado con el usuario actual
     $sql_cliente_usuario = "SELECT * FROM usuario_pagos WHERE usuario_id = ? AND cliente_id = ?";
     $stmt_cliente_usuario = $conexion->prepare($sql_cliente_usuario);

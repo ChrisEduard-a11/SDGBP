@@ -1,0 +1,302 @@
+/* 
+  soporte_premium.css
+  Ultra-Premium 2026 Aesthetic for SDGBP Support System
+  Glassmorphism + Outfit Typography + Modern Chat UI
+*/
+
+:root {
+    --brand-orange: #f18000;
+    --brand-orange-dark: #ea580c;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-blur: blur(16px);
+    --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.08);
+    --chat-bubble-radius: 20px;
+}
+
+/* Base Glassmorphism Container */
+.premium-glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: var(--shadow-premium);
+}
+
+/* Chat Bubble styles */
+.chat-bubble {
+    max-width: 80%;
+    padding: 14px 20px;
+    border-radius: var(--chat-bubble-radius);
+    position: relative;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    transition: transform 0.2s ease;
+}
+
+.chat-bubble:hover {
+    transform: scale(1.01);
+}
+
+.bubble-mine {
+    background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-dark) 100%);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 10px 20px rgba(241, 128, 0, 0.2);
+}
+
+.bubble-theirs {
+    background: #ffffff;
+    color: #1e293b;
+    align-self: flex-start;
+    border-bottom-left-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.bubble-meta {
+    font-size: 0.73rem;
+    opacity: 0.7;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Suggestion Chips */
+.premium-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 18px;
+    background: white;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.premium-chip:hover {
+    background: var(--brand-orange);
+    color: white;
+    border-color: var(--brand-orange);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(241, 128, 0, 0.2);
+}
+
+/* Status Badges */
+.premium-badge {
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Typing Indicator Animation */
+.typing-dots {
+    display: flex;
+    gap: 5px;
+    padding: 12px 18px;
+    background: white;
+    border-radius: 20px;
+    width: fit-content;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+.typing-dot {
+    width: 7px;
+    height: 7px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-7px); opacity: 1; }
+}
+
+/* Responsive Mobile Scaling */
+@media (max-width: 768px) {
+    .chat-bubble {
+        max-width: 90%;
+    }
+}
+
+/* ── Bubble Sender Label ── */
+.bubble-sender {
+    font-size: 0.73rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+/* ── Footer Chat Area ── */
+.tk-chat-footer,
+.g-footer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    position: relative;
+}
+
+.tk-chat-footer textarea,
+.tk-chat-footer input[type="text"],
+.g-footer textarea,
+.g-footer input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 22px;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    resize: none;
+    line-height: 1.5;
+}
+
+.tk-chat-footer textarea:focus,
+.tk-chat-footer input[type="text"]:focus,
+.g-footer textarea:focus {
+    border-color: var(--brand-orange);
+    box-shadow: 0 0 0 3px rgba(241,128,0,0.12);
+    background: #fff;
+}
+
+.tk-chat-footer button[id$="send"],
+.tk-chat-footer #tk-chat-send,
+.g-footer #g-btn-send {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 50%;
+    background: var(--brand-orange);
+    color: white;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tk-chat-footer button[id$="send"]:hover,
+.tk-chat-footer #tk-chat-send:hover,
+.g-footer #g-btn-send:hover {
+    background: var(--brand-orange-dark);
+    transform: scale(1.08);
+}
+
+.tk-chat-footer button[id$="send"]:disabled,
+.tk-chat-footer #tk-chat-send:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Icon Buttons (emoji, image) ── */
+.tk-emoji-btn,
+.g-emoji-btn {
+    background: none !important;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.35rem;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: color 0.2s, background 0.2s, transform 0.2s;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.tk-emoji-btn:hover,
+.g-emoji-btn:hover {
+    color: var(--brand-orange) !important;
+    background: rgba(241,128,0,0.08) !important;
+    transform: scale(1.15);
+}
+
+/* ── Emoji Picker (HIDDEN by default, toggled via JS) ── */
+.emoji-picker,
+.emoji-picker-g {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 0;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.06);
+    padding: 12px;
+    display: none; /* HIDDEN by default */
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    z-index: 200;
+    width: 280px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.emoji-picker span,
+.emoji-picker-g span {
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+    padding: 4px;
+    border-radius: 8px;
+    text-align: center;
+    display: block;
+}
+
+.emoji-picker span:hover,
+.emoji-picker-g span:hover {
+    background: #f1f5f9;
+    transform: scale(1.2);
+}
+
+/* ── Delete button in list items ── */
+.tk-list-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 5;
+}
+
+.tk-item:hover .tk-list-delete {
+    opacity: 1;
+}
+
+.tk-delete-btn {
+    color: #f87171;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.tk-delete-btn:hover {
+    background: rgba(248,113,113,0.1);
+    color: #ef4444;
+    transform: scale(1.1);
+}

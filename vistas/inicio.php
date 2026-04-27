@@ -528,15 +528,29 @@ if ($tipo_usuario == "admin") {
             </div>
             <?php } ?>
 
+            <?php
+                $is_admin_dash = ($_SESSION["tipo"] === "admin");
+                $soporte_url    = $is_admin_dash ? 'gestionar_tickets.php' : 'soporte_usuario.php';
+                $soporte_titulo = $is_admin_dash ? 'Centro de Soporte' : 'Mi Soporte Técnico';
+                $soporte_desc   = $is_admin_dash
+                    ? 'Gestiona y responde los tickets de todos los usuarios y visitantes del sistema.'
+                    : '¿Necesitas ayuda? Chatea en tiempo real con nuestro equipo de soporte técnico.';
+                $soporte_link   = $is_admin_dash ? 'Gestionar Tickets' : 'Ir a Soporte Técnico';
+                $soporte_gradient = $is_admin_dash ? 'bg-gradient-success-alt' : 'bg-gradient-info';
+            ?>
             <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.6s;">
-                <div class="card metric-card bg-gradient-info h-100 shadow-lg">
+                <div class="card metric-card <?php echo $soporte_gradient; ?> h-100 shadow-lg">
                     <div class="card-body p-4 d-flex flex-column position-relative">
-                        <h4 class="card-title text-white fw-bold mb-3"><i class="fas fa-headset me-2"></i> Soporte en Línea</h4>
-                        <p class="card-text text-white opacity-75 mb-4 fw-medium">¿Necesitas ayuda inmediata? Chatea con nuestro equipo técnico.</p>
+                        <h4 class="card-title text-white fw-bold mb-3">
+                            <i class="fas fa-headset me-2"></i> <?php echo $soporte_titulo; ?>
+                        </h4>
+                        <p class="card-text text-white opacity-75 mb-4 fw-medium"><?php echo $soporte_desc; ?></p>
                         <i class="fas fa-comments metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="gestionar_tickets.php">Ingresar al Centro de Soporte</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" href="<?php echo $soporte_url; ?>">
+                            <?php echo $soporte_link; ?>
+                        </a>
                         <div class="small text-white"><i class="fas fa-arrow-right"></i></div>
                     </div>
                 </div>

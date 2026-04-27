@@ -62,104 +62,161 @@ if (!$stmt->execute()) {
 
 $result = $stmt->get_result();
 
-// BOM para UTF-8
-echo "\xEF\xBB\xBF";
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Color;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-?>
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <!--[if gte mso 9]>
-    <xml>
-    <x:ExcelWorkbook>
-    <x:ExcelWorksheets>
-    <x:ExcelWorksheet>
-    <x:Name>Historial Pagos</x:Name>
-    <x:WorksheetOptions>
-    <x:DisplayGridlines/>
-    </x:WorksheetOptions>
-    </x:ExcelWorksheet>
-    </x:ExcelWorksheets>
-    </x:ExcelWorkbook>
-    </xml>
-    <![endif]-->
-    <style>
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .bg-gray { background-color: #f0f0f0; }
-        .font-bold { font-weight: bold; }
-        table { border-collapse: collapse; }
-        th, td { border: 1px solid #000; padding: 5px; }
-    </style>
-</head>
-<body>
-    <table>
-        <thead>
-            <tr class="bg-gray font-bold">
-                <th>UPU</th>
-                <th>Descripción</th>
-                <th>Fecha</th>
-                <th>Referencia</th>
-                <th>Método</th>
-                <th>Motivo Rechazo</th>
-                <th>Concepto</th>
-                <th>Entrada (Bs)</th>
-                <th>Salida (Bs)</th>
-                <th>Saldo Final (Bs)</th>
-                <th>Estado</th>
-                <th>Cliente/Proveedor</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if ($result->num_rows > 0): ?>
-                <?php while ($row = $result->fetch_assoc()): ?>
-                    <tr>
-                        <td><?php echo mb_convert_encoding(ucfirst($row["nombre_cliente"]), 'HTML-ENTITIES', 'UTF-8'); ?></td>
-                        <td><?php echo mb_convert_encoding(ucfirst($row["tipo"]), 'HTML-ENTITIES', 'UTF-8'); ?></td>
-                        <td class="text-center"><?php echo date('d/m/Y', strtotime($row["fecha_pago"])); ?></td>
-                        <td style="mso-number-format:'@';"><?php echo $row["referencia"]; ?></td>
-                        <td><?php echo mb_convert_encoding($row["metodo_pago"], 'HTML-ENTITIES', 'UTF-8'); ?></td>
-                        <td><?php echo mb_convert_encoding($row["des_rechazo"], 'HTML-ENTITIES', 'UTF-8'); ?></td>
-                        <td><?php echo mb_convert_encoding($row["descripcion"], 'HTML-ENTITIES', 'UTF-8'); ?></td>
-                        
-                        <!-- Ingreso -->
-                        <td class="text-right">
-                            <?php if ($row["tipo"] == "Ingreso"): ?>
-                                <?php echo number_format($row["monto"], 2, ',', '.'); ?>
-                            <?php
-        endif; ?>
-                        </td>
-                        
-                        <!-- Egreso -->
-                        <td class="text-right">
-                            <?php if ($row["tipo"] == "Egreso"): ?>
-                                <?php echo number_format($row["monto"], 2, ',', '.'); ?>
-                            <?php
-        endif; ?>
-                        </td>
-                        
-                        <!-- Saldo Final -->
-                        <td class="text-right">
-                            <?php
-        if ($row['estado'] == 'aprobado') {
-            echo isset($row['saldo_resultante']) ? number_format($row['saldo_resultante'], 2, ',', '.') : '';
+require '../vendor/autoload.php';
+
+$spreadsheet = new Spreadsheet();
+$sheet = $spreadsheet->getActiveSheet();
+$sheet->setTitle('Historial de Pagos y Egresos');
+
+// Estilos de la tabla
+$styleHeader = [
+    'font' => [
+        'bold' => true,
+        'color' => ['argb' => Color::COLOR_WHITE],
+        'size' => 11,
+    ],
+    'fill' => [
+        'fillType' => Fill::FILL_SOLID,
+        'startColor' => ['argb' => 'FF10B981'] // Green Emerald 500
+    ],
+    'borders' => [
+        'allBorders' => [
+            'borderStyle' => Border::BORDER_THIN,
+            'color' => ['argb' => 'FF9CA3AF'],
+        ],
+    ],
+    'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_CENTER,
+        'vertical' => Alignment::VERTICAL_CENTER,
+    ],
+];
+
+// Encabezado Global
+$sheet->mergeCells('A1:L2');
+$sheet->setCellValue('A1', 'REPORTE CORPORATIVO DE TRANSACCIONES Y PAGOS');
+$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16)->getColor()->setArgb('FF1E293B');
+$sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+
+$sheet->mergeCells('A3:L3');
+$sheet->setCellValue('A3', 'Filtros aplicados: ' . ($estado ? "Estado: $estado " : "") . ($fecha_inicio ? "Desde: $fecha_inicio " : "") . ($fecha_fin ? "Hasta: $fecha_fin" : "Diarios"));
+$sheet->getStyle('A3')->getFont()->setItalic(true)->getColor()->setArgb('FF6B7280');
+
+// Array de cabeceras
+$headers = [
+    'A' => 'UPU / Socio',
+    'B' => 'Tipo Tx',
+    'C' => 'Fecha de Pago',
+    'D' => 'Referencia',
+    'E' => 'Método de Pago',
+    'F' => 'Motivo de Rechazo',
+    'G' => 'Concepto / Descripción',
+    'H' => 'Ingreso (+ Bs)',
+    'I' => 'Egreso (- Bs)',
+    'J' => 'Saldo Final (Bs)',
+    'K' => 'Estado Transacción',
+    'L' => 'Usuario Ejecutor'
+];
+
+foreach ($headers as $col => $title) {
+    // Aplicar ancho automático luego, por ahora setea valor
+    $sheet->setCellValue($col . '5', $title);
+}
+$sheet->getStyle('A5:L5')->applyFromArray($styleHeader);
+$sheet->getRowDimension(5)->setRowHeight(25);
+
+// Llenar datos
+$fila = 6;
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $sheet->setCellValue('A' . $fila, $row["nombre_cliente"]);
+        $sheet->setCellValue('B' . $fila, ucfirst($row["tipo"]));
+        $sheet->setCellValue('C' . $fila, date('d/m/Y', strtotime($row["fecha_pago"])));
+        
+        // Forzar referencia como texto
+        $sheet->setCellValueExplicit('D' . $fila, $row["referencia"], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        
+        $sheet->setCellValue('E' . $fila, $row["metodo_pago"]);
+        $sheet->setCellValue('F' . $fila, html_entity_decode($row["des_rechazo"] ?? ''));
+        $sheet->setCellValue('G' . $fila, html_entity_decode($row["descripcion"]));
+        
+        if ($row["tipo"] == "Ingreso") {
+            $sheet->setCellValue('H' . $fila, (float)$row["monto"]);
+            $sheet->getStyle('H' . $fila)->getNumberFormat()->setFormatCode('#,##0.00_-"Bs"');
+            $sheet->getStyle('H' . $fila)->getFont()->getColor()->setArgb('FF059669'); // Verde
+        } else {
+            $sheet->setCellValue('I' . $fila, (float)$row["monto"]);
+            $sheet->getStyle('I' . $fila)->getNumberFormat()->setFormatCode('#,##0.00_-"Bs"');
+            $sheet->getStyle('I' . $fila)->getFont()->getColor()->setArgb('FFDC2626'); // Rojo
         }
+        
+        if ($row['estado'] == 'aprobado' && isset($row['saldo_resultante'])) {
+            $sheet->setCellValue('J' . $fila, (float)$row['saldo_resultante']);
+            $sheet->getStyle('J' . $fila)->getNumberFormat()->setFormatCode('#,##0.00_-"Bs"');
+            $sheet->getStyle('J' . $fila)->getFont()->setBold(true);
+        }
+        
+        $sheet->setCellValue('K' . $fila, ucfirst($row['estado']));
+        if ($row['estado'] == 'aprobado') {
+            $sheet->getStyle('K' . $fila)->getFont()->getColor()->setArgb('FF059669');
+        } elseif ($row['estado'] == 'rechazado') {
+            $sheet->getStyle('K' . $fila)->getFont()->getColor()->setArgb('FFDC2626');
+        }
+        
+        $sheet->setCellValue('L' . $fila, $row['cliente']);
+        
+        // Borde ligth para la fila
+        $sheet->getStyle('A'.$fila.':L'.$fila)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_HAIR);
+        
+        $fila++;
+    }
+} else {
+    $sheet->mergeCells('A6:L6');
+    $sheet->setCellValue('A6', 'No se encontraron pagos con los filtros seleccionados.');
+    $sheet->getStyle('A6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+}
+
+// Anchos de columna fijos o aprox
+$sheet->getColumnDimension('A')->setWidth(25);
+$sheet->getColumnDimension('B')->setWidth(15);
+$sheet->getColumnDimension('C')->setWidth(15);
+$sheet->getColumnDimension('D')->setWidth(20);
+$sheet->getColumnDimension('E')->setWidth(20);
+$sheet->getColumnDimension('F')->setWidth(25);
+$sheet->getColumnDimension('G')->setWidth(35);
+$sheet->getColumnDimension('H')->setWidth(18);
+$sheet->getColumnDimension('I')->setWidth(18);
+$sheet->getColumnDimension('J')->setWidth(20);
+$sheet->getColumnDimension('K')->setWidth(15);
+$sheet->getColumnDimension('L')->setWidth(25);
+
+// Congelar el encabezado superior
+$sheet->freezePane('A6');
+
+// Limpiar buffers en caso de que alguien dejó un echo por ahí suelto (previene archivos excel corruptos)
+if (ob_get_length()) {
+    ob_end_clean();
+}
+
+$nombreArchivo = "Historial_Pagos_" . date("Y_m_d_H_i") . ".xlsx";
+
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment;filename="' . $nombreArchivo . '"');
+header('Cache-Control: max-age=0');
+header('Cache-Control: max-age=1');
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); 
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); 
+header('Cache-Control: cache, must-revalidate'); 
+header('Pragma: public'); 
+
+$writer = new Xlsx($spreadsheet);
+$writer->save('php://output');
+exit;
 ?>
-                        </td>
-                        
-                        <td class="text-center"><?php echo mb_convert_encoding(ucfirst($row['estado']), 'HTML-ENTITIES', 'UTF-8'); ?></td>
-                        <td><?php echo mb_convert_encoding($row['cliente'], 'HTML-ENTITIES', 'UTF-8'); ?></td>
-                    </tr>
-                <?php
-    endwhile; ?>
-            <?php
-else: ?>
-                <tr>
-                    <td colspan="12" class="text-center">No se encontraron pagos con los filtros seleccionados.</td>
-                </tr>
-            <?php
-endif; ?>
-        </tbody>
-    </table>
-</body>
-</html>

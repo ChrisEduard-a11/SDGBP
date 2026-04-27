@@ -16,91 +16,54 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 }
 ?>
 
+    <link rel="stylesheet" href="../css/soporte_premium.css">
 <style>
-    /* Estilos Premium para Centro de Soporte Usuario */
+    /* Specific overrides for User Support Center */
+    #layoutSidenav_content { background-color: #f1f5f9; }
+    
     .tk-container {
-        display: flex; height: calc(100vh - 120px); min-height: 500px;
-        background: var(--glass-bg, #fff);
-        border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-        border: 1px solid rgba(0,0,0,0.05); overflow: hidden;
+        display: flex; height: calc(100vh - 140px); min-height: 550px;
+        margin-bottom: 20px;
     }
-    
-    .tk-list-panel {
-        width: 350px; background: rgba(248, 250, 252, 0.8);
-        border-right: 1px solid rgba(0,0,0,0.05);
-        display: flex; flex-direction: column;
-    }
-    .tk-list-header {
-        padding: 20px; background: #fff; border-bottom: 1px solid rgba(0,0,0,0.05);
-        display: flex; justify-content: space-between; align-items: center;
-    }
-    .tk-list-body { flex: 1; overflow-y: auto; padding: 10px; }
-    
+
     .tk-item {
-        padding: 15px; border-radius: 12px; margin-bottom: 8px; cursor: pointer;
-        transition: 0.2s; border: 1px solid transparent; background: #fff;
+        padding: 16px; border-radius: 18px; margin-bottom: 10px; cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid transparent; background: #fff;
     }
-    .tk-item:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.05); }
-    .tk-item.active { background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-color: #f18000; border-left: 4px solid #f18000; box-shadow: 0 4px 15px rgba(241,128,0,0.1); }
+    .tk-item:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.04); border-color: rgba(241,128,0,0.1); }
+    .tk-item.active { background: white; border-color: var(--brand-orange); border-left-width: 5px; box-shadow: 0 8px 25px rgba(241,128,0,0.12); }
     
-    .tk-chat-panel { flex: 1; display: flex; flex-direction: column; background: #fff; }
-    .tk-chat-header {
-        padding: 15px 25px; border-bottom: 1px solid rgba(0,0,0,0.05); background: #f8fafc;
-        display: flex; justify-content: space-between; align-items: center; height: 80px;
+    .tk-list-panel { width: 360px; border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; background: rgba(255,255,255,0.4); }
+    .tk-list-header {
+        padding: 18px 28px; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6);
+        display: flex; justify-content: space-between; align-items: center; min-height: 85px;
     }
-    .tk-chat-body { flex: 1; padding: 25px; overflow-y: auto; background: rgba(241, 245, 249, 0.3); display: flex; flex-direction: column; gap: 15px; }
-    .tk-chat-footer { padding: 20px; border-top: 1px solid rgba(0,0,0,0.05); background: #fff; display: flex; gap: 15px; align-items: center; }
+    .tk-chat-panel { flex: 1; display: flex; flex-direction: column; background: transparent; }
+    
+    .tk-chat-header {
+        padding: 18px 28px; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6);
+        display: flex; justify-content: space-between; align-items: center; min-height: 85px;
+    }
+    .tk-chat-body { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+    .tk-chat-footer { padding: 20px 28px; border-top: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6); display: flex; gap: 15px; align-items: center; }
     
     .tk-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; }
-    
-    /* Burbujas del Chat */
-    .c-bubble { max-width: 75%; padding: 12px 18px; border-radius: 18px; line-height: 1.4; position: relative; }
-    .c-theirs { background: #ffffff; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); }
-    .c-mine { background: linear-gradient(135deg, #f18000, #ea580c); color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(241,128,0,0.2); }
-    
-    .tk-chat-footer input { flex:1; padding: 15px 20px; border-radius: 30px; border: 1px solid #e2e8f0; background: #f8fafc; outline: none; transition: 0.3s; }
-    .tk-chat-footer input:focus { border-color: #f18000; box-shadow: 0 0 0 3px rgba(241,128,0,0.1); }
-    .tk-chat-footer button { width: 45px; height: 45px; border-radius: 50%; background: #f18000; color: white; border: none; font-size: 1.1rem; cursor: pointer; transition: 0.2s; display:flex; align-items:center; justify-content:center; }
-    .tk-chat-footer button:hover { background: #ea580c; transform: scale(1.05); }
-    .tk-chat-footer button:disabled { background: #cbd5e1; cursor:not-allowed; }
-    
-    .tk-emoji-btn { background: none !important; color: #94a3b8 !important; font-size: 1.4rem !important; width: 40px !important; }
-    .tk-emoji-btn:hover { color: #f18000 !important; transform: scale(1.2) !important; }
 
-    /* Emoji Picker Minimalista */
-    .emoji-picker {
-        position: absolute; bottom: calc(100% + 15px); right: 0; background: white;
-        border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        border: 1px solid rgba(0,0,0,0.05); padding: 12px; display: none;
-        grid-template-columns: repeat(6, 1fr); gap: 8px; z-index: 100;
-        width: 250px; transform: translateX(0);
-    }
-    @media (max-width: 500px) {
-        .emoji-picker { width: 90vw; max-width: 280px; right: -40px; grid-template-columns: repeat(5, 1fr); }
-    }
-    .emoji-picker span { font-size: 1.4rem; cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 8px; text-align: center; }
-    .emoji-picker span:hover { background: #f1f5f9; transform: scale(1.2); }
+    .rating-box { text-align:center; padding:20px; margin-top:15px; background:white; border-radius:18px; box-shadow: var(--premium-shadow); border: 1px solid rgba(0,0,0,0.03); }
 
-    .tk-delete-btn { color: #f87171; cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .tk-delete-btn:hover { background: rgba(248, 113, 113, 0.1); color: #ef4444; transform: scale(1.1); }
-    
-    .tk-list-delete { position: absolute; top: 10px; right: 10px; opacity: 0; transition: 0.2s; z-index: 5; }
-    .tk-item:hover .tk-list-delete { opacity: 1; }
+    /* Dark Mode Support */
+    [data-theme="dark"] .tk-container { background: rgba(15, 23, 42, 0.7); border-color: rgba(255, 255, 255, 0.1); }
+    [data-theme="dark"] .tk-list-panel { background: rgba(30, 41, 59, 0.4); border-color: rgba(255, 255, 255, 0.05); }
+    [data-theme="dark"] .tk-item { background: rgba(15, 23, 42, 0.5); border-color: rgba(255, 255, 255, 0.05); color: #f8fafc; }
+    [data-theme="dark"] .tk-item.active { background: rgba(30, 41, 59, 0.8); border-color: var(--brand-orange); }
+    [data-theme="dark"] .tk-chat-header, [data-theme="dark"] .tk-chat-footer { background: rgba(30, 41, 59, 0.6); border-color: rgba(255, 255, 255, 0.05); color: #fff; }
+    [data-theme="dark"] .tk-chat-footer input { background: rgba(15, 23, 42, 0.5); border-color: rgba(255, 255, 255, 0.1); color: #fff; }
+    [data-theme="dark"] .bubble-theirs { background: #1e293b; color: #f8fafc; border-color: #334155; }
 
-    /* Typing indicator */
-    .tk-typing-bubble { display: none; align-items: center; gap: 4px; padding: 10px 14px; background: #ffffff; border-radius: 18px; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: fit-content; max-width: 65px; margin-bottom: 5px; }
-    .tk-typing-bubble span { width: 7px; height: 7px; background: #94a3b8; border-radius: 50%; animation: tkTypingDot 1.2s infinite ease-in-out; }
-    .tk-typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
-    .tk-typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes tkTypingDot { 0%, 80%, 100% { transform: translateY(0); opacity:0.5; } 40% { transform: translateY(-6px); opacity:1; } }
-
-    /* Estilos para Calificación */
-    .rating-box { text-align:center; padding:15px; margin-top:10px; background:rgba(255,255,255,0.8); border-radius:15px; box-shadow:0 2px 10px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); }
-
-    /* Mobile handling (Simplified) */
     @media (max-width: 768px) {
         .tk-list-panel { width: 100%; border-right: none; }
-        .tk-chat-panel { position: fixed; inset: 0; z-index: 1050; display: none; }
+        .tk-chat-panel { position: fixed; inset: 0; z-index: 1050; display: none; background: #fff; }
+        [data-theme="dark"] .tk-chat-panel { background: #0f172a; }
         .tk-chat-panel.active { display: flex; }
     }
 </style>
@@ -117,12 +80,15 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
             </button>
         </header>
 
-        <div class="tk-container">
+        <div class="tk-container premium-glass">
             <!-- Panel Izquierdo: Mis Tickets -->
             <div class="tk-list-panel">
                 <div class="tk-list-header">
                     <h5 class="mb-0 fw-bold"><i class="fas fa-history me-2"></i>Mis Tickets</h5>
-                    <span class="badge bg-primary rounded-pill"><?php echo count($tickets); ?></span>
+                    <?php $count = count($tickets); ?>
+                    <span class="badge rounded-pill" style="font-size:0.75rem; background: #e2e8f0; color: #475569;">
+                        <?php echo $count; ?> Ticket<?php echo $count != 1 ? 's' : ''; ?>
+                    </span>
                 </div>
                 <div class="tk-list-body">
                     <?php if(count($tickets)>0): ?>
@@ -181,20 +147,69 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     <div class="tk-chat-body" id="tk-chat-msgs">
                         <!-- Mensajes aquí -->
                     </div>
-                    <div id="tk-typing-indicator" class="tk-typing-bubble mx-3 my-2" style="display:none; align-self:flex-start;"><span></span><span></span><span></span></div>
+                    <div id="tk-typing-indicator" class="typing-dots mx-3 my-2" style="display:none; align-self:flex-start;">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                    </div>
                     
+                    <!-- Suggestion Chips for Registered Users -->
+                    <div id="tk-suggestions-container" class="px-3 py-3 bg-white border-top d-none" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; z-index: 5; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px);">
+                        <style>
+                            #tk-suggestions-container::-webkit-scrollbar { display: none; }
+                            .tk-chip {
+                                display: inline-block; padding: 7px 18px; background: #fff; color: #1e293b;
+                                border: 1px solid #e2e8f0; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+                                cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+                            }
+                            .tk-chip:hover { background: #f18000; color: white; border-color: #f18000; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(241,128,0,0.2); }
+                            .tk-chip.loading { opacity: 0.6; pointer-events: none; background: #f1f5f9; }
+                        </style>
+                        <?php 
+                        $tipo = $_SESSION['tipo'] ?? '';
+                        if ($tipo === 'upu'): ?>
+                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_INGRESO')">¿Cómo reporto Ingresos?</div>
+                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_EGRESO')">¿Cómo reporto Egresos?</div>
+                        <?php elseif ($tipo === 'cont'): ?>
+                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_CONT_COMM')">¿Cómo registro comisiones?</div>
+                        <?php elseif ($tipo === 'inv'): ?>
+                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_INV_BIEN')">¿Cómo registro un bien?</div>
+                        <?php endif; ?>
+                        <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_GENERAL')">Otras dudas</div>
+                    </div>
+
                     <div class="tk-chat-footer" id="tk-footer" style="position:relative;">
                         <input type="file" id="tk-image-input" accept="image/jpeg,image/png,image/jpg" style="display:none;" onchange="handleImageSelect()">
                         <button class="tk-emoji-btn" onclick="document.getElementById('tk-image-input').click()" title="Adjuntar Imagen"><i class="fas fa-image"></i></button>
                         <button class="tk-emoji-btn" onclick="toggleEmojiPicker()"><i class="far fa-smile"></i></button>
                         <div class="emoji-picker" id="emoji-picker">
                             <span onclick="addEmoji('😀')">😀</span><span onclick="addEmoji('😃')">😃</span><span onclick="addEmoji('😄')">😄</span><span onclick="addEmoji('😁')">😁</span><span onclick="addEmoji('😆')">😆</span><span onclick="addEmoji('😅')">😅</span>
-                            <span onclick="addEmoji('😂')">😂</span><span onclick="addEmoji('😉')">😉</span><span onclick="addEmoji('😊')">😊</span><span onclick="addEmoji('😇')">😇</span><span onclick="addEmoji('🥰')">🥰</span><span onclick="addEmoji('😍')">😍</span>
-                            <span onclick="addEmoji('🤩')">🤩</span><span onclick="addEmoji('😘')">😘</span><span onclick="addEmoji('😜')">😜</span><span onclick="addEmoji('🤑')">🤑</span><span onclick="addEmoji('🤔')">🤔</span><span onclick="addEmoji('🤫')">🤫</span>
-                            <span onclick="addEmoji('🧐')">🧐</span><span onclick="addEmoji('😏')">😏</span><span onclick="addEmoji('🥳')">🥳</span><span onclick="addEmoji('😎')">😎</span><span onclick="addEmoji('🥺')">🥺</span><span onclick="addEmoji('😭')">😭</span>
-                            <span onclick="addEmoji('👍')">👍</span><span onclick="addEmoji('👎')">👎</span><span onclick="addEmoji('👏')">👏</span><span onclick="addEmoji('🙌')">🙌</span><span onclick="addEmoji('🔥')">🔥</span><span onclick="addEmoji('✨')">✨</span>
+                            <span onclick="addEmoji('🤣')">🤣</span><span onclick="addEmoji('😂')">😂</span><span onclick="addEmoji('🙂')">🙂</span><span onclick="addEmoji('🙃')">🙃</span><span onclick="addEmoji('😉')">😉</span><span onclick="addEmoji('😊')">😊</span>
+                            <span onclick="addEmoji('😇')">😇</span><span onclick="addEmoji('🥰')">🥰</span><span onclick="addEmoji('😍')">😍</span><span onclick="addEmoji('🤩')">🤩</span><span onclick="addEmoji('😘')">😘</span><span onclick="addEmoji('😗')">😗</span>
+                            <span onclick="addEmoji('😋')">😋</span><span onclick="addEmoji('😛')">😛</span><span onclick="addEmoji('😜')">😜</span><span onclick="addEmoji('🤪')">🤪</span><span onclick="addEmoji('😝')">😝</span><span onclick="addEmoji('🤑')">🤑</span>
+                            <span onclick="addEmoji('🤗')">🤗</span><span onclick="addEmoji('🤭')">🤭</span><span onclick="addEmoji('🤫')">🤫</span><span onclick="addEmoji('🤔')">🤔</span><span onclick="addEmoji('🤐')">🤐</span><span onclick="addEmoji('🤨')">🤨</span>
+                            <span onclick="addEmoji('😐')">😐</span><span onclick="addEmoji('😑')">😑</span><span onclick="addEmoji('😶')">😶</span><span onclick="addEmoji('😏')">😏</span><span onclick="addEmoji('😒')">😒</span><span onclick="addEmoji('🙄')">🙄</span>
+                            <span onclick="addEmoji('😬')">😬</span><span onclick="addEmoji('🤥')">🤥</span><span onclick="addEmoji('😌')">😌</span><span onclick="addEmoji('😔')">😔</span><span onclick="addEmoji('😪')">😪</span><span onclick="addEmoji('🤤')">🤤</span>
+                            <span onclick="addEmoji('😴')">😴</span><span onclick="addEmoji('😷')">😷</span><span onclick="addEmoji('🤒')">🤒</span><span onclick="addEmoji('🤕')">🤕</span><span onclick="addEmoji('🤢')">🤢</span><span onclick="addEmoji('🤮')">🤮</span>
+                            <span onclick="addEmoji('🤧')">🤧</span><span onclick="addEmoji('🥵')">🥵</span><span onclick="addEmoji('🥶')">🥶</span><span onclick="addEmoji('🥴')">🥴</span><span onclick="addEmoji('😵')">😵</span><span onclick="addEmoji('🤯')">🤯</span>
+                            <span onclick="addEmoji('🥳')">🥳</span><span onclick="addEmoji('😎')">😎</span><span onclick="addEmoji('🤓')">🤓</span><span onclick="addEmoji('🧐')">🧐</span><span onclick="addEmoji('😕')">😕</span><span onclick="addEmoji('😟')">😟</span>
+                            <span onclick="addEmoji('🙁')">🙁</span><span onclick="addEmoji('😮')">😮</span><span onclick="addEmoji('😯')">😯</span><span onclick="addEmoji('😲')">😲</span><span onclick="addEmoji('😳')">😳</span><span onclick="addEmoji('🥺')">🥺</span>
+                            <span onclick="addEmoji('😦')">😦</span><span onclick="addEmoji('😧')">😧</span><span onclick="addEmoji('😨')">😨</span><span onclick="addEmoji('😰')">😰</span><span onclick="addEmoji('😥')">😥</span><span onclick="addEmoji('😢')">😢</span>
+                            <span onclick="addEmoji('😭')">😭</span><span onclick="addEmoji('😱')">😱</span><span onclick="addEmoji('😖')">😖</span><span onclick="addEmoji('😣')">😣</span><span onclick="addEmoji('😞')">😞</span><span onclick="addEmoji('😓')">😓</span>
+                            <span onclick="addEmoji('😩')">😩</span><span onclick="addEmoji('😫')">😫</span><span onclick="addEmoji('🥱')">🥱</span><span onclick="addEmoji('😤')">😤</span><span onclick="addEmoji('😡')">😡</span><span onclick="addEmoji('😠')">😠</span>
+                            <span onclick="addEmoji('👍')">👍</span><span onclick="addEmoji('👎')">👎</span><span onclick="addEmoji('👌')">👌</span><span onclick="addEmoji('✌️')">✌️</span><span onclick="addEmoji('🤞')">🤞</span><span onclick="addEmoji('🤟')">🤟</span>
+                            <span onclick="addEmoji('🤘')">🤘</span><span onclick="addEmoji('🤙')">🤙</span><span onclick="addEmoji('🖐')">🖐</span><span onclick="addEmoji('✋')">✋</span><span onclick="addEmoji('👋')">👋</span><span onclick="addEmoji('👏')">👏</span>
+                            <span onclick="addEmoji('🙌')">🙌</span><span onclick="addEmoji('👐')">👐</span><span onclick="addEmoji('🤲')">🤲</span><span onclick="addEmoji('🙏')">🙏</span><span onclick="addEmoji('🤝')">🤝</span><span onclick="addEmoji('💪')">💪</span>
+                            <span onclick="addEmoji('❤️')">❤️</span><span onclick="addEmoji('🧡')">🧡</span><span onclick="addEmoji('💛')">💛</span><span onclick="addEmoji('💚')">💚</span><span onclick="addEmoji('💙')">💙</span><span onclick="addEmoji('💜')">💜</span>
+                            <span onclick="addEmoji('🤎')">🤎</span><span onclick="addEmoji('🖤')">🖤</span><span onclick="addEmoji('🤍')">🤍</span><span onclick="addEmoji('💔')">💔</span><span onclick="addEmoji('💯')">💯</span><span onclick="addEmoji('💢')">💢</span>
+                            <span onclick="addEmoji('💬')">💬</span><span onclick="addEmoji('🗯')">🗯</span><span onclick="addEmoji('💭')">💭</span><span onclick="addEmoji('💤')">💤</span><span onclick="addEmoji('✅')">✅</span><span onclick="addEmoji('❎')">❎</span>
+                            <span onclick="addEmoji('⚠️')">⚠️</span><span onclick="addEmoji('❌')">❌</span><span onclick="addEmoji('❓')">❓</span><span onclick="addEmoji('❕')">❕</span><span onclick="addEmoji('💡')">💡</span><span onclick="addEmoji('🔥')">🔥</span>
+                            <span onclick="addEmoji('✨')">✨</span><span onclick="addEmoji('🌟')">🌟</span><span onclick="addEmoji('🎉')">🎉</span><span onclick="addEmoji('✅')">✅</span><span onclick="addEmoji('🇻🇪')">🇻🇪</span><span onclick="addEmoji('💼')">💼</span>
+                            <span onclick="addEmoji('📅')">📅</span><span onclick="addEmoji('🔔')">🔔</span><span onclick="addEmoji('📢')">📢</span><span onclick="addEmoji('📊')">📊</span><span onclick="addEmoji('📈')">📈</span><span onclick="addEmoji('📉')">📉</span>
+                            <span onclick="addEmoji('📋')">📋</span><span onclick="addEmoji('📝')">📝</span><span onclick="addEmoji('📁')">📁</span><span onclick="addEmoji('📂')">📂</span><span onclick="addEmoji('📄')">📄</span><span onclick="addEmoji('📑')">📑</span>
                         </div>
-                        <input type="text" id="tk-chat-input" placeholder="Escribe tu mensaje..." onkeypress="if(event.key==='Enter') enviarMensaje()" oninput="tkSendTyping()">
+                        <textarea id="tk-chat-input" placeholder="Escribe tu mensaje..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); enviarMensaje(); }" oninput="tkSendTyping(); this.style.height='auto'; this.style.height=Math.min(this.scrollHeight, 120)+'px';" rows="1" style="resize:none; overflow-y:auto; line-height:1.5; min-height:45px; max-height:120px;"></textarea>
                         <button id="tk-chat-send" onclick="enviarMensaje()"><i class="fas fa-paper-plane"></i></button>
                     </div>
                 </div>
@@ -204,6 +219,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 
 <script>
     let cTickId = null;
+    let cTickEstado = null;   // Estado actual del ticket abierto
     let cLastMsgId = 0;
     let pollInterval = null;
     let isFetching = false;
@@ -229,8 +245,34 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         }
     }
 
+    function tkSendSuggestion(btn, code) {
+        if (!cTickId) return;
+
+        // Evitar doble clic y mostrar carga
+        btn.classList.add('loading');
+        const originalText = btn.innerText;
+        btn.innerText = '...';
+
+        const fd = new FormData();
+        fd.append('id_ticket', cTickId);
+        fd.append('mensaje', code);
+
+        fetch('../acciones/soporte/enviar_mensaje.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                btn.classList.remove('loading');
+                btn.innerText = originalText;
+                if (data.success) fetchMsgs();
+            }).catch(e => {
+                btn.classList.remove('loading');
+                btn.innerText = originalText;
+                console.error(e);
+            });
+    }
+
     function loadTicket(idTicket, asunto, estado) {
         cTickId = idTicket;
+        cTickEstado = estado;
         cLastMsgId = 0;
         
         // UI
@@ -248,12 +290,15 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         badge.innerText = estado;
         badge.className = 'badge rounded-pill ' + (estado==='Abierto' ? 'bg-success' : (estado==='En Proceso' ? 'bg-warning text-dark' : 'bg-secondary'));
 
-        document.getElementById('tk-chat-msgs').innerHTML = '<div class="tk-typing-bubble" id="tk-typing-indicator"><span></span><span></span><span></span></div>';
+        document.getElementById('tk-chat-msgs').innerHTML = '<div class="typing-dots" id="tk-typing-indicator" style="display:none;"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
 
+        const sugContainer = document.getElementById('tk-suggestions-container');
         if(estado === 'Resuelto') {
             document.getElementById('tk-footer').style.display = 'none';
+            if (sugContainer) sugContainer.classList.add('d-none');
         } else {
             document.getElementById('tk-footer').style.display = 'flex';
+            if (sugContainer) sugContainer.classList.remove('d-none');
         }
 
         fetchMsgs();
@@ -280,6 +325,8 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
             .then(r=>r.json())
             .then(data => {
                 isFetching = false;
+                if (data.estado) cTickEstado = data.estado; // Sincronizar estado
+
                 const typingEl = document.getElementById('tk-typing-indicator');
                 if (typingEl) typingEl.style.display = data.typing ? 'flex' : 'none';
 
@@ -304,9 +351,11 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 
                 if(data.success && data.mensajes.length > 0) {
                     const b = document.getElementById('tk-chat-msgs');
+                    let hasNewTheirs = false;
                     data.mensajes.forEach(m => {
                         const c = m.es_mio ? 'c-mine' : 'c-theirs';
                         const sender = m.es_mio ? 'Tú' : m.emisor_nombre;
+                        if (!m.es_mio && cLastMsgId > 0) hasNewTheirs = true;
 
                         const statusTicks = m.leido === 1 
                             ? `<span id="tick-${m.id_mensaje}" style="color: #34b7f1; margin-left: 3px;" title="Leído"><i class="fas fa-check-double"></i></span>`
@@ -314,17 +363,17 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 
                         let imgHtml = '';
                         if (m.archivo_adjunto) {
-                            imgHtml = `<div class="mt-2"><img src="../${m.archivo_adjunto}" style="max-width:100%; border-radius:10px; cursor:pointer;" onclick="window.open('../${m.archivo_adjunto}')"></div>`;
+                            imgHtml = `<div class="mt-2"><img src="../${m.archivo_adjunto}" style="max-width:100%; max-height:250px; object-fit:cover; border-radius:10px; cursor:zoom-in;" onclick="tkOpenLightbox('../${m.archivo_adjunto}')"></div>`;
                         }
 
                         const msgDiv = document.createElement('div');
-                        msgDiv.className = `c-bubble ${c}`;
+                        msgDiv.className = `chat-bubble ${m.es_mio ? 'bubble-mine' : 'bubble-theirs'}`;
                         msgDiv.setAttribute('data-id', m.id_mensaje);
                         msgDiv.innerHTML = `
-                            <div style="font-weight:700; font-size:0.75rem; margin-bottom:3px; opacity:0.8;">${sender}</div>
+                            <div class="bubble-sender">${sender}</div>
                             <div style="font-size:0.95rem;">${m.mensaje}</div>
                             ${imgHtml}
-                            <div style="font-size:0.65rem; opacity:0.7; margin-top:5px; display: flex; align-items: center; justify-content: ${m.es_mio?'flex-end':'flex-start'}">
+                            <div class="bubble-meta" style="justify-content: ${m.es_mio ? 'flex-end' : 'flex-start'}">
                                 ${m.fecha} ${m.es_mio ? statusTicks : ''}
                             </div>
                         `;
@@ -332,6 +381,14 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                         cLastMsgId = m.id_mensaje;
                     });
                     b.scrollTop = b.scrollHeight;
+
+                    if (hasNewTheirs) {
+                        try {
+                            const audio = new Audio('../assets/audio/notificacion.mp3');
+                            audio.volume = 0.5;
+                            audio.play().catch(()=>{});
+                        } catch(e){}
+                    }
                 }
 
                 // Si está resuelto y no hay calificación, mostrar box
@@ -387,6 +444,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         if (hasFile) fd.append('imagen', imgInput.files[0]);
 
         inp.value = '';
+        inp.style.height = 'auto';
         imgInput.value = '';
 
         fetch('../acciones/soporte/enviar_mensaje.php', { method: 'POST', body: fd })
@@ -399,10 +457,16 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
 
     function handleImageSelect() {
         if (typeof Swal !== 'undefined') {
+            const imgInput = document.getElementById('tk-image-input');
+            if (imgInput.files.length === 0) return;
+            const fileName = imgInput.files[0].name;
+
             Swal.fire({
-                title: '¿Enviar imagen?',
-                text: "Se enviará la imagen seleccionada al chat.",
-                icon: 'question',
+                title: 'Adjuntar imagen',
+                text: `Archivo: ${fileName}`,
+                input: 'text',
+                inputPlaceholder: 'Añadir un comentario (opcional)...',
+                icon: 'info',
                 showCancelButton: true,
                 confirmButtonColor: '#f18000',
                 cancelButtonColor: '#94a3b8',
@@ -410,9 +474,13 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    if (result.value) {
+                        const inp = document.getElementById('tk-chat-input');
+                        inp.value = (inp.value.trim() + " " + result.value).trim();
+                    }
                     enviarMensaje();
                 } else {
-                    document.getElementById('tk-image-input').value = '';
+                    imgInput.value = '';
                 }
             });
         } else {
@@ -449,12 +517,58 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
         tkSendTyping();
     }
 
+    function tkOpenLightbox(url) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                html: `
+                    <div style="position:relative; display:inline-block; max-width:90vw;">
+                        <button onclick="Swal.close()" style="position:absolute; top:-15px; right:-15px; background:#ef4444; color:white; border:none; border-radius:50%; width:35px; height:35px; font-size:1.2rem; cursor:pointer; display:flex; justify-content:center; align-items:center; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:10; transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='none'"><i class="fas fa-times"></i></button>
+                        <img src="${url}" style="max-width:100%; max-height:85vh; object-fit:contain; border-radius:12px; display:block; margin:0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: false,
+                width: 'auto',
+                padding: 0,
+                background: 'transparent',
+                backdrop: 'rgba(15, 23, 42, 0.92)'
+            });
+        } else {
+            window.open(url);
+        }
+    }
+
+    // Cerrar modales (Click Afuera)
+    document.addEventListener('click', function(e) {
+        const ep = document.getElementById('emoji-picker');
+        const isClickInsideEP = ep && ep.contains(e.target);
+        const isToggleBtn = e.target.closest('.tk-emoji-btn');
+        if (!isClickInsideEP && !isToggleBtn && ep && ep.style.display === 'grid') {
+            ep.style.display = 'none';
+        }
+    });
+
     function eliminarTicket(e, id) {
         if(e) {
             e.preventDefault();
             e.stopPropagation();
         }
         if(!id) return;
+
+        // ── Restricción: solo se puede eliminar si está Resuelto o Expirado ──
+        const estaResuelto  = (cTickEstado === 'Resuelto');
+        const estaExpirado  = (remainingSecs <= 0 && cTickId === id);
+
+        if (!estaResuelto && !estaExpirado) {
+            Swal.fire({
+                icon: 'info',
+                title: 'No puedes eliminar este ticket',
+                text: 'Solo puedes eliminar tickets que ya hayan sido resueltos o cuyo tiempo haya expirado.',
+                confirmButtonColor: '#f18000',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
 
         Swal.fire({
             title: '¿Estás seguro?',
@@ -470,7 +584,7 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                 const fd = new FormData();
                 fd.append('id_ticket', id);
 
-                fetch('../acciones/soporte/eliminar_ticket.php', { method: 'POST', body: fd })
+                fetch('../acciones/soporte/borrar_ticket.php', { method: 'POST', body: fd })
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {

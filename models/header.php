@@ -1285,6 +1285,12 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                             </div>
                             <?php
 }?>
+                            <?php if ($_SESSION["tipo"] == "admin" || $_SESSION["tipo"] == "cont") { ?>
+                                <a class="nav-link" href="../vistas/cierre_mes.php">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
+                                    Cierre de Mes
+                                </a>
+                            <?php } ?>
                             <div class="sb-sidenav-menu-heading">Ayuda y Soporte</div>
                             <?php if ($_SESSION["tipo"] == "admin") { ?>
                                 <a class="nav-link" href="../vistas/gestionar_tickets.php">
@@ -1335,6 +1341,87 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                         }
                     });
                 }
+
+                // ============================================================
+                // SOPORTE — Notificaciones en tiempo real (polling cada 15s)
+                // ============================================================
+                let _soporteNotifLastCount = -1;
+
+                function pollSoporteNotifications() {
+                    fetch('../acciones/soporte/obtener_notif_soporte.php')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (!data || data.count === undefined) return;
+                            const total = data.count;
+                            const bellBtn = document.getElementById('navbarDropdownNotif');
+                            const dropdown = bellBtn ? bellBtn.nextElementSibling : null;
+
+                            // Sonido si hay nuevas notificaciones
+                            if (total > 0 && _soporteNotifLastCount !== -1 && total > _soporteNotifLastCount) {
+                                try {
+                                    const audio = new Audio('../assets/audio/notificacion.mp3');
+                                    audio.volume = 0.4;
+                                    audio.play().catch(() => {});
+                                } catch(e) {}
+                            }
+                            _soporteNotifLastCount = total;
+
+                            // Actualizar badge
+                            if (bellBtn) {
+                                let badge = bellBtn.querySelector('.badge');
+                                const staticCount = document.querySelectorAll('#navbarDropdownNotif + .dropdown-menu li.px-2:not(.soporte-notif)').length;
+                                const grandTotal = total + staticCount;
+                                if (grandTotal > 0) {
+                                    if (!badge) {
+                                        badge = document.createElement('span');
+                                        badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                                        badge.style.cssText = 'font-size:0.6rem;padding:0.35em 0.65em;';
+                                        bellBtn.appendChild(badge);
+                                    }
+                                    badge.textContent = grandTotal;
+                                } else if (badge) {
+                                    badge.remove();
+                                }
+                            }
+
+                            // Inyectar items en el dropdown
+                            if (dropdown) {
+                                dropdown.querySelectorAll('.soporte-notif').forEach(el => el.remove());
+                                const divider = dropdown.querySelector('.dropdown-divider');
+                                const emptyMsg = dropdown.querySelector('li.dropdown-item.text-muted');
+
+                                data.items.forEach(item => {
+                                    if (emptyMsg) emptyMsg.style.display = 'none';
+                                    const li = document.createElement('li');
+                                    li.className = 'px-2 soporte-notif';
+                                    li.innerHTML = `
+                                        <a href="${item.url}" class="d-flex align-items-start p-2 rounded text-decoration-none mb-1"
+                                           style="border-left:4px solid #f18000;background:rgba(241,128,0,0.05);transition:background .2s;"
+                                           onmouseover="this.style.background='rgba(241,128,0,0.12)'"
+                                           onmouseout="this.style.background='rgba(241,128,0,0.05)'">
+                                            <i class="${item.icono} me-3 mt-1 flex-shrink-0" style="color:#f18000;font-size:1.1rem;"></i>
+                                            <div>
+                                                <div class="small fw-bold" style="color:#1e293b;">🎧 Soporte Técnico</div>
+                                                <div class="small text-muted" style="font-size:0.75rem;">${item.mensaje}</div>
+                                            </div>
+                                        </a>`;
+                                    if (divider) divider.parentNode.insertBefore(li, divider.nextSibling);
+                                    else dropdown.appendChild(li);
+                                });
+
+                                if (data.items.length === 0 && emptyMsg) {
+                                    const stillHasItems = dropdown.querySelectorAll('li.px-2:not(.soporte-notif)').length > 0;
+                                    emptyMsg.style.display = stillHasItems ? 'none' : '';
+                                }
+                            }
+                        })
+                        .catch(() => {});
+                }
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    pollSoporteNotifications();
+                    setInterval(pollSoporteNotifications, 15000);
+                });
             </script>
             <script>
 // Inicia el contenedor de contenido principal (layoutSidenav_content)

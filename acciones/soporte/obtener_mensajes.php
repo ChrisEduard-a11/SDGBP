@@ -112,7 +112,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         $emisor_tipo = "Visitante Externo";
         $foto = '../img/default_profile.png';
     } else if ($row['enviado_por'] === 'admin') {
-        $emisor_tipo = 'Soporte Técnico'; // Mensajes antiguos o del bot
+        $emisor_tipo = 'Soporte técnico BOT SDGBP'; // Mensajes del bot de sugerencias
         $foto = '../img/Logo-OP2_V4.webp';
     } else {
         $is_sender_admin = (isset($row['tipos']) && $row['tipos'] === 'admin');
@@ -144,9 +144,17 @@ while ($row = mysqli_fetch_assoc($result)) {
         }
     }
 
+    $mensaje_final = htmlspecialchars($row['mensaje']);
+    // Soporte para Markdown (**negrita**)
+    $mensaje_final = preg_replace('/\*\*(.*?)\*\*/', '<b>$1</b>', $mensaje_final);
+    // Permitir ciertos tags decorativos (br, b, strong) para mensajes del bot/formateados
+    $buscar = ['&lt;br&gt;', '&lt;b&gt;', '&lt;/b&gt;', '&lt;strong&gt;', '&lt;/strong&gt;'];
+    $reemplazar = ['<br>', '<b>', '</b>', '<strong>', '</strong>'];
+    $mensaje_final = str_replace($buscar, $reemplazar, $mensaje_final);
+
     $mensajes[] = [
         'id_mensaje' => (int)$row['id_mensaje'],
-        'mensaje' => htmlspecialchars($row['mensaje']),
+        'mensaje' => $mensaje_final,
         'archivo_adjunto' => $row['archivo_adjunto'],
         'fecha' => date('h:i A - d/m/y', strtotime($row['fecha_envio'])),
         'es_mio' => $es_mio,

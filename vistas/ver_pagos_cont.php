@@ -508,31 +508,60 @@ endif; ?>
 
         <!-- UPU Balances -->
         <div class="glass-card p-4 mb-5 fade-in-up stagger-5">
-            <div class="d-flex align-items-center mb-4">
-                <div class="bg-indigo bg-opacity-10 p-2 rounded-circle me-3">
-                    <i class="fas fa-wallet text-indigo"></i>
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-indigo bg-opacity-10 p-2 rounded-circle me-3">
+                        <i class="fas fa-wallet text-indigo"></i>
+                    </div>
+                    <h5 class="mb-0 fw-bold">Saldos Disponibles por UPU</h5>
                 </div>
-                <h5 class="mb-0 fw-bold">Saldos Disponibles por UPU</h5>
+                <div class="d-flex gap-2">
+                    <a href="../dompdf/exportar_pdf_saldos.php" target="_blank" class="btn btn-outline-danger rounded-pill shadow-sm fw-bold">
+                        <i class="fas fa-file-pdf me-2"></i> PDF
+                    </a>
+                    <a href="exportar_excel_saldos.php" class="btn btn-outline-success rounded-pill shadow-sm fw-bold">
+                        <i class="fas fa-file-excel me-2"></i> Excel
+                    </a>
+                </div>
             </div>
-            <div class="row g-3">
-                <?php if ($result_upu_saldos->num_rows > 0): ?>
-                    <?php while ($row_upu = $result_upu_saldos->fetch_assoc()): ?>
-                        <div class="col-md-4">
-                            <div class="bg-light p-3 rounded-4 d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="fw-bold text-dark small"><?php echo $row_upu["nombre"]; ?></div>
-                                    <div class="text-muted extra-small"><?php echo $row_upu["correo"]; ?></div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="text-primary fw-800"><?php echo number_format($row_upu["saldo"], 2, ',', '.'); ?></div>
-                                    <div class="extra-small text-muted">Bs Disponible</div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php
-    endwhile; ?>
-                <?php
-endif; ?>
+            
+            <div class="table-responsive">
+                <table id="datatablesSaldos" class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>Unidad de Producción / Origen</th>
+                            <th>Correo / Contacto</th>
+                            <th class="text-end">Saldo Disponible (Bs)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($result_upu_saldos->num_rows > 0): ?>
+                            <?php $result_upu_saldos->data_seek(0); ?>
+                            <?php while ($row_upu = $result_upu_saldos->fetch_assoc()): ?>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-light text-indigo fw-bold p-2 text-center rounded-circle me-3" style="width: 40px; height: 40px; line-height: 24px;">
+                                                <?php echo substr($row_upu["nombre"], 0, 1); ?>
+                                            </div>
+                                            <div class="fw-bold text-dark"><?php echo $row_upu["nombre"]; ?></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-muted small"><i class="fas fa-envelope me-2"></i> <?php echo $row_upu["correo"]; ?></div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-primary fw-800" style="font-size: 1.1rem;"><?php echo number_format($row_upu["saldo"], 2, ',', '.'); ?></span>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">No hay información de saldos disponible.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -655,6 +684,25 @@ endif; ?>
             color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#1e293b'
         });
     }
+
+    // Initialize custom datatable for UPUs
+    window.addEventListener('DOMContentLoaded', event => {
+        const saldosTable = document.getElementById('datatablesSaldos');
+        if (saldosTable && typeof simpleDatatables !== 'undefined') {
+            new simpleDatatables.DataTable(saldosTable, {
+                searchable: true,
+                fixedHeight: true,
+                perPage: 5,
+                perPageSelect: [5, 10, 15, 20],
+                labels: {
+                    placeholder: "Buscar UPU...",
+                    perPage: "{select} registros",
+                    noRows: "No hay registros encontrados",
+                    info: "Mostrando {start} a {end} de {rows} registros"
+                }
+            });
+        }
+    });
 </script>
 
 <style>

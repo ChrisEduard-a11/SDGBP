@@ -46,7 +46,7 @@ if (!$resultado) {
         }
     }
 
-    // Generar un banner vectorial 100% seguro para DOMPDF (solo shapes básicos, sin linear-gradient)
+    // Generar un banner vectorial 100% seguro para DOMPDF
     $svg_banner = '
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 120" width="100%" height="100%" preserveAspectRatio="none">
         <path d="M1000,40 C700,120 600,-20 0,60 L0,0 L1000,0 Z" fill="#1e293b" />
@@ -75,7 +75,7 @@ if (!$resultado) {
             footer { position: fixed; bottom: -40px; left: 40px; right: 40px; height: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 8pt; color: #94a3b8; }
             .pagenum:before { content: counter(page); }
 
-            .info-panel { background-color: #f8fafc; padding: 15px 20px; margin-top: 10px; margin-bottom: 25px; border-left: 5px solid #f18000; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+            .info-panel { background-color: #f8fafc; padding: 15px 20px; margin-top: 10px; margin-bottom: 25px; border-left: 5px solid #f18000; border: 1px solid #e2e8f0; }
             .info-label { font-size: 8pt; color: #64748b; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
             .info-value { font-size: 11pt; color: #0f172a; font-weight: bold; margin-top: 3px; display: block; }
             
@@ -105,10 +105,10 @@ if (!$resultado) {
             <table style="width: 100%;">
                 <tr>
                     <td style="width: 25%;">
-                        <img src="https://lh5.googleusercontent.com/p/AF1QipMIuz9nSKZaDup5Zr7LIVwhyDKheMsfdeD_55hd=w408-h408-k-no" alt="Logo" style="height: 65px; border-radius: 8px; background: white; padding: 2px;">
+                        <img src="../img/Logo-OP2_V4.png" alt="Logo" style="height: 65px; border-radius: 8px; background: white; padding: 2px;">
                     </td>
                     <td style="width: 75%; text-align: right;">
-                        <h1 class="company-name">EURIPYS 2024 C.A.</h1>
+                        <h1 class="company-name ">EURIPYS 2024 C.A.</h1>
                         <p class="report-title">Registro de Ingreso y Egreso de UPU</p>
                     </td>
                 </tr>
@@ -243,6 +243,7 @@ if (!$resultado) {
 $options = new Options();
 $options->set('isHtml5ParserEnabled', true);
 $options->set('isRemoteEnabled', true);
+$options->set('chroot', realpath(__DIR__ . '/../'));
 
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html);

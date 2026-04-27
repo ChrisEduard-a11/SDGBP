@@ -346,6 +346,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 playErrorSound();
                 toastr.error("Código Captcha incorrecto.", "Fallo de Seguridad");
                 drawWowCaptcha();
+                const ci = document.getElementById('captchaInput');
+                ci.value = '';
+                ci.focus();
                 return;
             }
             this.submit();

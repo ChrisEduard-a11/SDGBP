@@ -78,17 +78,12 @@ try {
         }
     }
 
-    // Generar un banner vectorial 100% seguro para DOMPDF (solo shapes básicos, sin linear-gradient)
+    // Generar un banner vectorial 100% seguro para DOMPDF
     $svg_banner = '
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 120" width="100%" height="100%" preserveAspectRatio="none">
-        <!-- Ola azul oscura en el fondo -->
         <path d="M1000,40 C700,120 600,-20 0,60 L0,0 L1000,0 Z" fill="#1e293b" />
-        
-        <!-- Ondas naranjas estrictamente alineadas a la IZQUIERDA -->
         <path d="M0,120 L0,30 C300,100 450,150 750,120 Z" fill="#f18000" fill-opacity="0.3" />
         <path d="M0,120 L0,60 C250,100 350,130 550,120 Z" fill="#f18000" fill-opacity="0.95" />
-        
-        <!-- Acentos a la derecha (Puntos y lineas finas que no estorban el texto) -->
         <circle cx="880" cy="40" r="3" fill="#f18000" fill-opacity="0.8" />
         <circle cx="800" cy="90" r="2" fill="#ffffff" fill-opacity="0.15" />
         <circle cx="830" cy="65" r="1.5" fill="#f18000" fill-opacity="0.3" />
@@ -106,13 +101,13 @@ try {
             
             header { position: fixed; top: -120px; left: 0px; right: 0px; height: 120px; background-color: #0f172a; border-bottom: 4px solid #f18000; }
             .header-content { position: relative; padding-top: 30px; padding-left: 40px; padding-right: 40px; }
-            .company-name { color: #ffffffff; font-size: 22pt; font-weight: bold; margin: 0; letter-spacing: 0.5px; }
-            .report-title { color: #ffffffff; font-size: 11pt; font-weight: bold; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px; }
+            .company-name { color: #ffffff; font-size: 22pt; font-weight: bold; margin: 0; letter-spacing: 0.5px; }
+            .report-title { color: #ffffff; font-size: 11pt; font-weight: bold; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px; }
             
             footer { position: fixed; bottom: -40px; left: 40px; right: 40px; height: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 8pt; color: #94a3b8; }
             .pagenum:before { content: counter(page); }
 
-            .info-panel { background-color: #f8fafc; padding: 15px 20px; margin-top: 10px; margin-bottom: 25px; border-left: 5px solid #f18000; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+            .info-panel { background-color: #f8fafc; padding: 15px 20px; margin-top: 10px; margin-bottom: 25px; border-left: 5px solid #f18000; border: 1px solid #e2e8f0; }
             .info-label { font-size: 8pt; color: #64748b; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
             .info-value { font-size: 11pt; color: #0f172a; font-weight: bold; margin-top: 3px; display: block; }
             
@@ -142,7 +137,7 @@ try {
             <table style="width: 100%;">
                 <tr>
                     <td style="width: 25%;">
-                        <img src="https://lh5.googleusercontent.com/p/AF1QipMIuz9nSKZaDup5Zr7LIVwhyDKheMsfdeD_55hd=w408-h408-k-no" alt="Logo" style="height: 65px; border-radius: 8px; background: white; padding: 2px;">
+                        <img src="../img/Logo-OP2_V4.png" alt="Logo" style="height: 65px; border-radius: 8px; background: white; padding: 2px;">
                     </td>
                     <td style="width: 75%; text-align: right;">
                         <h1 class="company-name ">EURIPYS 2024 C.A.</h1>
@@ -279,6 +274,7 @@ try {
     $options = new Options();
     $options->set('isHtml5ParserEnabled', true);
     $options->set('isRemoteEnabled', true);
+    $options->set('chroot', realpath(__DIR__ . '/../'));
 
     $dompdf = new Dompdf($options);
     $dompdf->loadHtml($html);

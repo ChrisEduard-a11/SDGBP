@@ -18,10 +18,20 @@ if (!$id_usuario || empty($id_ticket)) {
 
 // Verificar pertenencia o permisos
 if ($tipo_usuario !== 'admin') {
-    $check = mysqli_query($conexion, "SELECT id_usuario FROM soporte_tickets WHERE id_ticket = '$id_ticket'");
+    $check = mysqli_query($conexion, "SELECT id_usuario, estado, fecha_apertura FROM soporte_tickets WHERE id_ticket = '$id_ticket'");
     $row = mysqli_fetch_assoc($check);
     if (!$row || $row['id_usuario'] != $id_usuario) {
         echo json_encode(['success' => false, 'message' => 'No tienes permiso para eliminar este ticket']);
+        exit;
+    }
+
+    // Calcular si el ticket ha expirado (más de 30 min desde su apertura)
+    date_default_timezone_set('America/Caracas');
+    $transcurrido = time() - strtotime($row['fecha_apertura']);
+    $expirado     = ($transcurrido >= 1800);
+
+    if ($row['estado'] !== 'Resuelto' && !$expirado) {
+        echo json_encode(['success' => false, 'message' => 'Solo puedes eliminar tickets que estén resueltos o hayan expirado.']);
         exit;
     }
 }
@@ -35,6 +45,11 @@ while ($ri = mysqli_fetch_assoc($res_imgs)) {
 
 // Eliminar mensajes asociados primero
 mysqli_query($conexion, "DELETE FROM soporte_mensajes WHERE id_ticket = '$id_ticket'");
+
+// Registrar alerta para el admin
+$nombre_del_usuario = isset($_SESSION['nombre']) ? mysqli_real_escape_string($conexion, $_SESSION['nombre']) : 'Usuario desconocido';
+$uid = $id_usuario ?? 'NULL';
+mysqli_query($conexion, "INSERT INTO soporte_alertas (id_usuario, nombre_usuario, id_ticket) VALUES ($uid, '$nombre_del_usuario', '$id_ticket')");
 
 // Eliminar el ticket
 if (mysqli_query($conexion, "DELETE FROM soporte_tickets WHERE id_ticket = '$id_ticket'")) {
