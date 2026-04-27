@@ -9,9 +9,9 @@ require '../conexion.php';
 // Solo el usuario logueado UPU
 $usuario_upu = isset($_SESSION['id']) ? intval($_SESSION['id']) : 0;
 
-// Filtros opcionales por POST
-$fecha_inicio = $_POST['filtro_fecha_inicio'] ?? '';
-$fecha_fin = $_POST['filtro_fecha_fin'] ?? '';
+// Filtros opcionales
+$fecha_inicio = $_REQUEST['filtro_fecha_inicio'] ?? '';
+$fecha_fin = $_REQUEST['filtro_fecha_fin'] ?? '';
 
 $filtro_fecha = "";
 if (!empty($fecha_inicio) && !empty($fecha_fin)) {
@@ -239,10 +239,12 @@ if (!$resultado) {
     </html>
     ';
 
-// Configuración de Dompdf
+// Configuración de Dompdf Optimizado
 $options = new Options();
 $options->set('isHtml5ParserEnabled', true);
 $options->set('isRemoteEnabled', true);
+$options->set('isFontSubsettingEnabled', true);
+$options->set('dpi', 72);
 $options->set('chroot', realpath(__DIR__ . '/../'));
 
 $dompdf = new Dompdf($options);
@@ -265,7 +267,7 @@ if (!empty($fecha_inicio) && !empty($fecha_fin)) {
 
 $nombre_pdf = 'Reporte_Ingresos_Egresos_' . $nombre_upu_archivo . '_' . $periodo_archivo . '.pdf';
 
-// Generar el PDF con el nombre dinámico
-$dompdf->stream($nombre_pdf, ['Attachment' => 0]); 
+$attachment = (isset($_GET['download']) && $_GET['download'] == '1') ? 1 : 0;
+$dompdf->stream($nombre_pdf, ['Attachment' => $attachment]); 
 exit;
 ?>

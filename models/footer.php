@@ -302,16 +302,34 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Re-inicialización de Flatpickr con MODO STATIC para evitar bugs de actualización
+            // Re-inicialización de Flatpickr con MODO STATIC y Bloqueo de Períodos Cerrados
             flatpickr(".datepicker-flat", {
                 dateFormat: "Y-m-d",
                 locale: "es",
                 allowInput: false,
                 maxDate: "today",
                 disableMobile: true,
-                monthSelectorType: "static", // Evita el bug del dropdown que no actualiza texto
+                monthSelectorType: "static", 
                 altInput: true,
                 altFormat: "d/m/Y",
+                disable: [
+                    function(date) {
+                        // Solo restringir si el usuario es UPU
+                        if (window.USER_ROLE !== 'upu') return false;
+                        
+                        const now = new Date();
+                        const currentYear = now.getFullYear();
+                        const year = date.getFullYear();
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const period = `${year}-${month}`;
+                        
+                        // 1. Bloquear AÑOS anteriores COMPLETOS (2025, 2024...)
+                        if (year < currentYear) return true;
+                        
+                        // 2. Bloquear MESES CERRADOS del año actual
+                        return window.SDGBP_CLOSED_PERIODS && window.SDGBP_CLOSED_PERIODS.includes(period);
+                    }
+                ],
                 onReady: function(selectedDates, dateStr, instance) {
                     instance.altInput.classList.add("form-control");
                 }

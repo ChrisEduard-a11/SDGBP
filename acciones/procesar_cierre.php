@@ -67,6 +67,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $stmt_ant->close();
 
+    // NUEVO REFUERZO: Blindaje Contable de Pendientes
+    // 1. Verificar pagos pendientes (Ingresos/Egresos)
+    $sql_pend = "SELECT COUNT(*) as total FROM pagos WHERE MONTH(fecha_pago) = ? AND YEAR(fecha_pago) = ? AND estado NOT IN ('aprobado', 'rechazado')";
+    $stmt_pend = $conexion->prepare($sql_pend);
+    $stmt_pend->bind_param("ii", $mes, $anio);
+    $stmt_pend->execute();
+    $pend_count = $stmt_pend->get_result()->fetch_assoc()['total'];
+    $stmt_pend->close();
+
+    if ($pend_count > 0) {
+        echo json_encode(["status" => "error", "message" => "No se puede cerrar el mes: Existen $pend_count transacciones (Ingresos o Egresos) con estado 'Pendiente' o 'Por Validar'."]);
+        exit();
+    }
+
     // Proceder al cierre
     $sql_insert = "INSERT INTO cierres_mensuales (mes, anio, estado, usuario_cierre_id, fecha_cierre) VALUES (?, ?, 'cerrado', ?, NOW())";
     $stmt_insert = $conexion->prepare($sql_insert);

@@ -13,10 +13,10 @@ try {
         throw new Exception("Error de conexión: " . $conexion->connect_error);
     }
 
-    // Recibe filtros del formulario
-    $fecha_inicio = $_POST['filtro_fecha_inicio'] ?? '';
-    $fecha_fin = $_POST['filtro_fecha_fin'] ?? '';
-    $usuario_upu = isset($_POST['usuario_upu']) ? intval($_POST['usuario_upu']) : 0;
+    // Recibe filtros
+    $fecha_inicio = $_REQUEST['filtro_fecha_inicio'] ?? '';
+    $fecha_fin = $_REQUEST['filtro_fecha_fin'] ?? '';
+    $usuario_upu = isset($_REQUEST['usuario_upu']) ? ($_REQUEST['usuario_upu'] === 'all' ? 0 : intval($_REQUEST['usuario_upu'])) : 0;
 
     // Filtro de fechas
     $filtro_fecha = "";
@@ -270,10 +270,12 @@ try {
     ';
 
 
-    // Configuración de Dompdf
+    // Configuración de Dompdf Optimizado
     $options = new Options();
     $options->set('isHtml5ParserEnabled', true);
     $options->set('isRemoteEnabled', true);
+    $options->set('isFontSubsettingEnabled', true);
+    $options->set('dpi', 72);
     $options->set('chroot', realpath(__DIR__ . '/../'));
 
     $dompdf = new Dompdf($options);
@@ -298,8 +300,9 @@ try {
 
     $nombre_pdf = 'Reporte_Ingresos_Egresos_' . $nombre_upu_archivo . '_' . $periodo_archivo . '.pdf';
 
-    // Mostrar el PDF en el navegador
-    $dompdf->stream($nombre_pdf, ['Attachment' => 0]); 
+    // Mostrar el PDF o descargar
+    $attachment = (isset($_GET['download']) && $_GET['download'] == '1') ? 1 : 0;
+    $dompdf->stream($nombre_pdf, ['Attachment' => $attachment]); 
     exit;
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();

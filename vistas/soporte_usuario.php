@@ -171,6 +171,8 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                         if ($tipo === 'upu'): ?>
                             <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_INGRESO')">¿Cómo reporto Ingresos?</div>
                             <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_EGRESO')">¿Cómo reporto Egresos?</div>
+                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_CIERRE_FAIL')">¿Por qué no puedo cerrar el mes?</div>
+                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_PAGO_BLOC')">¿Por qué no puedo cargar un pago?</div>
                         <?php elseif ($tipo === 'cont'): ?>
                             <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_CONT_COMM')">¿Cómo registro comisiones?</div>
                         <?php elseif ($tipo === 'inv'): ?>

@@ -105,6 +105,12 @@ if (!$is_admin && strpos($mensaje, 'SUG_') === 0) {
         case 'SUG_UPU_EGRESO':
             $bot_response = "Para reportar egresos de UPU:<br>1. Dirígete a la barra lateral y entra al módulo <b>Pagos</b> > <b>Reportar Egreso</b>.<br>2. Selecciona detalladamente el concepto de tu gasto.<br>3. Ingresa el monto exacto debitado.<br>4. Adjunta la foto física o digital del comprobante del gasto como aval y procede a guardar.";
             break;
+        case 'SUG_UPU_CIERRE_FAIL':
+            $bot_response = "<b>Error al cerrar el mes:</b><br>El sistema bloquea el cierre si existen pagos 'Pendientes' o 'Por Validar'.<br>1. Revisa en tu tabla de <b>Saldos UPU</b> si hay montos resaltados.<br>2. Asegúrate de que Contabilidad haya liberado todos los ingresos registrados.<br>3. Una vez que el saldo pendiente sea cero, podrás ejecutar el cierre.";
+            break;
+        case 'SUG_UPU_PAGO_BLOC':
+            $bot_response = "<b>Bloqueo de Carga de Pago:</b><br>Si no puedes guardar un nuevo movimiento, es probable que el mes actual ya haya sido <b>Cerrado Contablemente</b>.<br>1. Verifica en el módulo de 'Cierre de Mes' el estado del periodo actual.<br>2. Una vez cerrado un mes, no se permiten modificaciones por seguridad e integridad financiera.";
+            break;
         case 'SUG_CONT_COMM':
             $bot_response = "Para registrar comisiones:<br>1. Accede al módulo <b>Aprobar Pagos</b> desde tu panel.<br>2. Busca el pago pendiente y pulsa el botón verde de validación.<br>3. En la ventana emergente, completa el campo 'Comisión' con el monto descontado.<br>4. Finaliza pulsando <b>Liberar Pago</b> para que se asiente la operación con la deducción correspondiente en el saldo.";
             break;
@@ -124,6 +130,8 @@ if (!$is_admin && strpos($mensaje, 'SUG_') === 0) {
             'SUG_PWD_LOST'    => 'Consulta: ¿Cómo recupero mi clave?',
             'SUG_UPU_INGRESO' => 'Consulta: ¿Cómo reporto un ingreso?',
             'SUG_UPU_EGRESO'  => 'Consulta: ¿Cómo reporto un egreso?',
+            'SUG_UPU_CIERRE_FAIL' => 'Consulta: Error al cerrar mes',
+            'SUG_UPU_PAGO_BLOC'   => 'Consulta: Pago bloqueado',
             'SUG_CONT_COMM'   => 'Consulta: ¿Cómo registro comisiones?',
             'SUG_INV_BIEN'    => 'Consulta: ¿Cómo registro un bien?',
             'SUG_GENERAL'     => 'Consulta: Otras dudas/Sugerencias'

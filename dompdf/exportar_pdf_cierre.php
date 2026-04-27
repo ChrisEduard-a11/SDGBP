@@ -333,6 +333,8 @@ try {
     $options = new Options();
     $options->set('isHtml5ParserEnabled', true);
     $options->set('isRemoteEnabled', true);
+    $options->set('isFontSubsettingEnabled', true);
+    $options->set('dpi', 72);
     $options->set('chroot', realpath(__DIR__ . '/../'));
 
     $dompdf = new Dompdf($options);
@@ -340,8 +342,8 @@ try {
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
 
-    $nombre_pdf = 'Cierre_Mensual_' . mb_strtoupper($nombre_mes, 'UTF-8') . '_' . $anio . '.pdf';
-    $dompdf->stream($nombre_pdf, ['Attachment' => 0]); 
+    $attachment = (isset($_GET['download']) && $_GET['download'] == '1') ? 1 : 0;
+    $dompdf->stream($nombre_pdf, ['Attachment' => $attachment]); 
     exit;
 } catch (Exception $e) {
     echo "Error interno al generar documento PDF: " . $e->getMessage();

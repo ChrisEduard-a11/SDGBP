@@ -244,6 +244,21 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
     }
 }
 
+// =====================================================================
+// EXPORTACIÓN DE PERÍODOS CERRADOS PARA CALENDARIOS
+// =====================================================================
+$sql_cierres = "SELECT mes, anio FROM cierres_mensuales";
+$res_cierres = mysqli_query($conexion, $sql_cierres);
+$periodos_cerrados = [];
+while ($c = mysqli_fetch_assoc($res_cierres)) {
+    $periodos_cerrados[] = $c['anio'] . '-' . str_pad($c['mes'], 2, '0', STR_PAD_LEFT);
+}
+?>
+<script>
+    window.SDGBP_CLOSED_PERIODS = <?php echo json_encode($periodos_cerrados); ?>;
+    window.USER_ROLE = "<?php echo strtolower($tipo_usuario); ?>";
+</script>
+<?php
 ?>
 <!DOCTYPE html>
     <html lang="es">
@@ -1518,4 +1533,151 @@ if ($dias_para_vencer <= 0 && $current_page !== 'nueva_clave.php' && $current_pa
                         }
                     });
                 }
+
+                // =====================================================================
+                // CONTROLADOR GLOBAL DE MODAL PREMIUM PARA REPORTES PDF
+                // =====================================================================
+                function showPremiumReport(url, title) {
+                    const modalElement = document.getElementById('premiumPDFModal');
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    const $modal = $('#premiumPDFModal');
+                    const $iframe = $('#pdfIframe');
+                    const $loading = $('#pdfLoading');
+                    const $container = $('#pdfContainer');
+                    const $title = $('#pdfModalTitle');
+                    const $downloadBtn = $('#downloadPDFBtn');
+                    const $printBtn = $('#printPDFBtn');
+
+                    // Resetear estado
+                    $title.text(title || 'Visualización de Reporte');
+                    $loading.removeClass('d-none');
+                    $container.addClass('d-none').empty(); // Limpiar contenedor por completo
+                    $downloadBtn.addClass('d-none');
+                    $printBtn.addClass('d-none');
+
+                    modal.show();
+
+                    // Detectar tema actual para el modal
+                    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                    modalElement.setAttribute('data-theme', currentTheme);
+
+                    // Construir URL con cache-buster para forzar recarga fresca
+                    const cacheBuster = '_v2026=' + new Date().getTime();
+                    const finalUrl = url + (url.includes('?') ? '&' : '?') + cacheBuster;
+
+                    // Crear nuevo Iframe dinámicamente con dimensiones explícitas
+                    const $newIframe = $('<iframe>', {
+                        id: 'pdfIframe',
+                        src: finalUrl
+                    }).css({
+                        'width': '100%',
+                        'height': '100%',
+                        'border': '1px solid rgba(0,0,0,0.1)',
+                        'border-radius': '16px',
+                        'background': '#f1f5f9'
+                    });
+
+                    $container.append($newIframe);
+                    
+                    // Timeout de seguridad
+                    let loadTriggered = false;
+                    const handleLoad = function() {
+                        if (loadTriggered) return;
+                        loadTriggered = true;
+                        
+                        $loading.addClass('d-none');
+                        $container.removeClass('d-none');
+                        
+                        // Configurar botón de descarga
+                        const downloadUrl = finalUrl + '&download=1';
+                        $downloadBtn.removeClass('d-none').attr('href', downloadUrl);
+                        $printBtn.removeClass('d-none');
+                    };
+
+                    $newIframe.on('load', handleLoad);
+                    setTimeout(handleLoad, 8000);
+
+                    // Lógica de impresión (vinculada al nuevo iframe)
+                    $printBtn.off('click').on('click', function() {
+                        try {
+                            $newIframe[0].contentWindow.focus();
+                            $newIframe[0].contentWindow.print();
+                        } catch (e) {
+                            window.open(finalUrl, '_blank').print();
+                        }
+                    });
+                }
             </script>
+
+            <!-- Estructura del Modal Premium PDF -->
+            <div class="modal fade" id="premiumPDFModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" style="z-index: 1060;">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div id="modalContentPDF" class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 24px; transition: all 0.3s ease;">
+                        <div class="modal-header border-0 bg-transparent px-4 pt-4 pb-0">
+                            <h5 class="modal-title fw-bold text-dark d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 p-2 rounded-3 me-3">
+                                    <i class="fas fa-file-pdf text-primary"></i>
+                                </div>
+                                <span id="pdfModalTitle" class="text-main">Visualización de Reporte</span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <!-- Estado de Carga Premium -->
+                            <div id="pdfLoading" class="text-center py-5 animate__animated animate__fadeIn">
+                                <div class="premium-loader mb-4">
+                                    <div class="spinner-grow text-primary" style="width: 3.5rem; height: 3.5rem;" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                </div>
+                                <h4 class="fw-bold text-main mb-2">Generando Inteligencia Financiera...</h4>
+                                <p class="text-muted small mb-4">Procesando transacciones</p>
+                                <div class="progress mt-4 mx-auto" style="height: 8px; width: 280px; border-radius: 20px; background-color: rgba(0,0,0,0.05);">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Contenedor del PDF (Iframe) -->
+                            <div id="pdfContainer" class="d-none animate__animated animate__fadeIn" style="height: 75vh;">
+                                <iframe id="pdfIframe" src="" width="100%" height="100%" style="border-radius: 16px; border: 1px solid rgba(0,0,0,0.1); background: #f1f5f9;"></iframe>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 px-4 py-4" style="background-color: rgba(0,0,0,0.02);">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-2"></i> Cerrar Vista
+                                </button>
+                                <div class="d-flex gap-2">
+                                    <a id="downloadPDFBtn" href="#" target="_blank" download class="btn btn-outline-success rounded-pill px-4 fw-bold shadow-sm d-none">
+                                        <i class="fas fa-download me-2"></i> Guardar Copia
+                                    </a>
+                                    <button id="printPDFBtn" type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-none">
+                                        <i class="fas fa-print me-2"></i> Imprimir Reporte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                /* Glassmorphism Dinámico para el Modal */
+                #modalContentPDF {
+                    background: rgba(255, 255, 255, 0.9) !important;
+                    backdrop-filter: blur(25px) saturate(180%);
+                    -webkit-backdrop-filter: blur(25px) saturate(180%);
+                    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+                }
+
+                [data-theme="dark"] #modalContentPDF {
+                    background: rgba(10, 15, 30, 0.95) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                }
+
+                #premiumPDFModal .progress-bar {
+                    background: linear-gradient(90deg, var(--accent-color), #f18000);
+                }
+
+                .text-main { color: var(--text-main) !important; }
+            </style>

@@ -97,7 +97,11 @@ $nombres_meses = [
                                 </select>
                             </div>
                             
-                            <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm rounded-pill text-dark">
+                            <div id="checkPendientes" class="mb-4">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                            
+                            <button type="submit" id="btnSellar" class="btn btn-warning w-100 fw-bold shadow-sm rounded-pill text-dark">
                                 <i class="fas fa-key me-2"></i> Sellar Mes Definitivamente
                             </button>
                         </form>
@@ -144,9 +148,9 @@ $nombres_meses = [
                                                 <?php echo htmlspecialchars($h['usuario_nombre'] ?? 'Sistema'); ?>
                                             </td>
                                             <td class="text-end text-nowrap">
-                                                <a href="../dompdf/exportar_pdf_cierre.php?id=<?php echo $h['id']; ?>" target="_blank" class="btn btn-sm btn-outline-primary shadow-sm rounded-pill font-monospace me-2">
+                                                <button type="button" onclick="showPremiumReport('../dompdf/exportar_pdf_cierre.php?id=<?php echo $h['id']; ?>', 'Resumen Mensual de Cierre')" class="btn btn-sm btn-outline-primary shadow-sm rounded-pill font-monospace me-2">
                                                     <i class="fas fa-file-pdf me-1"></i> Resumen
-                                                </a>
+                                                </button>
                                                 <?php if ($idx < 2): ?>
                                                     <button class="btn btn-sm btn-outline-danger shadow-sm rounded-pill font-monospace" onclick="reabrirMes(<?php echo $h['id']; ?>, '<?php echo $nombres_meses[$h['mes']] . ' ' . $h['anio']; ?>')">
                                                         <i class="fas fa-lock-open me-1"></i> Re-abrir
@@ -200,8 +204,44 @@ $nombres_meses = [
                 }
             }
             
-            $('#anioCierre').on('change', actualizarMesesDisponibles);
+            function checkPendientes() {
+                const anio = $('#anioCierre').val();
+                const mes = $('#mesCierre').val();
+                if (!anio || !mes) return;
+
+                $.getJSON('../acciones/verificar_pendientes_cierre.php', { mes, anio }, function(data) {
+                    let html = '';
+                    if (data.status === 'success') {
+                        if (data.total > 0) {
+                            html = `<div class="alert alert-danger bg-opacity-10 border-danger d-flex align-items-center p-3 rounded-4">
+                                <i class="fas fa-exclamation-circle fa-2x me-3 text-danger"></i>
+                                <div>
+                                    <div class="fw-bold text-danger">Acción Bloqueada</div>
+                                    <div class="small text-danger opacity-75">Hay ${data.total} transacciones (Pagos/Egresos) pendientes por validar en este periodo.</div>
+                                </div>
+                            </div>`;
+                            $('#btnSellar').prop('disabled', true).addClass('opacity-50');
+                        } else {
+                            html = `<div class="alert alert-success bg-opacity-10 border-success d-flex align-items-center p-3 rounded-4">
+                                <i class="fas fa-shield-alt fa-2x me-3 text-success"></i>
+                                <div>
+                                    <div class="fw-bold text-success">Escudo Contable Activo</div>
+                                    <div class="small text-success opacity-75">Periodo limpio. Listo para ser sellado.</div>
+                                </div>
+                            </div>`;
+                            $('#btnSellar').prop('disabled', false).removeClass('opacity-50');
+                        }
+                    }
+                    $('#checkPendientes').html(html);
+                });
+            }
+            
+            $('#anioCierre, #mesCierre').on('change', function() {
+                actualizarMesesDisponibles();
+                checkPendientes();
+            });
             actualizarMesesDisponibles();
+            checkPendientes();
 
             // Setup datatable if we have records
             if ($('#tablaCierres tbody tr td').length > 1) {

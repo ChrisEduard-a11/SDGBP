@@ -352,15 +352,15 @@ if ($result_usuarios_upu_filter->num_rows > 0) {
                 </div>
                 <h5 class="mb-0 fw-bold">Exportación de Reportes</h5>
             </div>
-            <form method="POST" action="../dompdf/exportar_pdf_I-E.php" class="row g-3 w-100" onsubmit="return validateFormExportPDF()" data-no-preloader="true">
+            <form id="formExportPDF" class="row g-3 w-100">
                 <div class="col-6 col-md-3">
-                    <input type="text" name="filtro_fecha_inicio" class="form-control border-0 bg-light rounded-3 datepicker-flat w-100" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio; ?>">
+                    <input type="text" id="pdf_fecha_inicio" name="filtro_fecha_inicio" class="form-control border-0 bg-light rounded-3 datepicker-flat w-100" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio; ?>">
                 </div>
                 <div class="col-6 col-md-3">
-                    <input type="text" name="filtro_fecha_fin" class="form-control border-0 bg-light rounded-3 datepicker-flat w-100" placeholder="YYYY-MM-DD" value="<?php echo $fecha_fin; ?>">
+                    <input type="text" id="pdf_fecha_fin" name="filtro_fecha_fin" class="form-control border-0 bg-light rounded-3 datepicker-flat w-100" placeholder="YYYY-MM-DD" value="<?php echo $fecha_fin; ?>">
                 </div>
                 <div class="col-12 col-md-4">
-                    <select name="usuario_upu" class="form-select border-0 bg-light rounded-3 w-100">
+                    <select id="pdf_usuario_upu" name="usuario_upu" class="form-select border-0 bg-light rounded-3 w-100">
                         <option value="">Seleccionar UPU...</option>
                         <option value="all">Todas las UPU</option>
                         <?php
@@ -374,7 +374,7 @@ if ($result_usuarios_upu_export->num_rows > 0) {
                     </select>
                 </div>
                 <div class="col-12 col-md-2">
-                    <button type="submit" class="btn btn-success w-100 rounded-pill shadow-sm fw-bold">
+                    <button type="button" onclick="launchIEPDF()" class="btn btn-success w-100 rounded-pill shadow-sm fw-bold">
                         <i class="fas fa-download me-2"></i> Reporte PDF
                     </button>
                 </div>
@@ -516,9 +516,9 @@ endif; ?>
                     <h5 class="mb-0 fw-bold">Saldos Disponibles por UPU</h5>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="../dompdf/exportar_pdf_saldos.php" target="_blank" class="btn btn-outline-danger rounded-pill shadow-sm fw-bold">
+                    <button type="button" onclick="showPremiumReport('../dompdf/exportar_pdf_saldos.php', 'Estado de Saldos UPU')" class="btn btn-outline-danger rounded-pill shadow-sm fw-bold">
                         <i class="fas fa-file-pdf me-2"></i> PDF
-                    </a>
+                    </button>
                     <a href="exportar_excel_saldos.php" class="btn btn-outline-success rounded-pill shadow-sm fw-bold">
                         <i class="fas fa-file-excel me-2"></i> Excel
                     </a>
@@ -702,6 +702,21 @@ endif; ?>
                 }
             });
         }
+
+        // Función para lanzar Reporte I-E con Modal
+        window.launchIEPDF = function() {
+            const fecha_inicio = $('#pdf_fecha_inicio').val();
+            const fecha_fin = $('#pdf_fecha_fin').val();
+            const upu = $('#pdf_usuario_upu').val();
+            
+            if (!fecha_inicio || !fecha_fin) {
+                Swal.fire('Atención', 'Por favor selecciona un rango de fechas completo.', 'warning');
+                return;
+            }
+            
+            const url = `../dompdf/exportar_pdf_I-E.php?filtro_fecha_inicio=${fecha_inicio}&filtro_fecha_fin=${fecha_fin}&usuario_upu=${upu}`;
+            showPremiumReport(url, 'Reporte de Ingresos y Egresos');
+        };
     });
 </script>
 

@@ -175,10 +175,12 @@ $html = '<!DOCTYPE html>
 </body>
 </html>';
 
-// Configurar y generar el PDF
+// Configurar y generar el PDF Optimizado
 $options = new Options();
 $options->set('isHtml5ParserEnabled', true);
 $options->set('isRemoteEnabled', true);
+$options->set('isFontSubsettingEnabled', true);
+$options->set('dpi', 72);
 $options->set('chroot', realpath(__DIR__ . '/../'));
 
 $dompdf = new Dompdf($options);
@@ -187,5 +189,6 @@ $dompdf->setPaper('A4', 'portrait');
 $dompdf->loadHtml($html);
 $dompdf->render();
 
-$dompdf->stream("Reporte_Saldos_UPU.pdf", array("Attachment" => false));
+$attachment = (isset($_GET['download']) && $_GET['download'] == '1') ? 1 : 0;
+$dompdf->stream("Reporte_Saldos_UPU.pdf", array("Attachment" => $attachment));
 ?>

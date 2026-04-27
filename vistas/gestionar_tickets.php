@@ -441,6 +441,8 @@ if ($resAlertas) {
                             <div class="premium-chip" onclick="insertQuickReply('El comprobante de ingreso anexo es ilegible o los datos de referencia no concuerdan. Por favor vuelve a reportarlo adecuadamente.')">Rechazo de Ingreso / Incoherencia</div>
                             <div class="premium-chip" onclick="insertQuickReply('Recuerde que antes de liberar el pago (CONT), debe fijar la comisión bancaria correspondiente en el formulario si esta aplica.')">Aviso de Comisión (Contabilidad)</div>
                             <div class="premium-chip" onclick="insertQuickReply('Por favor indica claramente el concepto específico de este egreso reportado y vuelve a adjuntar o actualizar su respectiva factura/constancia.')">Indicar Concepto de Egreso</div>
+                            <div class="premium-chip" onclick="insertQuickReply('Para cerrar el mes, asegúrese de que todos los ingresos y egresos hayan sido validados por contabilidad. Si hay pendientes, el sistema bloqueará el cierre por seguridad.')">Control Cierre de Mes (Pdt.)</div>
+                            <div class="premium-chip" onclick="insertQuickReply('El sistema no permite cargar pagos en meses que ya han sido cerrados contablemente. Esto protege la integridad de los reportes ya generados.')">Bloqueo por Mes Cerrado</div>
 
                             <div class="fw-bold mt-2 mb-2 pb-2 border-bottom text-muted" style="font-size:0.8rem;"><i class="fas fa-box text-secondary me-1"></i> Bienes e Inventario</div>
                             <div class="premium-chip" onclick="insertQuickReply('Para registrar o aprobar la desincorporación de este bien, necesitamos estrictamente la foto legible de su placa de inventario.')">Pedir Placa de Bien</div>
