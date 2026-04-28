@@ -33,19 +33,19 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
     .tk-item:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.04); border-color: rgba(241,128,0,0.1); }
     .tk-item.active { background: white; border-color: var(--brand-orange); border-left-width: 5px; box-shadow: 0 8px 25px rgba(241,128,0,0.12); }
     
-    .tk-list-panel { width: 360px; border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; background: rgba(255,255,255,0.4); }
-    .tk-list-header {
-        padding: 18px 28px; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6);
+    .tk-list-panel { width: 320px; flex-shrink: 0; border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; background: rgba(255,255,255,0.4); }
+    .tk-list-header { 
+        padding: 18px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6);
         display: flex; justify-content: space-between; align-items: center; min-height: 85px;
     }
-    .tk-chat-panel { flex: 1; display: flex; flex-direction: column; background: transparent; }
+    .tk-chat-panel { flex: 1; display: flex; flex-direction: column; background: transparent; min-width: 0; }
     
     .tk-chat-header {
         padding: 18px 28px; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6);
         display: flex; justify-content: space-between; align-items: center; min-height: 85px;
     }
-    .tk-chat-body { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
-    .tk-chat-footer { padding: 20px 28px; border-top: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6); display: flex; gap: 15px; align-items: center; }
+    .tk-chat-body { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .tk-chat-footer { padding: 15px 20px; border-top: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6); display: flex; gap: 10px; align-items: center; }
     
     .tk-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; }
 
@@ -61,10 +61,15 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
     [data-theme="dark"] .bubble-theirs { background: #1e293b; color: #f8fafc; border-color: #334155; }
 
     @media (max-width: 768px) {
-        .tk-list-panel { width: 100%; border-right: none; }
-        .tk-chat-panel { position: fixed; inset: 0; z-index: 1050; display: none; background: #fff; }
+        .tk-container { height: calc(100vh - 120px); min-height: 450px; border-radius: 0; margin: -1.5rem; width: calc(100% + 3rem); border: transparent; }
+        .tk-list-panel { width: 100%; border-right: none; height: 100%; }
+        .tk-chat-panel { position: fixed; inset: 0; z-index: 2000; display: none; background: #f8fafc; height: 100vh; width: 100vw; }
         [data-theme="dark"] .tk-chat-panel { background: #0f172a; }
         .tk-chat-panel.active { display: flex; }
+        .tk-chat-header { min-height: 70px; padding: 12px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .tk-chat-footer { padding: 10px 12px; }
+        .tk-chip { padding: 8px 16px; font-size: 0.8rem; }
+        #tk-suggestions-container { padding: 12px; gap: 10px; background: rgba(255, 255, 255, 0.95); }
     }
 </style>
 
@@ -154,31 +159,46 @@ while ($row = mysqli_fetch_assoc($resTickets)) {
                     </div>
                     
                     <!-- Suggestion Chips for Registered Users -->
-                    <div id="tk-suggestions-container" class="px-3 py-3 bg-white border-top d-none" style="display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; z-index: 5; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px);">
+                    <div id="tk-suggestions-container" class="px-3 py-3 border-top d-none" style="display: flex; flex-wrap: wrap; gap: 8px; z-index: 5; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
                         <style>
-                            #tk-suggestions-container::-webkit-scrollbar { display: none; }
                             .tk-chip {
-                                display: inline-block; padding: 7px 18px; background: #fff; color: #1e293b;
-                                border: 1px solid #e2e8f0; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
-                                cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;
-                                box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+                                flex: 1 1 calc(50% - 8px);
+                                display: flex; align-items: center; justify-content: center;
+                                text-align: center; padding: 6px 10px; background: #fff; color: #1e293b;
+                                border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.75rem; font-weight: 600;
+                                cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.03); min-height: 38px; line-height: 1.1;
                             }
                             .tk-chip:hover { background: #f18000; color: white; border-color: #f18000; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(241,128,0,0.2); }
                             .tk-chip.loading { opacity: 0.6; pointer-events: none; background: #f1f5f9; }
+                            
+                            @media (max-width: 576px) {
+                                .tk-chip { flex: 1 1 100%; }
+                            }
+
+                            [data-theme="dark"] .tk-chip {
+                                background: rgba(30, 41, 59, 0.8);
+                                color: #f8fafc;
+                                border-color: rgba(255, 255, 255, 0.1);
+                            }
+                            [data-theme="dark"] .tk-chip:hover {
+                                background: #f18000;
+                            }
                         </style>
                         <?php 
                         $tipo = $_SESSION['tipo'] ?? '';
                         if ($tipo === 'upu'): ?>
-                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_INGRESO')">¿Cómo reporto Ingresos?</div>
-                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_EGRESO')">¿Cómo reporto Egresos?</div>
-                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_CIERRE_FAIL')">¿Por qué no puedo cerrar el mes?</div>
-                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_PAGO_BLOC')">¿Por qué no puedo cargar un pago?</div>
+                            <div class="tk-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_INGRESO')">¿Cómo reporto Ingresos?</div>
+                            <div class="tk-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_EGRESO')">¿Cómo reporto Egresos?</div>
+                            <div class="tk-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_REPORTE')">¿Cómo descargo mi reporte de pagos?</div>
+                            <div class="tk-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_CIERRE_FAIL')">¿Por qué mi mes sigue pendiente?</div>
+                            <div class="tk-chip" onclick="tkSendSuggestion(this, 'SUG_UPU_PAGO_BLOC')">¿Por qué no puedo cargar un pago?</div>
                         <?php elseif ($tipo === 'cont'): ?>
-                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_CONT_COMM')">¿Cómo registro comisiones?</div>
+                            <div class="tk-chip" onclick="tkSendSuggestion(this, 'SUG_CONT_COMM')">¿Cómo registro comisiones?</div>
                         <?php elseif ($tipo === 'inv'): ?>
-                            <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_INV_BIEN')">¿Cómo registro un bien?</div>
+                            <div class="tk-chip" onclick="tkSendSuggestion(this, 'SUG_INV_BIEN')">¿Cómo registro un bien?</div>
                         <?php endif; ?>
-                        <div class="premium-chip" onclick="tkSendSuggestion(this, 'SUG_GENERAL')">Otras dudas</div>
+                        <div class="tk-chip" onclick="tkSendSuggestion(this, 'SUG_GENERAL')">Otras dudas</div>
                     </div>
 
                     <div class="tk-chat-footer" id="tk-footer" style="position:relative;">

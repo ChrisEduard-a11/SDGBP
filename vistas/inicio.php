@@ -496,37 +496,59 @@ if ($tipo_usuario == "admin") {
         </div>
         
         <h3 class="mb-4 mt-5 text-dark section-title"><i class="fas fa-book-reader text-primary me-2"></i> Documentación y Ayuda</h3>
+        <?php
+            $tipo_sesion = $_SESSION["tipo"] ?? 'upu';
+            $manual_rol = "Manual_General_SDGBP.pdf";
+            $titulo_rol = "Manual de Usuario";
+            $desc_rol = "Guía completa del sistema para gestión operativa.";
+            
+            if ($tipo_sesion == 'upu') {
+                $manual_rol = "Manual_UPU_SDGBP.pdf";
+                $titulo_rol = "Guía del Productor (UPU)";
+                $desc_rol = "Instrucciones para reporte de pagos y gestión de cuenta personal.";
+            } else if ($tipo_sesion == 'inv') {
+                $manual_rol = "Manual_INV_SDGBP.pdf";
+                $titulo_rol = "Guía de Inventario (INV)";
+                $desc_rol = "Manual técnico para el registro y control de activos físicos.";
+            } else if ($tipo_sesion == 'cont') {
+                $manual_rol = "Manual_CONT_SDGBP.pdf";
+                $titulo_rol = "Guía Contable (CONT)";
+                $desc_rol = "Procedimientos para auditoría de pagos y cierres financieros.";
+            } else if ($tipo_sesion == 'admin') {
+                $manual_rol = "Manual_General_SDGBP.pdf";
+                $titulo_rol = "Manual Maestro (ADMIN)";
+                $desc_rol = "Documentación total del sistema y herramientas administrativas.";
+            }
+        ?>
         <div class="row g-4 mb-5">
 
-            <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.4s;">
+            <div class="col-xl-6 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.4s;">
                 <div class="card metric-card bg-gradient-secondary h-100 shadow-lg">
                     <div class="card-body p-4 d-flex flex-column position-relative">
-                        <h4 class="card-title text-white fw-bold mb-3"><i class="fas fa-user-graduate me-2"></i> Manual de Usuario</h4>
-                        <p class="card-text text-white opacity-75 mb-4 fw-medium">Guía detallada para el uso correcto de todas las funciones accesibles.</p>
+                        <h4 class="card-title text-white fw-bold mb-3"><i class="fas fa-user-graduate me-2"></i> <?php echo $titulo_rol; ?></h4>
+                        <p class="card-text text-white opacity-75 mb-4 fw-medium"><?php echo $desc_rol; ?></p>
                         <i class="fas fa-book-open metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" onclick="window.open('../manuales/Manual_del_Usuario.pdf', '_blank')" style="cursor:pointer;"><i class="fas fa-file-pdf text-white me-1"></i> Ver/Descargar</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" onclick="window.open('../manuales/<?php echo $manual_rol; ?>', '_blank')" style="cursor:pointer;"><i class="fas fa-file-pdf text-white me-1"></i> Ver/Descargar Manual de Rol</a>
                         <div class="small text-white"><i class="fas fa-external-link-alt"></i></div>
                     </div>
                 </div>
             </div>
             
-            <?php if ($_SESSION["tipo"] == "admin") { ?>
-            <div class="col-xl-4 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.5s;">
+            <div class="col-xl-6 col-md-6 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.5s;">
                 <div class="card metric-card bg-gradient-success-alt h-100 shadow-lg">
                     <div class="card-body p-4 d-flex flex-column position-relative">
-                        <h4 class="card-title text-white fw-bold mb-3"><i class="fas fa-tools me-2"></i> Manual del Sistema</h4>
-                        <p class="card-text text-white opacity-75 mb-4 fw-medium">Información técnica y de configuración para la administración total.</p>
+                        <h4 class="card-title text-white fw-bold mb-3"><i class="fas fa-globe me-2"></i> Manual General</h4>
+                        <p class="card-text text-white opacity-75 mb-4 fw-medium">Documentación exhaustiva que abarca todos los módulos del ecosistema SDGBP.</p>
                         <i class="fas fa-laptop-code metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" onclick="window.open('../manuales/Manual_del_Software.pdf', '_blank')" style="cursor:pointer;"><i class="fas fa-file-pdf text-white me-1"></i> Ver/Descargar</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" onclick="window.open('../manuales/Manual_General_SDGBP.pdf', '_blank')" style="cursor:pointer;"><i class="fas fa-file-pdf text-white me-1"></i> Ver Manual Completo</a>
                         <div class="small text-white"><i class="fas fa-external-link-alt"></i></div>
                     </div>
                 </div>
             </div>
-            <?php } ?>
 
             <?php
                 $is_admin_dash = ($_SESSION["tipo"] === "admin");

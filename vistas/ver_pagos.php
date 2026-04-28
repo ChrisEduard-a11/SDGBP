@@ -406,16 +406,16 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
                             <h5 class="fw-bold mb-0 text-success"><i class="fas fa-file-export me-2"></i> Reportes Contables</h5>
                             <p class="text-muted small mb-0">Generar balance de ingresos y egresos en formato PDF</p>
                         </div>
-                        <form method="POST" action="../dompdf/exportar_pdf_I-E_UPU.php" id="form-exportar" class="row g-2 w-100" target="_blank" onsubmit="return validateFormExportPDF()" data-no-preloader="true">
+                        <form id="form-exportar" class="row g-2 w-100">
                             <div class="col-6 col-md-auto">
-                                <input type="text" name="filtro_fecha_inicio" class="form-control form-control-sm rounded-3 w-100 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio ?: date('Y-m-01'); ?>" title="Fecha Inicio">
+                                <input type="text" id="filtro_fecha_inicio_pdf" name="filtro_fecha_inicio" class="form-control form-control-sm rounded-3 w-100 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio ?: date('Y-m-01'); ?>" title="Fecha Inicio">
                             </div>
                             <div class="col-6 col-md-auto">
-                                <input type="text" name="filtro_fecha_fin" class="form-control form-control-sm rounded-3 w-100 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_fin ?: date('Y-m-d'); ?>" title="Fecha Fin">
+                                <input type="text" id="filtro_fecha_fin_pdf" name="filtro_fecha_fin" class="form-control form-control-sm rounded-3 w-100 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_fin ?: date('Y-m-d'); ?>" title="Fecha Fin">
                             </div>
-                            <input type="hidden" name="usuario_upu" value="<?php echo $_SESSION['id']; ?>">
+                            <input type="hidden" id="usuario_upu_pdf" name="usuario_upu" value="<?php echo $_SESSION['id']; ?>">
                             <div class="col-12 col-md-auto">
-                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 shadow-sm w-100">
+                                <button type="button" onclick="launchPremiumIE()" class="btn btn-success btn-sm rounded-pill px-4 shadow-sm w-100">
                                     <i class="fas fa-file-pdf me-1"></i> Exportar PDF
                                 </button>
                             </div>
@@ -727,6 +727,21 @@ endif; ?>
             background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#fff',
             color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#1e293b'
         });
+    }
+
+    // Función para lanzar Reporte I-E con Modal Premium
+    function launchPremiumIE() {
+        const fecha_inicio = $('#filtro_fecha_inicio_pdf').val();
+        const fecha_fin = $('#filtro_fecha_fin_pdf').val();
+        const upu = $('#usuario_upu_pdf').val();
+        
+        if (!fecha_inicio || !fecha_fin) {
+            Swal.fire('Atención', 'Por favor selecciona un rango de fechas.', 'warning');
+            return;
+        }
+        
+        const url = `../dompdf/exportar_pdf_I-E_UPU.php?filtro_fecha_inicio=${fecha_inicio}&filtro_fecha_fin=${fecha_fin}&usuario_upu=${upu}`;
+        showPremiumReport(url, 'Reporte de Ingresos y Egresos');
     }
 </script>
 

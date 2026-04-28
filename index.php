@@ -208,9 +208,6 @@ if (file_exists($configFile)) {
                         <a href="vistas/login.php" class="inline-flex justify-center items-center px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl font-bold text-lg shadow-[0_10px_25px_rgba(241,128,0,0.3)] hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(241,128,0,0.4)] transition-all">
                             Comenzar Ahora <i class="fas fa-arrow-right ml-2"></i>
                         </a>
-                        <button onclick="document.getElementById('manualModal').classList.remove('hidden')" class="inline-flex justify-center items-center px-8 py-4 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 rounded-2xl font-bold text-lg hover:-translate-y-1 shadow-sm transition-all focus:outline-none">
-                            <i class="fa-solid fa-book mr-2"></i> Manual de Usuario
-                        </button>
                     </div>
                 </div>
                 
@@ -615,23 +612,7 @@ if (file_exists($configFile)) {
     </script>
     <?php endif; ?>
 
-    <!-- Manual PDF Modal -->
-    <div id="manualModal" class="fixed inset-0 z-[100] hidden">
-        <div class="fixed inset-0 modal-overlay" onclick="document.getElementById('manualModal').classList.add('hidden')"></div>
-        <div class="fixed inset-0 p-4 sm:p-6 lg:p-10 flex items-center justify-center pointer-events-none">
-            <div class="bg-white dark:bg-slate-900 rounded-[2rem] w-full max-w-6xl h-full pb-8 shadow-2xl overflow-hidden flex flex-col pointer-events-auto border border-slate-200 dark:border-slate-800">
-                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                    <h3 class="font-bold text-lg text-slate-800 dark:text-white"><i class="fas fa-book text-brand-500 mr-2"></i> Documentación de Referencia</h3>
-                    <button onclick="document.getElementById('manualModal').classList.add('hidden')" class="text-slate-400 hover:text-red-500 w-8 h-8 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center transition-colors shadow-sm">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="flex-grow w-full bg-slate-100 dark:bg-slate-950">
-                    <iframe src="manuales/Manual_del_Usuario.pdf" class="w-full h-full"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Javascript Handlers -->
     <script>

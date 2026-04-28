@@ -105,11 +105,14 @@ if (!$is_admin && strpos($mensaje, 'SUG_') === 0) {
         case 'SUG_UPU_EGRESO':
             $bot_response = "Para reportar egresos de UPU:<br>1. Dirígete a la barra lateral y entra al módulo <b>Pagos</b> > <b>Reportar Egreso</b>.<br>2. Selecciona detalladamente el concepto de tu gasto.<br>3. Ingresa el monto exacto debitado.<br>4. Adjunta la foto física o digital del comprobante del gasto como aval y procede a guardar.";
             break;
+        case 'SUG_UPU_REPORTE':
+            $bot_response = "Para generar tu reporte PDF:<br>1. Dirígete a <b>Pagos</b> > <b>Ver Historial</b>.<br>2. En la sección superior 'Reportes Contables', selecciona el rango de fechas.<br>3. Haz clic en <b>Exportar PDF</b>. Se abrirá un visor premium donde podrás revisar, imprimir o descargar tu reporte oficial.";
+            break;
         case 'SUG_UPU_CIERRE_FAIL':
-            $bot_response = "<b>Error al cerrar el mes:</b><br>El sistema bloquea el cierre si existen pagos 'Pendientes' o 'Por Validar'.<br>1. Revisa en tu tabla de <b>Saldos UPU</b> si hay montos resaltados.<br>2. Asegúrate de que Contabilidad haya liberado todos los ingresos registrados.<br>3. Una vez que el saldo pendiente sea cero, podrás ejecutar el cierre.";
+            $bot_response = "<b>Estado de Mes Pendiente:</b><br>Si tu mes aún no se ha formalizado, es porque existen pagos 'Pendientes' o 'Por Validar' en tu registro.<br>1. Revisa en tu tabla de <b>Saldos UPU</b> si hay montos resaltados en naranja.<br>2. Contacta a un administrador o contador para que aprueben tus ingresos y egresos recientes.<br>3. Una vez que el personal administrativo valide tus movimientos, el mes podrá ser sellado por la gerencia.";
             break;
         case 'SUG_UPU_PAGO_BLOC':
-            $bot_response = "<b>Bloqueo de Carga de Pago:</b><br>Si no puedes guardar un nuevo movimiento, es probable que el mes actual ya haya sido <b>Cerrado Contablemente</b>.<br>1. Verifica en el módulo de 'Cierre de Mes' el estado del periodo actual.<br>2. Una vez cerrado un mes, no se permiten modificaciones por seguridad e integridad financiera.";
+            $bot_response = "<b>Bloqueo de Registro:</b><br>Si el sistema no te permite guardar un nuevo pago, significa que la administración ya ha <b>Cerrado el Periodo</b> correspondiente.<br>1. Por seguridad contable, una vez que un mes es sellado, no se permiten nuevos registros en esa fecha.<br>2. Si necesitas reportar algo urgente de un mes cerrado, por favor explícalo en este chat para que un administrador evalúe tu caso.";
             break;
         case 'SUG_CONT_COMM':
             $bot_response = "Para registrar comisiones:<br>1. Accede al módulo <b>Aprobar Pagos</b> desde tu panel.<br>2. Busca el pago pendiente y pulsa el botón verde de validación.<br>3. En la ventana emergente, completa el campo 'Comisión' con el monto descontado.<br>4. Finaliza pulsando <b>Liberar Pago</b> para que se asiente la operación con la deducción correspondiente en el saldo.";
@@ -119,26 +122,27 @@ if (!$is_admin && strpos($mensaje, 'SUG_') === 0) {
             break;
     }
 
+    // Map SUG_ codes to readable labels for the database entry
+    $mapping = [
+        'SUG_ACCESS_FAIL' => 'Consulta: No puedo acceder',
+        'SUG_USER_LOST'   => 'Consulta: ¿Cómo recupero mi usuario?',
+        'SUG_PWD_LOST'    => 'Consulta: ¿Cómo recupero mi clave?',
+        'SUG_UPU_INGRESO' => 'Consulta: ¿Cómo reporto un ingreso?',
+        'SUG_UPU_EGRESO'  => 'Consulta: ¿Cómo reporto un egreso?',
+        'SUG_UPU_REPORTE' => 'Consulta: ¿Cómo descargo mi reporte?',
+        'SUG_UPU_CIERRE_FAIL' => 'Consulta: Estado de mes pendiente',
+        'SUG_UPU_PAGO_BLOC'   => 'Consulta: Registro bloqueado',
+        'SUG_CONT_COMM'   => 'Consulta: ¿Cómo registro comisiones?',
+        'SUG_INV_BIEN'    => 'Consulta: ¿Cómo registro un bien?',
+        'SUG_GENERAL'     => 'Consulta: Otras dudas/Sugerencias'
+    ];
+    if (isset($mapping[$mensaje])) {
+        $mensaje = $mapping[$mensaje];
+    }
+
     if (!empty($bot_response)) {
         $bot_response_db = mysqli_real_escape_string($conexion, $bot_response);
         $post_messages[] = "INSERT INTO soporte_mensajes (id_ticket, enviado_por, mensaje) VALUES ('$id_ticket', 'admin', '$bot_response_db')";
-        
-        // Map SUG_ codes to readable labels for the database entry
-        $mapping = [
-            'SUG_ACCESS_FAIL' => 'Consulta: No puedo acceder',
-            'SUG_USER_LOST'   => 'Consulta: ¿Cómo recupero mi usuario?',
-            'SUG_PWD_LOST'    => 'Consulta: ¿Cómo recupero mi clave?',
-            'SUG_UPU_INGRESO' => 'Consulta: ¿Cómo reporto un ingreso?',
-            'SUG_UPU_EGRESO'  => 'Consulta: ¿Cómo reporto un egreso?',
-            'SUG_UPU_CIERRE_FAIL' => 'Consulta: Error al cerrar mes',
-            'SUG_UPU_PAGO_BLOC'   => 'Consulta: Pago bloqueado',
-            'SUG_CONT_COMM'   => 'Consulta: ¿Cómo registro comisiones?',
-            'SUG_INV_BIEN'    => 'Consulta: ¿Cómo registro un bien?',
-            'SUG_GENERAL'     => 'Consulta: Otras dudas/Sugerencias'
-        ];
-        if (isset($mapping[$mensaje])) {
-            $mensaje = $mapping[$mensaje];
-        }
     }
 }
 

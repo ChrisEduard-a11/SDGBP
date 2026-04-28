@@ -90,6 +90,14 @@ try {
         <polyline points="800,90 830,65 850,55" fill="none" stroke="#f18000" stroke-width="1" stroke-opacity="0.3" />
     </svg>';
     $base64_banner = 'data:image/svg+xml;base64,' . base64_encode(trim($svg_banner));
+    
+    // Logo Corporativo en Base64 para máxima compatibilidad en InfinityFree
+    $logo_path = '../img/Logo-OP2_V4.png';
+    $logo_base64 = '';
+    if (file_exists($logo_path)) {
+        $logo_data = base64_encode(file_get_contents($logo_path));
+        $logo_base64 = 'data:image/png;base64,' . $logo_data;
+    }
 
     $html = '<!DOCTYPE html>
     <html lang="es">
@@ -137,7 +145,7 @@ try {
             <table style="width: 100%;">
                 <tr>
                     <td style="width: 25%;">
-                        <img src="../img/Logo-OP2_V4.png" alt="Logo" style="height: 65px; border-radius: 8px; background: white; padding: 2px;">
+                        <img src="' . $logo_base64 . '" alt="Logo" style="height: 65px; border-radius: 8px; background: white; padding: 2px;">
                     </td>
                     <td style="width: 75%; text-align: right;">
                         <h1 class="company-name ">EURIPYS 2024 C.A.</h1>

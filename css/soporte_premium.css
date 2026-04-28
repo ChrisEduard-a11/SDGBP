@@ -26,8 +26,8 @@
 
 /* Chat Bubble styles */
 .chat-bubble {
-    max-width: 80%;
-    padding: 14px 20px;
+    max-width: 75%;
+    padding: 12px 18px;
     border-radius: var(--chat-bubble-radius);
     position: relative;
     font-size: 0.95rem;
@@ -130,7 +130,9 @@
 /* Responsive Mobile Scaling */
 @media (max-width: 768px) {
     .chat-bubble {
-        max-width: 90%;
+        max-width: 85%;
+        padding: 10px 14px;
+        font-size: 0.9rem;
     }
 }
 
