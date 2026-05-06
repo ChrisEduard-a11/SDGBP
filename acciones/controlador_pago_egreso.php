@@ -1,6 +1,7 @@
 <?php
 session_start();
 include('../conexion.php'); // Conexión a la base de datos
+global $conexion;
 include_once('../models/bitacora.php'); // Bitácora
 include_once('../models/notificaciones.php'); // Sistema de notificaciones
 require '../PHPMailer/src/PHPMailer.php';
@@ -40,10 +41,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Eliminar el token de la sesión para evitar re-procesamiento
     unset($_SESSION['form_tokens'][$token]);
 
+    // Inicializar variables y sentencias para el bloque finally
+    $estado_cierre = null;
+    $stmt_cierre_actual = null;
+    $stmt_cierre_ant = null;
+    $stmt_verif_fecha = null;
+    $stmt_lookup = null;
+    $stmt_new = null;
+    $stmt_fav = null;
+    $stmt_saldo = null;
+    $stmt_pago = null;
+    $stmt_upu = null;
+    $stmt_update_saldo = null;
+    $stmt_relacion = null;
+    $stmt_correo = null;
+    $stmt_nombre_cliente = null;
+
     // Validar campos obligatorios
     $usuario_id = $_POST["usuario_id"];
     $nombre_usuario = $_SESSION["nombre"];
-    $monto_raw = $_POST["monto"];
+    $monto_raw = $_POST["monto"] ?? "0";
     // Inteligente: Solo quitar puntos si hay comas (formato 1.234,56)
     if (strpos($monto_raw, ',') !== false) {
         $monto_clean = str_replace('.', '', $monto_raw);
@@ -52,10 +69,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $monto_clean = $monto_raw;
     }
     $monto = number_format((float)$monto_clean, 2, '.', '');
-    $descripcion = mysqli_real_escape_string($conexion, $_POST["descripcion"] ?? null);
-    $referencia = mysqli_real_escape_string($conexion, $_POST["referencia"]);
-    $fecha_pago = mysqli_real_escape_string($conexion, $_POST["fecha_pago"]);
-    $metodo_pago = mysqli_real_escape_string($conexion, $_POST["metodo_pago"]);
+    $descripcion = $_POST["descripcion"] ?? null;
+    $referencia = $_POST["referencia"] ?? '';
+    $fecha_pago = $_POST["fecha_pago"] ?? '';
+    $metodo_pago = $_POST["metodo_pago"] ?? '';
+    $forma_pago = $_POST["forma_pago"] ?? '';
+    $save_client_db = isset($_POST["save_client_db"]);
     
     // CAPTURA DEL VALOR DEL CLIENTE
     $cliente_input = $_POST["cliente"];
@@ -71,10 +90,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_cierre_actual = $conexion->prepare($sql_cierre_actual);
     $stmt_cierre_actual->bind_param("ii", $mes_pago, $anio_pago);
     $stmt_cierre_actual->execute();
-    $res_cierre_actual = $stmt_cierre_actual->get_result();
-    if ($res_cierre_actual->num_rows > 0) {
-        $row_cierre = $res_cierre_actual->fetch_assoc();
-        if ($row_cierre['estado'] === 'cerrado') {
+    $stmt_cierre_actual->bind_result($estado_cierre);
+    if ($stmt_cierre_actual->fetch()) {
+        if ($estado_cierre === 'cerrado') {
             respond("warning", "Error: No se pueden registrar pagos en un mes que ya ha sido cerrado.", "../vistas/registro_pagos_egresos.php");
         }
     }
@@ -90,26 +108,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_cierre_ant = $conexion->prepare($sql_cierre_ant);
     $stmt_cierre_ant->bind_param("ii", $mes_anterior, $anio_anterior);
     $stmt_cierre_ant->execute();
-    $res_cierre_ant = $stmt_cierre_ant->get_result();
-    if ($res_cierre_ant->num_rows === 0) {
+    $stmt_cierre_ant->store_result();
+    if ($stmt_cierre_ant->num_rows === 0) {
+        $stmt_cierre_ant->close();
         respond("warning", "Error: No puedes cargar pagos para este mes. El departamento contable aún no ha cerrado el mes anterior.", "../vistas/registro_pagos_egresos.php");
     }
+    $stmt_cierre_ant->close();
+    $stmt_cierre_ant = null;
     // -----------------------------------
 
     // Verificar si el cliente está relacionado (SOLO SI NO ES "No Aplica")
-    if (!$es_no_aplica) {
-        $cliente_id = mysqli_real_escape_string($conexion, $cliente_input);
-        $sql_cliente_usuario = "SELECT * FROM usuario_pagos WHERE usuario_id = ? AND cliente_id = ?";
-        $stmt_cliente_usuario = $conexion->prepare($sql_cliente_usuario);
-        $stmt_cliente_usuario->bind_param("ii", $usuario_id, $cliente_id);
-        $stmt_cliente_usuario->execute();
-        $result_cliente_usuario = $stmt_cliente_usuario->get_result();
+    $cliente_id_rel = null;
+    $nombre_cliente = trim($cliente_input);
 
-        if ($result_cliente_usuario->num_rows === 0) {
-            respond("warning", "Error: El cliente seleccionado no está asociado a tu cuenta.", "../vistas/registro_pagos_egresos.php");
-        }
+    if ($es_no_aplica) {
+        $nombre_cliente = "No Aplica";
+        $cliente_id_rel = null;
     } else {
-        $cliente_id = null; // Para la tabla usuario_pagos guardaremos NULL
+        if (empty($nombre_cliente)) {
+            respond("warning", "Error: El nombre del cliente no puede estar vacío.", "../vistas/registro_pagos_egresos.php");
+        }
+
+        // Primero revisamos si el nombre YA existe como un cliente vinculado a este usuario
+        $sql_lookup = "SELECT c.id_cliente FROM cliente c 
+                       INNER JOIN usuario_pagos up ON c.id_cliente = up.cliente_id 
+                       WHERE up.usuario_id = ? AND c.nombre = ? LIMIT 1";
+        $stmt_lookup = $conexion->prepare($sql_lookup);
+        $stmt_lookup->bind_param("is", $usuario_id, $nombre_cliente);
+        $stmt_lookup->execute();
+        $found_id = null;
+        $stmt_lookup->bind_result($found_id);
+        
+        if ($stmt_lookup->fetch()) {
+            $cliente_id_rel = $found_id;
+        }
+        $stmt_lookup->free_result();
+        $stmt_lookup->close();
+        $stmt_lookup = null;
+
+        // Si no existe y es UPU y pidió guardar, lo registramos
+        if (!$cliente_id_rel && $save_client_db && $_SESSION['tipo'] === 'upu') {
+            $stmt_new = $conexion->prepare("INSERT INTO cliente (nombre) VALUES (?)");
+            $stmt_new->bind_param("s", $nombre_cliente);
+            $stmt_new->execute();
+            $cliente_id_rel = $conexion->insert_id;
+
+            $stmt_fav = $conexion->prepare("INSERT INTO usuario_pagos (usuario_id, cliente_id) VALUES (?, ?)");
+            $stmt_fav->bind_param("ii", $usuario_id, $cliente_id_rel);
+            $stmt_fav->execute();
+            $stmt_fav->close();
+            $stmt_fav = null;
+        }
     }
 
     // Verificar el saldo del usuario (Lógica original intacta)
@@ -127,6 +176,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         respond("error", "Error: No se pudo obtener el saldo del usuario.", "../vistas/registro_pagos_egresos.php");
     }
+    $stmt_saldo->close();
+    $stmt_saldo = null;
 
     // Iniciar una transacción
     mysqli_begin_transaction($conexion);
@@ -140,7 +191,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Obtener el nombre del cliente desde la tabla `cliente` para usuarios normales
             $sql_nombre_cliente = "SELECT nombre FROM cliente WHERE id_cliente = ?";
             $stmt_nombre_cliente = $conexion->prepare($sql_nombre_cliente);
-            $stmt_nombre_cliente->bind_param("i", $cliente_id);
+            $stmt_nombre_cliente->bind_param("i", $cliente_id_rel);
             $stmt_nombre_cliente->execute();
             $result_nombre_cliente = $stmt_nombre_cliente->get_result();
 
@@ -149,6 +200,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } else {
                 throw new Exception("Error: No se encontró el cliente seleccionado.");
             }
+            $stmt_nombre_cliente->close();
+            $stmt_nombre_cliente = null;
         }
 
         // Manejo de la subida del comprobante
@@ -191,19 +244,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $nombre_para_pago = $nombre_usuario; // Fallback
             }
             $stmt_upu->close();
+            $stmt_upu = null;
+            
             // -------------------------------------------------------------
         } else {
             $nombre_para_pago = $nombre_usuario; // El usuario normal se registra a sí mismo
         }
 
         // Insertar el registro en la tabla `pagos`
-        $sql_pago = "INSERT INTO pagos (nombre_cliente, monto, descripcion, referencia, fecha_pago, estado, tipo, cliente, comprobante_archivo, saldo_resultante, usuario_aprobador, metodo_pago)
-                     VALUES (?, ?, ?, ?, ?, ?, 'Egreso', ?, ?, ?, ?, ?)";
+        $sql_pago = "INSERT INTO pagos (nombre_cliente, monto, descripcion, referencia, fecha_pago, estado, tipo, cliente, comprobante_archivo, saldo_resultante, usuario_aprobador, metodo_pago, forma_pago)
+                     VALUES (?, ?, ?, ?, ?, ?, 'Egreso', ?, ?, ?, ?, ?, ?)";
         $stmt_pago = $conexion->prepare($sql_pago);
-        $stmt_pago->bind_param("ssssssssdss", $nombre_para_pago, $monto, $descripcion, $referencia, $fecha_pago, $estado_inicial, $nombre_cliente, $ruta_comprobante, $saldo_resultante, $usuario_aprobador, $metodo_pago);
+        $stmt_pago->bind_param("ssssssssdsss", $nombre_para_pago, $monto, $descripcion, $referencia, $fecha_pago, $estado_inicial, $nombre_cliente, $ruta_comprobante, $saldo_resultante, $usuario_aprobador, $metodo_pago, $forma_pago);
         if (!$stmt_pago->execute()) {
             throw new Exception("Error al registrar el egreso: " . $stmt_pago->error);
         }
+        $stmt_pago->close();
+        $stmt_pago = null;
 
         // Obtener el ID del pago recién insertado
         $pago_id = $conexion->insert_id;
@@ -216,16 +273,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (!$stmt_update_saldo->execute()) {
                 throw new Exception("Error al actualizar el saldo del usuario: " . $stmt_update_saldo->error);
             }
-            $stmt_update_saldo->close();
+            
         }
 
         // Insertar la relación en la tabla `usuario_pagos`
         $sql_relacion = "INSERT INTO usuario_pagos (usuario_id, pago_id, cliente_id) VALUES (?, ?, ?)";
         $stmt_relacion = $conexion->prepare($sql_relacion);
-        $stmt_relacion->bind_param("iii", $usuario_id, $pago_id, $cliente_id);
+        // Usamos $cliente_id_rel que puede ser ID o NULL
+        $stmt_relacion->bind_param("iii", $usuario_id, $pago_id, $cliente_id_rel);
         if (!$stmt_relacion->execute()) {
             throw new Exception("Error al registrar la relación usuario-pago-cliente: " . $stmt_relacion->error);
         }
+        
 
         // ----------- ENVÍO DE CORREO A USUARIOS DE TIPO "cont" (Toda tu lógica original) -----------
         // SOLO si el usuario que registra NO es admin ni cont
@@ -317,8 +376,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $mail->SMTPAuth = true;
                         $mail->Username = 'soporte.sdgbp2024@gmail.com'; 
                         $mail->Password = 'ktwf cyvz rmyh lqfy'; 
-                        $mail->SMTPSecure = 'tls';
-                        $mail->Port = 587;
+                        $mail->SMTPSecure = 'ssl';
+                        $mail->Port = 465;
 
                         $mail->setFrom('soporte.sdgbp2024@gmail.com', 'Sistema de Pagos');
                         $mail->addAddress($correo_destino);
@@ -379,11 +438,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $final_status = "error";
         $final_message = "Error al registrar el egreso: " . $e->getMessage();
     } finally {
-        if (isset($stmt_cliente_usuario)) $stmt_cliente_usuario->close();
-        if (isset($stmt_nombre_cliente)) $stmt_nombre_cliente->close();
-        if (isset($stmt_pago)) $stmt_pago->close();
-        if (isset($stmt_relacion)) $stmt_relacion->close();
-        if (isset($stmt_saldo)) $stmt_saldo->close();
+        if (isset($stmt_verif_fecha) && $stmt_verif_fecha) { @$stmt_verif_fecha->close(); }
+        if (isset($stmt_cierre_actual) && $stmt_cierre_actual) { @$stmt_cierre_actual->close(); }
+        if (isset($stmt_cierre_ant) && $stmt_cierre_ant) { @$stmt_cierre_ant->close(); }
+        if (isset($stmt_lookup) && $stmt_lookup) { @$stmt_lookup->close(); }
+        if (isset($stmt_new) && $stmt_new) { @$stmt_new->close(); }
+        if (isset($stmt_fav) && $stmt_fav) { @$stmt_fav->close(); }
+        if (isset($stmt_saldo) && $stmt_saldo) { @$stmt_saldo->close(); }
+        if (isset($stmt_pago) && $stmt_pago) { @$stmt_pago->close(); }
+        if (isset($stmt_nombre_cliente) && $stmt_nombre_cliente) { @$stmt_nombre_cliente->close(); }
+        if (isset($stmt_upu) && $stmt_upu) { @$stmt_upu->close(); }
+        if (isset($stmt_update_saldo) && $stmt_update_saldo) { @$stmt_update_saldo->close(); }
+        if (isset($stmt_relacion) && $stmt_relacion) { @$stmt_relacion->close(); }
     }
 
     mysqli_close($conexion);

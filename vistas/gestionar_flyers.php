@@ -1,4 +1,5 @@
 <?php
+global $conexion;
 require_once("../models/header.php");
 
 // Verificación estricta de Admin
@@ -49,7 +50,7 @@ $aviso_status = ($config['bienvenida_login_status'] ?? '1') == '1';
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none text-muted">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none text-muted">Dashboard</a></li>
                     <li class="breadcrumb-item active">Info Institucional</li>
                     <li class="breadcrumb-item active">Banners Informativos</li>
                 </ol>
@@ -116,7 +117,7 @@ $aviso_status = ($config['bienvenida_login_status'] ?? '1') == '1';
 
                             <div class="mb-4">
                                 <label class="form-label fw-600">Fecha de Lanzamiento</label>
-                                <input type="date" name="fecha_inicio" class="form-control form-control-premium datepicker-flat" value="<?php echo $aviso_fecha; ?>" required>
+                                <input type="text" name="fecha_inicio" class="form-control form-control-premium datepicker-flat" value="<?php echo $aviso_fecha; ?>" required>
                                 <div class="form-text text-info"><i class="fas fa-clock me-1"></i>Vencerá automáticamente en 90 días desde esta fecha.</div>
                             </div>
 

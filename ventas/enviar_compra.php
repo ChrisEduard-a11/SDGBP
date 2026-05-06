@@ -70,13 +70,13 @@ try {
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'soporte.sdgbp2024@gmail.com'; // Cambia esto por tu correo
-    $mail->Password = 'zqmk whnf jrlz mhpp'; // Cambia esto por tu contraseña
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
+    $mail->Password = 'ktwf cyvz rmyh lqfy'; // Cambia esto por tu contraseña
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+    $mail->Port = 465;
 
     // Configuración del correo
     $mail->setFrom('soporte.sdgbp2024@gmail.com', 'EURIPYS 2024, C.A.');
-    $mail->addAddress('soporte.sdgbp2024@gmail.com', $nombre); // Enviar al correo del comprador
+    $mail->addAddress('soporte.sdgbp2024@gmail.com', $datosPago['nombreComprador']); // Enviar al correo del comprador
     $mail->isHTML(true);
     $mail->CharSet = 'UTF-8'; // Configurar UTF-8 para el cuerpo del correo
     $mail->Subject = 'Confirmación de Compra - EURIPYS 2024';

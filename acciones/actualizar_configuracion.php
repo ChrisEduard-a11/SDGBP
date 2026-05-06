@@ -107,6 +107,7 @@ if (!empty($password)) {
     $sql .= ", clave = '$hashed_password', fecha_cambio_clave = CURRENT_DATE";
 }
 
+
 // Solo si se envían respuestas nuevas
 if (!empty($respuesta1) && !empty($respuesta2)) {
     $hashed_respuesta1 = sha1($respuesta1);
@@ -124,7 +125,7 @@ $sql .= " WHERE id_usuario = " . $_SESSION['id'];
 if ($conexion->query($sql) === TRUE) {
     // Ya no se actualiza $_SESSION['nombre'] porque el nombre no se actualiza en la BD.
     
-    if (!empty($sql_imagen)) {
+    if (!empty($sql_imagen) && isset($rutaDestino)) {
         $_SESSION['foto'] = $rutaDestino; // Actualizar la foto en la sesión si se cambió
     }
 

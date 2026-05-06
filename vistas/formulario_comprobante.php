@@ -134,7 +134,7 @@ require_once("../conexion.php");
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Comprobantes</li>
                 </ol>
             </nav>
@@ -169,8 +169,8 @@ require_once("../conexion.php");
                         </div>
 
                         <div class="col-md-4">
-                            <label for="fecha" class="form-label-premium"><i class="fas fa-calendar-day"></i> Fecha de Emisión</label>
-                            <input type="text" class="form-control form-control-premium datepicker-flat" id="fecha" name="fecha">
+                            <label for="fecha_comprobante" class="form-label-premium"><i class="fas fa-calendar-day"></i> Fecha de Emisión</label>
+                            <input type="text" class="form-control form-control-premium datepicker-flat" id="fecha_comprobante" name="fecha">
                         </div>
                         
                         <div class="col-md-4">

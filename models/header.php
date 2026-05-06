@@ -1,6 +1,7 @@
 <?php
 session_start();
-require_once("../conexion.php");
+require_once(__DIR__ . "/../conexion.php");
+global $conexion, $maintenance_data;
 
 $usuarioid = $_SESSION['id'] ?? null;
 $session_token = $_SESSION['session_token'] ?? '';
@@ -25,7 +26,7 @@ if ($maintenance_data) {
     $hora_inicio = !empty($maintenance_data['hora_inicio']) ? date('H:i', strtotime($maintenance_data['hora_inicio'])) : '';
     $hora_fin = !empty($maintenance_data['hora_fin']) ? date('H:i', strtotime($maintenance_data['hora_fin'])) : '';
 
-    if (!$is_active && !empty($hora_inicio) && !empty($hora_fin)) {
+    if (!$is_active && ($maintenance_data['usar_horario'] ?? 1) && !empty($hora_inicio) && !empty($hora_fin)) {
         $fecha_actual = date('Y-m-d');
         $hora_actual = date('H:i');
         
@@ -257,6 +258,8 @@ while ($c = mysqli_fetch_assoc($res_cierres)) {
 <script>
     window.SDGBP_CLOSED_PERIODS = <?php echo json_encode($periodos_cerrados); ?>;
     window.USER_ROLE = "<?php echo strtolower($tipo_usuario); ?>";
+    
+    window.USER_ROLE = "<?php echo strtolower($tipo_usuario); ?>";
 </script>
 <?php
 ?>
@@ -308,7 +311,7 @@ while ($c = mysqli_fetch_assoc($res_cierres)) {
             <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-            <?php require_once("../models/validation.php"); ?>
+            <?php require_once(__DIR__ . "/validation.php"); ?>
 
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -1294,18 +1297,16 @@ while ($c = mysqli_fetch_assoc($res_cierres)) {
                                             <div class="sb-nav-link-icon"><i class="fas fa-table-list"></i></div>
                                             Reporte de Pagos
                                         </a>
+                                         <a class="nav-link" href="../vistas/cierre_mes.php">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
+                                            Cierre de Mes
+                                        </a>
                                     <?php
     }?>
                                 </nav>
                             </div>
                             <?php
 }?>
-                            <?php if ($_SESSION["tipo"] == "admin" || $_SESSION["tipo"] == "cont") { ?>
-                                <a class="nav-link" href="../vistas/cierre_mes.php">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
-                                    Cierre de Mes
-                                </a>
-                            <?php } ?>
                             <div class="sb-sidenav-menu-heading">Ayuda y Soporte</div>
                             <?php if ($_SESSION["tipo"] == "admin") { ?>
                                 <a class="nav-link" href="../vistas/gestionar_tickets.php">

@@ -7,12 +7,9 @@ require_once("../models/notificaciones.php"); // Sistema de notificaciones
 require '../PHPMailer/src/PHPMailer.php';
 require '../PHPMailer/src/SMTP.php';
 require '../PHPMailer/src/Exception.php';
-require_once '../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST["accion"])) {
     // Verificar token de idempotencia
@@ -97,6 +94,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
     $monto = $saldo_actual = 0;
     $nuevo_saldo = 0;
 
+    if ($result->num_rows === 0) {
+        throw new Exception("No se encontraron datos del pago o no tiene usuario asociado. No se puede procesar.");
+    }
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         $correo = $row['correo'];
@@ -310,184 +310,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
 
     $nuevo_id_pago_string = isset($nuevo_id_pago) ? $nuevo_id_pago : $id;
 
-    // Generar PDF con DomPDF solo si fue aprobado
-    $pdfOutput = null;
-    if ($estado == "aprobado") {
-        try {
-            $options = new Options();
-            $options->set('isHtml5ParserEnabled', true);
-            $options->set('isRemoteEnabled', true);
-            $options->set('defaultFont', 'Helvetica');
-            $dompdf = new Dompdf($options);
-
-            // ELIMINADO LOGO PESADO -> USANDO INSIGNIA CSS PROFESIONAL (SDGBP)
-            $logoSrc = ""; // Ya no se usa imagen externa
-
-            $formatted_id = str_pad($nuevo_id_pago_string, 6, "0", STR_PAD_LEFT);
-            $fecha_hora = date('d/m/Y', strtotime($fecha_pago));
-            $desc = empty($descripcion_pago) ? 'Declaración de Movimiento Operativo' : htmlspecialchars($descripcion_pago);
-            $monto_format = number_format($monto, 2, ',', '.');
-            $comision_format = number_format($comision, 2, ',', '.');
-            $nombre_aprobador = $_SESSION['nombre'] ?? 'Administración Central';
-
-            // Lógica dinámica de etiquetas según Ingreso/Egreso
-            if ($tipo == "Ingreso") {
-                $label_origen  = "Remitente / Pagador";
-                $valor_origen  = $cliente;
-                $label_destino = "Receptor / Unidad Ejecutora";
-                $valor_destino = $nombre;
-            } else { // Egreso
-                $label_origen  = "Emisor / Unidad Ejecutora";
-                $valor_origen  = $nombre;
-                $label_destino = "Beneficiario / Receptor";
-                $valor_destino = $cliente;
-            }
-
-            $fila_comision = "";
-            if ($comision > 0) {
-                $fila_comision = "
-                <tr>
-                    <td style='padding: 12px; border-bottom: 1px solid #eee;'>Comisión por Gestión Administrativa</td>
-                    <td style='padding: 12px; border-bottom: 1px solid #eee;'>Débito Directo</td>
-                    <td style='padding: 12px; border-bottom: 1px solid #eee;'>-</td>
-                    <td style='padding: 12px; border-bottom: 1px solid #eee; text-align: right; color: #ef4444;'>- Bs. {$comision_format}</td>
-                </tr>";
-            }
-
-            $htmlPdf = <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <style>
-        @page { margin: 0; }
-        body { font-family: 'Helvetica', sans-serif; margin: 0; padding: 0; color: #1e293b; background-color: #ffffff; }
-        .banner { background-color: #0f172a; height: 180px; width: 100%; position: relative; color: white; overflow: hidden; }
-        .banner-accent { position: absolute; top: 0; right: 0; width: 35%; height: 100%; background-color: #f97316; }
-        .header-content { position: absolute; top: 50px; left: 40px; width: 60%; }
-        .logo-container { position: absolute; top: 0; right: 0; width: 35%; height: 180px; text-align: center; display: table; }
-        .insignia-wrapper { display: table-cell; vertical-align: middle; }
-        .insignia { background-color: #ffffff; color: #0f172a; padding: 12px 20px; border-radius: 8px; font-weight: 900; font-size: 28px; display: inline-block; border-left: 6px solid #f97316; letter-spacing: 2px; }
-        .insignia span { color: #f97316; }
-        .invoice-title { font-size: 34px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #ffffff; margin: 0; }
-        .invoice-number { font-size: 16px; color: #94a3b8; margin-top: 5px; }
-        
-        .main-content { padding: 40px; margin-top: -20px; }
-        .grid { width: 100%; margin-bottom: 40px; }
-        .col-50 { width: 50%; vertical-align: top; }
-        
-        .section-box { background-color: #f8fafc; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0; }
-        .section-title { font-size: 12px; font-weight: 800; color: #f97316; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; border-bottom: 2px solid #f97316; display: inline-block; padding-bottom: 4px; }
-        .info-p { margin: 6px 0; font-size: 14px; line-height: 1.4; color: #334155; }
-        .info-p strong { color: #0f172a; }
-
-        .details-table { width: 100%; border-collapse: collapse; margin-top: 30px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .details-table th { background-color: #f1f5f9; color: #475569; padding: 15px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #e2e8f0; }
-        .details-table td { padding: 15px 12px; font-size: 14px; color: #334155; border-bottom: 1px solid #f1f5f9; }
-        
-        .total-section { margin-top: 30px; width: 100%; }
-        .total-box { background-color: #0f172a; color: white; border-radius: 12px; padding: 25px; text-align: right; }
-        .total-label { font-size: 14px; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
-        .total-amount { font-size: 38px; font-weight: 800; color: #f97316; }
-        
-        .approver-info { margin-top: 50px; font-size: 12px; color: #64748b; border-left: 4px solid #f97316; padding-left: 15px; }
-        
-        .footer { position: fixed; bottom: 0; width: 100%; padding: 30px 40px; background-color: #f1f5f9; text-align: center; border-top: 1px solid #e2e8f0; }
-        .footer p { margin: 4px 0; font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-    </style>
-</head>
-<body>
-    <div class="banner">
-        <div class="banner-accent"></div>
-        <div class="header-content">
-            <h1 class="invoice-title">Reporte de Pago</h1>
-            <p class="invoice-number">Control Correlativo Oficial: #UPU-{$formatted_id}</p>
-        </div>
-        <div class="logo-container">
-            <div class="insignia-wrapper">
-                <div class="insignia">SD<span>GBP</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <table class="grid">
-            <tr>
-                <td class="col-50" style="padding-right: 15px;">
-                    <div class="section-box">
-                        <span class="section-title">Información de Origen</span>
-                        <p class="info-p"><strong>{$label_origen}:</strong><br>{$valor_origen}</p>
-                        <p class="info-p"><strong>Fecha de Reporte:</strong><br>{$fecha_hora}</p>
-                    </div>
-                </td>
-                <td class="col-50" style="padding-left: 15px;">
-                    <div class="section-box">
-                        <span class="section-title">Información de Destino</span>
-                        <p class="info-p"><strong>{$label_destino}:</strong><br>{$valor_destino}</p>
-                        <p class="info-p"><strong>Referencia Bancaria:</strong><br>{$referencia}</p>
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <table class="details-table">
-            <thead>
-                <tr>
-                    <th width="40%">Concepto de Operación</th>
-                    <th width="20%">Método</th>
-                    <th width="20%">Referencia</th>
-                    <th width="20%" style="text-align: right;">Monto</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">{$desc} [{$tipo}]</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">{$metodo_pago}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">{$referencia}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">Bs. {$monto_format}</td>
-                </tr>
-                {$fila_comision}
-            </tbody>
-        </table>
-
-        <table class="grid" style="margin-top: 30px;">
-            <tr>
-                <td width="55%">
-                    <div class="approver-info">
-                        <strong>Certificado de Validación Digital</strong><br>
-                        Esta transacción ha sido verificada y liquidada electrónicamente por:<br>
-                        <strong>{$nombre_aprobador}</strong> - Administración Central SDGBP por EURIPYS.
-                    </div>
-                </td>
-                <td width="45%" style="padding-left: 20px;">
-                    <div class="total-box">
-                        <div class="total-label">Balance Liquidado</div>
-                        <div class="total-amount">Bs. {$monto_format}</div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="footer">
-        <p>Sistema de Gestión de Bienes y Pagos (SDGBP) &copy; {$current_year}</p>
-        <p>Documento generado para fines de auditoría, control operativo e inventario contable.</p>
-        <p>Verificado por EURIPYS - Transparencia y Eficiencia Administrativa.</p>
-    </div>
-</body>
-</html>
-HTML;
-
-            $dompdf->loadHtml($htmlPdf);
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-            $pdfOutput = $dompdf->output();
-            error_log("PERF: PDF Gen took " . (microtime(true) - $t_inicio) . "s (cumulative)");
-
-        } catch (\Exception $ex) {
-            error_log("Error generando PDF con DomPDF: " . $ex->getMessage());
-        }
-    }
 
     // Crear el mensaje del correo
     $asunto = "Notificación de Estado de Pago";
@@ -514,51 +336,50 @@ HTML;
     if ($estado == "aprobado") {
         $aprobado_html = "
         <div style='background-color: #f0fdf4; padding: 15px 20px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;'>
-            <p style='margin: 0; color: #047857; font-size: 15px; font-weight: bold;'>¡Buenas noticias! Hemos adjuntado tu Factura Electrónica Oficial (PDF) en este correo, lista para que la descargues o la declares.</p>
+            <p style='margin: 0; color: #047857; font-size: 15px; font-weight: bold;'>¡Buenas noticias! Tu reporte de pago ha sido procesado exitosamente por la administración central.</p>
         </div>";
     }
 
     $current_year = date('Y');
 
-    $mensaje = <<<HTML
-<!DOCTYPE html>
-<html lang="es">
+    $mensaje = "<!DOCTYPE html>
+<html lang='es'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8fafc; color: #334155; -webkit-font-smoothing: antialiased;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 0;">
+<body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8fafc; color: #334155; -webkit-font-smoothing: antialiased;'>
+    <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f8fafc; padding: 40px 0;'>
         <tr>
-            <td align="center">
-                <table width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; margin: 0 auto; border: 1px solid #e2e8f0;" cellpadding="0" cellspacing="0">
+            <td align='center'>
+                <table width='100%' style='max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; margin: 0 auto; border: 1px solid #e2e8f0;' cellpadding='0' cellspacing='0'>
                     <!-- Header -->
                     <tr>
-                        <td align="center" style="padding: 30px 20px; background-color: #0f172a; border-bottom: 4px solid {$color_banner};">
-                            <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">Estado de Pago Notificado</h1>
-                            <p style="color: #94a3b8; font-size: 14px; margin: 5px 0 0 0;">Sistema de Gestión de Bienes y Pagos</p>
+                        <td align='center' style='padding: 30px 20px; background-color: #0f172a; border-bottom: 4px solid {$color_banner};'>
+                            <h1 style='color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;'>Estado de Pago Notificado</h1>
+                            <p style='color: #94a3b8; font-size: 14px; margin: 5px 0 0 0;'>Sistema de Gestión de Bienes y Pagos</p>
                         </td>
                     </tr>
                     <!-- Body Content -->
                     <tr>
-                        <td style="padding: 40px 40px 30px 40px;">
-                            <h2 style="color: #0f172a; font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 20px;">Estimado/a {$nombre},</h2>
-                            <p style="font-size: 16px; line-height: 1.6; color: #475569; margin-top: 0; margin-bottom: 25px;">
+                        <td style='padding: 40px 40px 30px 40px;'>
+                            <h2 style='color: #0f172a; font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 20px;'>Estimado/a {$nombre},</h2>
+                            <p style='font-size: 16px; line-height: 1.6; color: #475569; margin-top: 0; margin-bottom: 25px;'>
                                 Le informamos oficialmente el estado de revisión de la siguiente transacción registrada a su nombre:
                             </p>
                             
-                            <table width="100%" cellpadding="10" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px;">
+                            <table width='100%' cellpadding='10' cellspacing='0' style='background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px;'>
                                 <tr>
-                                    <td width="35%" style="color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0;">Monto Transado:</td>
-                                    <td style="color: #0f172a; font-weight: 800; font-size: 18px; border-bottom: 1px solid #e2e8f0;">Bs. {$monto}</td>
+                                    <td width='35%' style='color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0;'>Monto Transado:</td>
+                                    <td style='color: #0f172a; font-weight: 800; font-size: 18px; border-bottom: 1px solid #e2e8f0;'>Bs. {$monto}</td>
                                 </tr>
                                 <tr>
-                                    <td width="35%" style="color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0;">Nro. Referencia:</td>
-                                    <td style="color: #0f172a; font-weight: 600; border-bottom: 1px solid #e2e8f0;">{$referencia}</td>
+                                    <td width='35%' style='color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0;'>Nro. Referencia:</td>
+                                    <td style='color: #0f172a; font-weight: 600; border-bottom: 1px solid #e2e8f0;'>{$referencia}</td>
                                 </tr>
                                 <tr>
-                                    <td width="35%" style="color: #64748b; font-weight: 700;">Estado Final:</td>
-                                    <td style="color: {$color_banner}; font-weight: 800; text-transform: uppercase;">{$titulo_banner}</td>
+                                    <td width='35%' style='color: #64748b; font-weight: 700;'>Estado Final:</td>
+                                    <td style='color: {$color_banner}; font-weight: 800; text-transform: uppercase;'>{$titulo_banner}</td>
                                 </tr>
                             </table>
 
@@ -566,21 +387,21 @@ HTML;
                             {$aprobado_html}
 
                             <!-- Action Button -->
-                            <div style="text-align: center; margin: 35px 0;">
-                                <a href="{$login_url}" style="display: inline-block; padding: 14px 28px; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;">Consultar mi Cuenta</a>
+                            <div style='text-align: center; margin: 35px 0;'>
+                                <a href='{$login_url}' style='display: inline-block; padding: 14px 28px; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px;'>Consultar mi Cuenta</a>
                             </div>
-                            <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-top: 30px; margin-bottom: 0;">
+                            <p style='font-size: 14px; line-height: 1.6; color: #64748b; margin-top: 30px; margin-bottom: 0;'>
                                 Si tiene alguna duda o requiere mayor información técnica respecto al estado de esta operación, puede responder directamente a este correo para contactar al servicio de soporte de <strong>SDGBP</strong>.
                             </p>
                         </td>
                     </tr>
                     <!-- Footer -->
                     <tr>
-                        <td style="background-color: #f1f5f9; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
-                            <p style="margin: 0 0 10px 0; font-size: 12px; color: #64748b; font-weight: 600;">
+                        <td style='background-color: #f1f5f9; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;'>
+                            <p style='margin: 0 0 10px 0; font-size: 12px; color: #64748b; font-weight: 600;'>
                                 &copy; {$current_year} SDGBP. Todos los derechos reservados.
                             </p>
-                            <p style="margin: 0; font-size: 11px; color: #94a3b8;">
+                            <p style='margin: 0; font-size: 11px; color: #94a3b8;'>
                                 Mensaje emitido por el sistema contable automatizado.
                             </p>
                         </td>
@@ -590,38 +411,36 @@ HTML;
         </tr>
     </table>
 </body>
-</html>
-HTML;
+</html>";
 
 
-    // Configurar PHPMailer
-    $mail = new PHPMailer(true);
-    $mail->CharSet = 'UTF-8'; 
-    try {
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'soporte.sdgbp2024@gmail.com';
-        $mail->Password = 'ktwf cyvz rmyh lqfy';
-        $mail->SMTPSecure = 'tls';
-        $mail->Port = 587;
+    // Configurar PHPMailer (solo si hay un correo destinatario válido)
+    if (!empty(trim($correo))) {
+        $mail = new PHPMailer(true);
+        $mail->CharSet = 'UTF-8'; 
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'soporte.sdgbp2024@gmail.com';
+            $mail->Password = 'ktwf cyvz rmyh lqfy';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = 465;
+            $mail->Timeout = 30; // Aumentar timeout por si acaso
 
-        $mail->setFrom('soporte.sdgbp2024@gmail.com', 'Sistema de Gestión de Bienes y Pagos');
-        $mail->addAddress($correo);
-        $mail->isHTML(true);
-        $mail->Subject = $asunto;
-        $mail->Body = $mensaje;
+            $mail->setFrom('soporte.sdgbp2024@gmail.com', 'Sistema de Gestión de Bienes y Pagos');
+            $mail->addAddress($correo);
+            $mail->isHTML(true);
+            $mail->Subject = $asunto;
+            $mail->Body = $mensaje;
 
-        if ($pdfOutput !== null) {
-            $mail->addStringAttachment($pdfOutput, 'Ref_' . $referencia . '_Factura_Contable.pdf', 'base64', 'application/pdf');
+            $mail->send();
+            error_log("PERF: Email Send took " . (microtime(true) - $t_inicio) . "s (cumulative)");
+        } catch (\PHPMailer\PHPMailer\Exception $e) { 
+            error_log("Error al enviar correo (PHPMailer): {$mail->ErrorInfo}");
+            $_SESSION["mensaje"] .= " Sin embargo, hubo un error al enviar el correo: " . $mail->ErrorInfo;
+            $_SESSION["estatus"] = "warning";
         }
-
-        $mail->send();
-        error_log("PERF: Email Send took " . (microtime(true) - $t_inicio) . "s (cumulative)");
-    } catch (\PHPMailer\PHPMailer\Exception $e) { 
-        error_log("Error al enviar correo (PHPMailer): {$mail->ErrorInfo}");
-        $_SESSION["mensaje"] .= " Sin embargo, hubo un error al enviar el correo: " . $mail->ErrorInfo;
-        $_SESSION["estatus"] = "warning";
     }
 
     // Registrar la acción en la bitácora del administrador

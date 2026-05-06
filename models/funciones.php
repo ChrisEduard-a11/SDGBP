@@ -786,11 +786,43 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        let accionTexto = (tipoTransaccionGlobal.toLowerCase() === 'egreso') ? 'descontado/reducido' : 'incrementado';
+        // Obtener datos detallados del modal para el resumen final
+        const upu = document.getElementById('modal-upu')?.textContent || 'N/A';
+        const entidad = document.getElementById('modal-entidad')?.textContent || 'N/A';
+        const fecha = document.getElementById('modal-fecha')?.textContent || 'N/A';
+        const monto = document.getElementById('modal-monto')?.textContent || 'N/A';
+        const referencia = document.getElementById('modal-referencia')?.textContent || 'N/A';
+
         let confirmTitle = `¿Confirmar Aprobación?`;
-        let confirmHtml = (comision > 0) 
-            ? `<p>¿Estás seguro de aprobar este <strong>${tipoTransaccionGlobal.toLowerCase()}</strong> aplicando una comisión de <strong>Bs. ${comision.toLocaleString('es-VE', {minimumFractionDigits: 2})}</strong>?</p>`
-            : `<p>¿Estás seguro de aprobar este <strong>${tipoTransaccionGlobal.toLowerCase()}</strong> <strong>sin ninguna comisión</strong>?</p>`;
+        
+        // Formato ultra-premium para el resumen de confirmación
+        let confirmHtml = `
+            <div class="text-start border rounded-4 p-4 mt-3" style="background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.1) !important;">
+                <div class="mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                    <span class="text-muted small text-uppercase fw-bold">Unidad (UPU)</span>
+                    <span class="fw-bold text-primary">${upu}</span>
+                </div>
+                <div class="mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                    <span class="text-muted small text-uppercase fw-bold">Cliente/Entidad</span>
+                    <span class="fw-bold">${entidad}</span>
+                </div>
+                <div class="mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                    <span class="text-muted small text-uppercase fw-bold">Referencia y Fecha</span>
+                    <span class="small">${referencia} <br> <span class="text-muted">${fecha}</span></span>
+                </div>
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <span class="text-muted small text-uppercase fw-bold">Monto Original</span>
+                    <span class="fw-bold text-dark fs-5">${monto}</span>
+                </div>
+                <div class="p-3 rounded-3 mt-2 ${comision > 0 ? 'bg-soft-success border-success-subtle' : 'bg-light'}" style="border: 1px dashed;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold ${comision > 0 ? 'text-success' : 'text-muted'}">COMISIÓN A APLICAR</span>
+                        <span class="fw-bold fs-4 ${comision > 0 ? 'text-success' : 'text-muted'}">Bs. ${comision.toLocaleString('es-VE', {minimumFractionDigits: 2})}</span>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4 text-center text-muted small">¿Estás seguro de procesar esta transacción con los datos mostrados arriba?</p>
+        `;
 
         // Cierra el modal Bootstrap ANTES de abrir SweetAlert
         const bsModalEl = document.getElementById('modalAprobarPago');
@@ -802,11 +834,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: confirmTitle,
                 html: confirmHtml,
                 icon: 'question',
+                width: '550px',
                 showCancelButton: true,
-                confirmButtonColor: '#2af598',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="fas fa-check"></i> Sí, Confirmar',
-                cancelButtonText: '<i class="fas fa-times"></i> Cancelar'
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fas fa-check-circle me-2"></i> Sí, Aprobar y Procesar',
+                cancelButtonText: '<i class="fas fa-times-circle me-2"></i> Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({

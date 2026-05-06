@@ -23,6 +23,13 @@ $categorias = obtenerCategorias($conexion);
         --border-color: #e2e8f0;
     }
 
+    [data-theme="dark"] {
+        --bg-body: #0f172a;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --border-color: rgba(255, 255, 255, 0.1);
+    }
+
     body {
         background-color: var(--bg-body);
         background-image: 
@@ -115,6 +122,11 @@ $categorias = obtenerCategorias($conexion);
         border-radius: 16px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    
+    [data-theme="dark"] #tablaBienesAjax tbody tr {
+        background: rgba(30, 41, 59, 0.7);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
 
     #tablaBienesAjax tbody tr:hover {
         transform: scale(1.005) translateY(-3px);
@@ -133,12 +145,23 @@ $categorias = obtenerCategorias($conexion);
     #tablaBienesAjax td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; border-left: 1px solid #f1f5f9; }
     #tablaBienesAjax td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; border-right: 1px solid #f1f5f9; }
 
+    [data-theme="dark"] #tablaBienesAjax td { border-bottom-color: rgba(255,255,255,0.05) !important; border-top-color: rgba(255,255,255,0.05) !important; }
+    [data-theme="dark"] #tablaBienesAjax td:first-child { border-left-color: rgba(255,255,255,0.05); }
+    [data-theme="dark"] #tablaBienesAjax td:last-child { border-right-color: rgba(255,255,255,0.05); }
+
     .badge-premium {
         padding: 0.5rem 0.85rem;
         border-radius: 10px;
         font-weight: 700;
         font-size: 0.75rem;
         letter-spacing: 0.3px;
+        background: #f1f5f9; 
+        color: #475569;
+    }
+    
+    [data-theme="dark"] .badge-premium {
+        background: rgba(100,116,139,0.15);
+        color: #cbd5e1;
     }
 
     .btn-action-premium {
@@ -188,7 +211,7 @@ $categorias = obtenerCategorias($conexion);
             </div>
             <nav aria-label="breadcrumb" class="d-none d-lg-block">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Bienes Nacionales</li>
                 </ol>
             </nav>
@@ -399,13 +422,13 @@ $categorias = obtenerCategorias($conexion);
                     tableHTML += `
                         <tr class="fade-in-up" style="animation-delay: ${i * 0.05}s">
                             <td class="text-center">
-                                <span class="badge bg-light text-muted border px-2 py-1 shadow-sm">${numCounter}</span>
+                                <span class="badge border px-2 py-1 shadow-sm" style="background: rgba(100,116,139,0.1); color: var(--text-muted);">${numCounter}</span>
                             </td>
                             <td>
-                                <div class="fw-bold text-dark">${bien.nombre}</div>
+                                <div class="fw-bold" style="color: var(--text-main);">${bien.nombre}</div>
                                 <div class="small text-muted text-truncate" style="max-width: 300px;">${bien.descripcion}</div>
                             </td>
-                            <td><span class="badge-premium shadow-sm" style="background: #f1f5f9; color: #475569;">${bien.categoria}</span></td>
+                            <td><span class="badge-premium shadow-sm">${bien.categoria}</span></td>
                             <td>
                                 <div class="badge bg-primary-light text-primary px-2 py-1 mb-1 d-inline-block rounded-pill fw-bold shadow-sm" style="font-size: 0.7rem;">
                                     <i class="fas fa-barcode me-1"></i> ${bien.codigo}

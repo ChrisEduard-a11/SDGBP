@@ -1,4 +1,5 @@
 <?php
+global $conexion;
 require_once("../models/header.php");
 include('../conexion.php');
 
@@ -107,8 +108,8 @@ $totalPendientes = count($usuarios_no_aprobados);
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('usuario.php')" class="text-decoration-none">Usuarios</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="usuario.php" class="text-decoration-none">Usuarios</a></li>
                     <li class="breadcrumb-item active">Aprobaciones</li>
                 </ol>
             </nav>

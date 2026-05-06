@@ -17,8 +17,8 @@ $hora_fin = $_POST['hora_fin'] ?? '';
 $fecha = $_POST['fecha'] ?? null;
 if (empty($fecha)) $fecha = null;
 
-// Actualizar en DB
-$sql_update = "UPDATE config_mantenimiento SET titulo = ?, descripcion = ?, hora_inicio = ?, hora_fin = ?, fecha = ? WHERE id = 1";
+// Actualizar en DB e incluir re-activación de horario si se estaba usando un bypass manual
+$sql_update = "UPDATE config_mantenimiento SET titulo = ?, descripcion = ?, hora_inicio = ?, hora_fin = ?, fecha = ?, usar_horario = 1 WHERE id = 1";
 $stmt = $conexion->prepare($sql_update);
 $stmt->bind_param("sssss", $titulo, $descripcion, $hora_inicio, $hora_fin, $fecha);
 

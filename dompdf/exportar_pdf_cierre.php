@@ -351,6 +351,9 @@ try {
     $dompdf->render();
 
     $attachment = (isset($_GET['download']) && $_GET['download'] == '1') ? 1 : 0;
+    
+    // Generar nombre de archivo dinámico si es necesario
+    $nombre_pdf = "Resumen_Cierre_Mes_{$nombre_mes}_{$anio}.pdf";
     $dompdf->stream($nombre_pdf, ['Attachment' => $attachment]); 
     exit;
 } catch (Exception $e) {

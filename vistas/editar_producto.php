@@ -152,8 +152,8 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('productos.php')" class="text-decoration-none">Productos</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="productos.php" class="text-decoration-none">Productos</a></li>
                     <li class="breadcrumb-item active">Editar</li>
                 </ol>
             </nav>
@@ -237,7 +237,7 @@ $categorias = $result->fetch_all(MYSQLI_ASSOC);
                                 <button type="submit" class="btn btn-save-premium">
                                     <i class="fas fa-check-circle me-2"></i> Confirmar Cambios
                                 </button>
-                                <a href="javascript:void(0);" onclick="navigateTo('productos.php')" class="btn btn-outline-secondary border-0 rounded-4 py-2 fw-bold small">
+                                <a href="productos.php" class="btn btn-outline-secondary border-0 rounded-4 py-2 fw-bold small">
                                     <i class="fas fa-arrow-left me-1"></i> Volver sin cambios
                                 </a>
                             </div>

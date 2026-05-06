@@ -34,9 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $mail->Host = 'smtp.gmail.com';
                 $mail->SMTPAuth = true;
                 $mail->Username = 'soporte.sdgbp2024@gmail.com';
-                $mail->Password = 'zqmk whnf jrlz mhpp';
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
+                $mail->Password = 'ktwf cyvz rmyh lqfy';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                $mail->Port = 465;
 
                 $mail->setFrom('soporte.sdgbp2024@gmail.com', 'SDGBP Security');
                 $mail->addAddress($correo_ingresado);

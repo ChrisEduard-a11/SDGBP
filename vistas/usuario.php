@@ -1,4 +1,5 @@
 <?php
+global $conexion;
 require_once("../models/header.php");
 include('../conexion.php');
 
@@ -276,9 +277,6 @@ function openSaldoModal(id, nombre, saldoActual) {
     }
 }
 
-function navigateTo(url) {
-    window.location.href = url;
-}
 
 function confirmUserAction(url, title = 'Borrar') {
     if (typeof Swal !== 'undefined') {
@@ -323,7 +321,7 @@ function confirmUserAction(url, title = 'Borrar') {
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Usuarios</li>
                 </ol>
             </nav>
@@ -425,13 +423,16 @@ function confirmUserAction(url, title = 'Borrar') {
         </div>
 
         <div class="mb-5 d-flex flex-wrap flex-column flex-sm-row gap-3 animate__animated animate__fadeIn">
-            <button class="btn btn-premium-violet px-4 py-2 rounded-4 shadow-sm fw-bold flex-grow-1 flex-sm-grow-0" onclick="navigateTo('registro_u.php')">
+            <a class="btn btn-premium-violet px-4 py-2 rounded-4 shadow-sm fw-bold flex-grow-1 flex-sm-grow-0" href="registro_u.php">
                 <i class="fa fa-user-plus me-2"></i> Nuevo Usuario
-            </button>
-            <button class="btn btn-premium-amber px-4 py-2 rounded-4 shadow-sm fw-bold flex-grow-1 flex-sm-grow-0" onclick="navigateTo('usuarios_a.php')">
+            </a>
+            <a class="btn btn-premium-amber px-4 py-2 rounded-4 shadow-sm fw-bold flex-grow-1 flex-sm-grow-0" href="usuarios_a.php">
                 <i class="fa fa-user-check me-2"></i> Aprobar Pendientes
                 <span class="badge rounded-pill bg-danger ms-2"><?php echo $totalPendientes; ?></span>
-            </button>
+            </a>
+            <a class="btn btn-outline-success px-4 py-2 rounded-4 shadow-sm fw-bold flex-grow-1 flex-sm-grow-0" href="backup_db.php">
+                <i class="fas fa-database me-2"></i> Respaldo BD
+            </a>
         </div>
         
         <?php
@@ -514,9 +515,9 @@ function confirmUserAction(url, title = 'Borrar') {
             $resSolicitudes = mysqli_query($conexion, $sqlSolicitudes);
         ?>
             <div class="card glass-card border-0 mb-4 animate__animated animate__fadeIn">
-                <div class="card-header bg-warning text-dark p-3 border-0 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><i class="fas fa-bell me-2"></i> Solicitudes de Eliminación Pendientes</h5>
-                    <span class="badge bg-danger rounded-pill"><?php echo mysqli_num_rows($resSolicitudes); ?> Nuevas</span>
+                <div class="card-header bg-transparent p-4 border-0 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid var(--glass-border) !important;">
+                    <h5 class="mb-0 fw-bold text-warning"><i class="fas fa-bell me-2"></i> Solicitudes de Eliminación Pendientes</h5>
+                    <span class="badge bg-danger rounded-pill p-2 px-3 shadow-sm"><?php echo mysqli_num_rows($resSolicitudes); ?> Nuevas</span>
                 </div>
                 <div class="card-body p-3">
                     <?php if (mysqli_num_rows($resSolicitudes) > 0): ?>
@@ -634,8 +635,8 @@ function confirmUserAction(url, title = 'Borrar') {
         <?php endif; ?>
 
         <div class="card glass-card border-0 mb-5 animate__animated animate__fadeIn">
-            <div class="card-header bg-success text-white p-4 border-0">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-wallet me-2"></i> Clientes UPU y Saldos</h5>
+            <div class="card-header bg-transparent p-4 border-0" style="border-bottom: 1px solid var(--glass-border) !important;">
+                <h5 class="mb-0 fw-bold text-success"><i class="fas fa-wallet me-2"></i> Clientes UPU y Saldos</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -704,9 +705,9 @@ function confirmUserAction(url, title = 'Borrar') {
 
                                         <td class="pe-4">
                                             <div class="d-flex gap-2 justify-content-center">
-                                                <button class="btn btn-soft-primary btn-sm rounded-3" onclick="navigateTo('edit_u.php?id=<?php echo $row['id_usuario']; ?>')">
+                                                <a class="btn btn-soft-primary btn-sm rounded-3" href="edit_u.php?id=<?php echo $row['id_usuario']; ?>">
                                                     <i class="fas fa-pen-nib"></i>
-                                                </button>
+                                                </a>
                                                 <?php if ($loggedUserType == 'admin'): ?>
                                                     <?php if ($row['bloqueado']): ?>
                                                         <button class="btn btn-soft-success btn-sm rounded-3" onclick="toggleBloqueo(<?php echo $row['id_usuario']; ?>, 0)"><i class="fas fa-user-check"></i></button>
@@ -739,8 +740,8 @@ function confirmUserAction(url, title = 'Borrar') {
         </div>
 
         <div class="card glass-card border-0 animate__animated animate__fadeIn">
-            <div class="card-header bg-primary text-white p-4 border-0">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-users me-2"></i> Lista de Personal</h5>
+            <div class="card-header bg-transparent p-4 border-0" style="border-bottom: 1px solid var(--glass-border) !important;">
+                <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-users me-2"></i> Lista de Personal</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">

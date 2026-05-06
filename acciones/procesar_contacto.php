@@ -32,9 +32,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->Host = 'smtp.gmail.com'; // Servidor SMTP de Gmail
             $mail->SMTPAuth = true;
             $mail->Username = 'soporte.sdgbp2024@gmail.com'; // Cambia esto por tu correo de Gmail
-            $mail->Password = 'otht adre wzei pdeh'; // Cambia esto por tu contraseña o contraseña de aplicación
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
+            $mail->Password = 'ktwf cyvz rmyh lqfy'; // Cambia esto por tu contraseña o contraseña de aplicación
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = 465;
 
             // Configuración del correo
             $mail->setFrom('cristianarcaya2003@gmail.com', 'EURIPYS 2024, C.A.'); // Remitente

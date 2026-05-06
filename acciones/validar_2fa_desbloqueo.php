@@ -97,9 +97,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = 'soporte.sdgbp2024@gmail.com'; // Tu correo de Gmail
-            $mail->Password = 'yfav yolv uuji pwhq'; // Tu contraseña de aplicación de Gmail
-            $mail->SMTPSecure = 'tls';
-            $mail->Port = 587;
+            $mail->Password = 'ktwf cyvz rmyh lqfy'; // Tu contraseña de aplicación de Gmail
+            $mail->SMTPSecure = 'ssl';
+            $mail->Port = 465;
 
             // Configuración del correo
             $mail->setFrom('soporte.sdgbp2024@gmail.com', 'Seguridad SDGBP');

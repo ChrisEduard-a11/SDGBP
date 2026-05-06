@@ -1,10 +1,14 @@
 <?php
 /*INICIO CONEXION DB*/
-$conexion = mysqli_connect("localhost","root","","if0_38581055_sys_inv");
+$host = "localhost";
+$user = "root";
+$pass = "";
+$db   = "if0_38581055_sys_inv";
 
-if (mysqli_connect_errno())
-{
-    echo("Error al conectar: " . mysqli_connect_error());
+$conexion = new mysqli($host, $user, $pass, $db);
+
+if ($conexion->connect_errno) {
+    echo("Error al conectar: " . $conexion->connect_error);
     exit();
 }
 
@@ -12,8 +16,8 @@ if (mysqli_connect_errno())
 date_default_timezone_set('America/Caracas');
 
 // Configurar el conjunto de caracteres a utf8mb4 (Soporta Emojis)
-mysqli_set_charset($conexion, "utf8mb4");
+$conexion->set_charset("utf8mb4");
 
 // Establecer la zona horaria de la base de datos a Venezuela (UTC -4:00)
-mysqli_query($conexion, "SET time_zone = '-04:00'");
+$conexion->query("SET time_zone = '-04:00'");
 ?>

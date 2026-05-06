@@ -180,12 +180,12 @@ $result = $stmt->get_result();
                 <h1 class="fw-bold mb-0 text-primary"><i class="fas fa-users me-2"></i>Mis Clientes</h1>
                 <p class="text-muted">Listado de clientes registrados en el sistema</p>
             </div>
-            <a onclick="navigateTo('agregar_cliente.php')" class="btn btn-add-premium">
+            <a href="agregar_cliente.php" class="btn btn-add-premium">
                 <i class="fas fa-user-plus me-2"></i> Nuevo Cliente
             </a>
             <nav aria-label="breadcrumb" class="d-none d-lg-block">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Clientes</li>
                 </ol>
             </nav>
@@ -217,7 +217,7 @@ $result = $stmt->get_result();
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a 
-                                                    onclick="navigateTo('editar_cliente.php?id=<?php echo $row['id_cliente']; ?>')" 
+                                                    href="editar_cliente.php?id=<?php echo $row['id_cliente']; ?>" 
                                                     class="btn-action btn-action-edit" 
                                                     title="Ver Detalles"
                                                 >
@@ -247,7 +247,7 @@ $result = $stmt->get_result();
                         </div>
                         <h4 class="text-dark fw-bold mb-2">No tienes clientes registrados</h4>
                         <p class="text-muted mb-4 max-w-400 mx-auto">Parece que aún no has registrado clientes bajo tu cuenta. Comienza agregando uno nuevo.</p>
-                        <a onclick="navigateTo('agregar_cliente.php')" class="btn btn-add-premium">
+                        <a href="agregar_cliente.php" class="btn btn-add-premium">
                              <i class="fas fa-user-plus me-2"></i> Registrar Primer Cliente
                         </a>
                     </div>

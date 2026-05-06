@@ -112,6 +112,17 @@ $categorias = obtenerCategorias($conexion);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     
+    [data-theme="dark"] .instruction-alert {
+        background: linear-gradient(135deg, rgba(30,41,59,1) 0%, rgba(15,23,42,1) 100%);
+        border: 1px solid rgba(255,255,255,0.05) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        color: #f8fafc;
+    }
+    
+    [data-theme="dark"] .instruction-alert h5 {
+        color: #f8fafc !important;
+    }
+    
     /* Los floating labels ahora utilizan el estándar form-floating de Bootstrap 5 */
     .form-floating > .form-control-premium:focus,
     .form-floating > .form-select-premium:focus {
@@ -134,7 +145,7 @@ $categorias = obtenerCategorias($conexion);
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Registro de Activos</li>
                 </ol>
             </nav>

@@ -76,8 +76,8 @@ require_once("../models/header.php")
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('usuario.php')" class="text-decoration-none">Usuarios</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="usuario.php" class="text-decoration-none">Usuarios</a></li>
                     <li class="breadcrumb-item active">Nuevo Usuario</li>
                 </ol>
             </nav>
@@ -250,7 +250,7 @@ require_once("../models/header.php")
                 <button class="btn-submit-violet me-3" type="submit" id="btnGuardar">
                     <i class="fa fa-user-plus me-2"></i> Registrar Usuario
                 </button>
-                <a href="javascript:void(0);" onclick="navigateTo('usuario.php')" class="btn btn-outline-secondary btn-lg rounded-4 px-4">
+                <a href="usuario.php" class="btn btn-outline-secondary btn-lg rounded-4 px-4">
                     <i class="fa fa-arrow-left me-1"></i> Cancelar
                 </a>
             </div>

@@ -24,7 +24,7 @@ $stmtFoto->close();
 
 $usuario_id = $_SESSION['id']; // Obtén el ID del usuario actual
 
-// Obtener las preguntas de seguridad actuales del usuario desde la base de datos
+// Obtener datos del usuario incluyendo preferencias
 $sql = "SELECT pregunta, pregunta2 FROM usuario WHERE id_usuario = ?";
 $stmt = $conexion->prepare($sql);
 $stmt->bind_param("i", $usuario_id);
@@ -274,7 +274,7 @@ $opciones_preguntas = [
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none text-muted fw-bold">Dashboard</a></li>
                     <li class="breadcrumb-item active">Configuración de Perfil</li>
                 </ol>
             </nav>
@@ -368,6 +368,7 @@ $opciones_preguntas = [
                             <input type="text" class="form-control form-control-premium" id="respuesta2" name="respuesta2" placeholder="Solo si deseas cambiar tus preguntas">
                         </div>
                     </div>
+
 
                     <!-- CONTRASEÑA -->
                     <h5 class="section-title"><i class="fas fa-lock"></i> Gestión de Contraseñas</h5>

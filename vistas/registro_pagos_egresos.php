@@ -1,4 +1,5 @@
 <?php
+global $conexion;
 require_once("../models/header.php");
 require_once("../conexion.php");
 
@@ -28,6 +29,13 @@ foreach ($_SESSION['form_tokens'] as $token => $time) {
         unset($_SESSION['form_tokens'][$token]);
     }
 }
+
+// Comprobar si el mes actual está cerrado
+$anio_actual = date('Y');
+$mes_actual_num = date('n'); // 1 to 12
+$cierre_query = "SELECT id FROM cierres_mensuales WHERE anio = '$anio_actual' AND mes = '$mes_actual_num'";
+$cierre_res = $conexion->query($cierre_query);
+$is_month_closed = ($cierre_res && $cierre_res->num_rows > 0);
 // Variables dinámicas para el contexto de la UI (Admin/Cont vs UPU)
 $isAdminOrCont = ($_SESSION['tipo'] === 'admin' || $_SESSION['tipo'] === 'cont');
 $uiTituloPagina = $isAdminOrCont ? 'Registrar Comisión / Ajuste' : 'Registrar Egreso';
@@ -38,7 +46,33 @@ $uiDetalles = $isAdminOrCont ? 'Detalles de la Comisión' : 'Detalles del Egreso
 $uiMontoLabel = $isAdminOrCont ? 'Monto de la Comisión (Bs)' : 'Monto del Egreso (Bs)';
 $uiFechaLabel = $isAdminOrCont ? 'Fecha de la Comisión' : 'Fecha del Egreso';
 $uiBtnTexto = $isAdminOrCont ? 'Confirmar Comisión' : 'Confirmar Egreso';
+
+// Obtener fecha del último pago para advertencias en el calendario
+$last_payment_date = '2000-01-01';
+if (isset($_SESSION['id'])) {
+    $sqlLast = "SELECT MAX(p.fecha_pago) 
+                FROM pagos p
+                INNER JOIN usuario_pagos up ON p.id = up.pago_id
+                WHERE up.usuario_id = ? AND p.estado != 'rechazado'";
+    $stmtLast = $conexion->prepare($sqlLast);
+    if ($stmtLast) {
+        $stmtLast->bind_param("i", $_SESSION['id']);
+        $stmtLast->execute();
+        $last_date_found = null;
+        $stmtLast->bind_result($last_date_found);
+        if ($stmtLast->fetch()) {
+            if ($last_date_found) {
+                $last_payment_date = $last_date_found;
+            }
+        }
+        $stmtLast->close();
+    }
+}
 ?>
+<script>
+    window.SDGBP_LAST_PAYMENT_DATE = "<?php echo $last_payment_date; ?>";
+</script>
+
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -148,7 +182,7 @@ $uiBtnTexto = $isAdminOrCont ? 'Confirmar Comisión' : 'Confirmar Egreso';
             </div>
             <nav aria-label="breadcrumb" class="d-none d-lg-block">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active"><?php echo $uiBreadcrumb; ?></li>
                 </ol>
             </nav>
@@ -209,6 +243,13 @@ $uiBtnTexto = $isAdminOrCont ? 'Confirmar Comisión' : 'Confirmar Egreso';
             <!-- Main Form -->
             <div class="<?php echo $isAdminOrCont ? 'col-lg-10' : 'col-lg-8'; ?> animate-up" style="animation-delay: 0.2s;">
                 <div class="glass-card p-4 p-md-5">
+                    <?php if ($_SESSION['tipo'] === 'upu' && $is_month_closed): ?>
+                        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-25 rounded-3 mb-0 p-4 text-center">
+                            <i class="fas fa-lock fa-3x text-danger mb-3 opacity-75"></i>
+                            <h5 class="fw-bold text-danger">Operaciones Suspendidas</h5>
+                            <p class="mb-0 text-dark opacity-75">El periodo contable actual (<strong><?php echo date('m/Y'); ?></strong>) se encuentra cerrado. Deberá esperar al próximo mes para registrar nuevos egresos.</p>
+                        </div>
+                    <?php else: ?>
                     <form method="post" id="formRegistroEgreso" action="../acciones/controlador_pago_egreso.php" onsubmit="return validateFormRegistroEgreso()" enctype="multipart/form-data">
                         <input type="hidden" id="idempotency_token" name="idempotency_token" value="<?php echo $idempotency_token; ?>">
                         <input type="hidden" id="user_role_global" value="<?php echo $_SESSION['tipo']; ?>">
@@ -256,23 +297,66 @@ $uiBtnTexto = $isAdminOrCont ? 'Confirmar Comisión' : 'Confirmar Egreso';
                                         <input type="text" class="form-control bg-light" value="No Aplica" readonly>
                                         <input type="hidden" name="cliente" id="cliente" value="No Aplica">
                                     <?php else: ?>
+                                        <?php
+                                        // Pre-fetch client list for datalist + dropdown
+                                        $sqlClientes = "SELECT DISTINCT c.nombre FROM cliente c INNER JOIN usuario_pagos up ON c.id_cliente = up.cliente_id WHERE up.usuario_id = ? ORDER BY c.nombre ASC";
+                                        $stmtClientes = $conexion->prepare($sqlClientes);
+                                        $stmtClientes->bind_param("i", $_SESSION['id']);
+                                        $stmtClientes->execute();
+                                        $cnombre = "";
+                                        $stmtClientes->bind_result($cnombre);
+                                        $existing_clients_egreso = [];
+                                        while ($stmtClientes->fetch()) { $existing_clients_egreso[] = $cnombre; }
+                                        $stmtClientes->close();
+                                        ?>
                                         <span class="input-group-text"><i class="fas fa-building"></i></span>
-                                        <select class="form-select" id="cliente" name="cliente">
-                                            <option value="">Seleccione...</option>
-                                            <?php
-                                            $sqlClientes = "SELECT DISTINCT c.id_cliente, c.nombre FROM cliente c INNER JOIN usuario_pagos up ON c.id_cliente = up.cliente_id WHERE up.usuario_id = ?";
-                                            $stmtClientes = $conexion->prepare($sqlClientes);
-                                            $stmtClientes->bind_param("i", $_SESSION['id']);
-                                            $stmtClientes->execute();
-                                            $resultClientes = $stmtClientes->get_result();
-                                            while ($rowCliente = $resultClientes->fetch_assoc()) {
-                                                echo "<option value='" . $rowCliente['id_cliente'] . "'>" . $rowCliente['nombre'] . "</option>";
-                                            }
-                                            $stmtClientes->close();
-                                            ?>
-                                        </select>
+                                        <input type="text"
+                                               class="form-control hybrid-client-input"
+                                               id="cliente"
+                                               name="cliente"
+                                               placeholder="Escribe o selecciona un proveedor..."
+                                               autocomplete="off"
+                                               list="clientes-datalist-egreso">
+                                        <datalist id="clientes-datalist-egreso">
+                                            <?php foreach ($existing_clients_egreso as $cn): ?>
+                                                <option value="<?= htmlspecialchars($cn) ?>">
+                                            <?php endforeach; ?>
+                                        </datalist>
+                                        <?php if (!empty($existing_clients_egreso)): ?>
+                                        <button class="btn btn-outline-secondary dropdown-toggle-split px-3" type="button"
+                                                id="btn-pick-egreso"
+                                                data-bs-toggle="dropdown" aria-expanded="false"
+                                                title="Seleccionar cliente guardado"
+                                                style="border-radius:0 12px 12px 0;">
+                                            <i class="fas fa-users fa-sm"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow" style="max-height:220px;overflow-y:auto;min-width:260px;">
+                                            <li><h6 class="dropdown-header"><i class="fas fa-star me-1 text-warning"></i> Clientes / Proveedores guardados</h6></li>
+                                            <?php foreach ($existing_clients_egreso as $cn): ?>
+                                            <li>
+                                                <a class="dropdown-item hybrid-client-pick" href="#"
+                                                   data-target="cliente"
+                                                   data-save-container="save-client-container"
+                                                   data-name="<?= htmlspecialchars($cn) ?>">
+                                                    <i class="fas fa-user me-2 text-muted fa-sm"></i><?= htmlspecialchars($cn) ?>
+                                                </a>
+                                            </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
+                                <!-- Toggle dinámico para guardar nuevo cliente (Solo UPU) -->
+                                <?php if ($_SESSION['tipo'] === 'upu'): ?>
+                                <div id="save-client-container" class="mt-2 animate__animated animate__fadeInSmall" style="display: none;">
+                                    <div class="form-check form-switch p-0 d-flex align-items-center gap-2">
+                                        <input class="form-check-input ms-0" type="checkbox" id="save_client_db" name="save_client_db" value="1">
+                                        <label class="form-check-label small text-primary fw-bold" for="save_client_db" style="cursor: pointer;">
+                                            <i class="fas fa-save me-1"></i> Guardar como cliente frecuente
+                                        </label>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -312,6 +396,32 @@ $uiBtnTexto = $isAdminOrCont ? 'Confirmar Comisión' : 'Confirmar Egreso';
                             </div>
 
                             <div class="col-md-6 mb-3">
+                                <label class="small fw-bold mb-2">Forma de Ejecución</label>
+                                <?php if ($isAdminOrCont): ?>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-exchange-alt text-primary"></i></span>
+                                        <input type="text" class="form-control bg-light fw-bold" value="Transacción" readonly>
+                                        <input type="hidden" name="forma_pago" value="Transacción">
+                                    </div>
+                                <?php else: ?>
+                                    <div class="d-flex gap-4 mt-2">
+                                        <div class="form-check custom-option">
+                                            <input class="form-check-input" type="radio" name="forma_pago" id="pago_transferencia" value="Transacción" checked>
+                                            <label class="form-check-label small fw-500" for="pago_transferencia">
+                                                <i class="fas fa-exchange-alt me-1 text-primary"></i> Transacción
+                                            </label>
+                                        </div>
+                                        <div class="form-check custom-option">
+                                            <input class="form-check-input" type="radio" name="forma_pago" id="pago_tarjeta" value="Tarjeta de Débito">
+                                            <label class="form-check-label small fw-500" for="pago_tarjeta">
+                                                <i class="fas fa-credit-card me-1 text-danger"></i> Tarjeta de Débito
+                                            </label>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
                                 <label class="small fw-bold mb-2"><?php echo $uiMontoLabel; ?></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-money-bill-wave"></i></span>
@@ -332,7 +442,7 @@ $uiBtnTexto = $isAdminOrCont ? 'Confirmar Comisión' : 'Confirmar Egreso';
                                 <label class="small fw-bold mb-2"><?php echo $uiFechaLabel; ?></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                                    <input type="text" class="form-control datepicker-flat" id="fecha_pago" name="fecha_pago" placeholder="YYYY-MM-DD" readonly>
+                                    <input type="text" class="form-control datepicker-flat datepicker-finance" id="fecha_pago" name="fecha_pago" placeholder="YYYY-MM-DD" readonly>
                                 </div>
                             </div>
 
@@ -349,12 +459,14 @@ $uiBtnTexto = $isAdminOrCont ? 'Confirmar Comisión' : 'Confirmar Egreso';
                                 <label class="small fw-bold mb-2">Descripción / Motivo</label>
                                 <textarea class="form-control" id="descripcion" name="descripcion" maxlength="50" placeholder="Motivo detallado (máx 50 caracteres)" style="height: 100px;"></textarea>
                             </div>
+
                         </div>
 
                         <button type="submit" class="btn btn-register-egreso btn-lg w-100 shadow-sm mt-2">
                             <i class="fas fa-check-circle me-2"></i> <?php echo $uiBtnTexto; ?>
                         </button>
                     </form>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

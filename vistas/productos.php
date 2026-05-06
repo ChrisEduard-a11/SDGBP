@@ -142,16 +142,16 @@ $total_sin_stock = $row['total_sin_stock'];
                 <p class="text-muted">Control de productos, stock y categorías de venta</p>
             </div>
             <div class="d-flex gap-2">
-                <a class="btn btn-emerald-premium px-4 py-2" href="javascript:void(0);" onclick="navigateTo('agregar_producto.php')">
+                <a class="btn btn-emerald-premium px-4 py-2" href="agregar_producto.php">
                     <i class="fa fa-plus-circle me-2"></i> Nuevo Producto
                 </a>
-                <a class="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm" href="javascript:void(0);" onclick="navigateTo('agregar_categoria_producto.php')">
+                <a class="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm" href="agregar_categoria_producto.php">
                     <i class="fa fa-tags me-2"></i> Categorías
                 </a>
             </div>
             <nav aria-label="breadcrumb" class="d-none d-lg-block">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Productos</li>
                 </ol>
             </nav>

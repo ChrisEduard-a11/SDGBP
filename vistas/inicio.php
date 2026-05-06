@@ -8,8 +8,8 @@ if (file_exists($marketing_status_path)) {
     $marketingEnabled = isset($ms_data['activo']) ? $ms_data['activo'] : true;
 }
 
-$maint_query = mysqli_query($conexion, "SELECT * FROM config_mantenimiento WHERE id = 1");
-$maint_data = mysqli_fetch_assoc($maint_query);
+global $conexion, $maintenance_data;
+$maint_data = $maintenance_data; // Reusar datos ya cargados por models/header.php
 
 $maintenanceEnabled = (bool)($maint_data['activo'] ?? false);
 $fecha_m = $maint_data['fecha'] ?? null;
@@ -17,7 +17,7 @@ $h_inicio = substr($maint_data['hora_inicio'], 0, 5);
 $h_fin = substr($maint_data['hora_fin'], 0, 5);
 
 // Integrar lógica de horario en el estado del Dashboard
-if (!$maintenanceEnabled && !empty($h_inicio) && !empty($h_fin)) {
+if (!$maintenanceEnabled && ($maint_data['usar_horario'] ?? 1) && !empty($h_inicio) && !empty($h_fin)) {
     date_default_timezone_set('America/Caracas'); 
     $f_actual = date('Y-m-d');
     $h_actual = date('H:i');
@@ -415,7 +415,7 @@ if ($tipo_usuario == "admin") {
                                 </span>
                                 
                                 <?php if ($maintenanceEnabled): ?>
-                                    <button type="button" onclick="toggleMaintenanceState(event)" class="btn btn-sm btn-light text-danger fw-bold w-100 shadow-sm mb-2" style="font-size: 0.75rem;">
+                                    <button type="button" onclick="toggleMaintenanceState(event, 'off')" class="btn btn-sm btn-light text-danger fw-bold w-100 shadow-sm mb-2" style="font-size: 0.75rem;">
                                         <i class="fas fa-unlock me-1"></i> Abrir (Manual)
                                     </button>
                                 <?php endif; ?>
@@ -530,7 +530,7 @@ if ($tipo_usuario == "admin") {
                         <i class="fas fa-book-open metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" onclick="window.open('../manuales/<?php echo $manual_rol; ?>', '_blank')" style="cursor:pointer;"><i class="fas fa-file-pdf text-white me-1"></i> Ver/Descargar Manual de Rol</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" onclick="showPremiumReport('../manuales/<?php echo $manual_rol; ?>', '<?php echo $titulo_rol; ?>')" style="cursor:pointer;"><i class="fas fa-file-pdf text-white me-1"></i> Ver Manual de Rol</a>
                         <div class="small text-white"><i class="fas fa-external-link-alt"></i></div>
                     </div>
                 </div>
@@ -544,7 +544,7 @@ if ($tipo_usuario == "admin") {
                         <i class="fas fa-laptop-code metric-icon"></i>
                     </div>
                     <div class="card-footer card-footer-premium d-flex align-items-center justify-content-between p-3 mt-auto">
-                        <a class="small text-white stretched-link text-decoration-none fw-bold" onclick="window.open('../manuales/Manual_General_SDGBP.pdf', '_blank')" style="cursor:pointer;"><i class="fas fa-file-pdf text-white me-1"></i> Ver Manual Completo</a>
+                        <a class="small text-white stretched-link text-decoration-none fw-bold" onclick="showPremiumReport('../manuales/Manual_General_SDGBP.pdf', 'Manual General del Sistema')" style="cursor:pointer;"><i class="fas fa-file-pdf text-white me-1"></i> Ver Manual Completo</a>
                         <div class="small text-white"><i class="fas fa-external-link-alt"></i></div>
                     </div>
                 </div>
@@ -603,7 +603,7 @@ if ($tipo_usuario == "admin") {
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Fecha de Mantenimiento (Opcional)</label>
-                            <input type="date" class="form-control rounded-3" name="fecha" value="<?php echo htmlspecialchars($maint_data['fecha'] ?? ''); ?>">
+                            <input type="text" class="form-control rounded-3 datepicker-flat" name="fecha" value="<?php echo htmlspecialchars($maint_data['fecha'] ?? ''); ?>">
                             <div class="form-text">Si se deja vacío, el horario se aplicará todos los días.</div>
                         </div>
                         <div class="row">
@@ -655,44 +655,52 @@ if ($tipo_usuario == "admin") {
                 });
         }
 
-        function toggleMaintenanceState(e) {
+        function toggleMaintenanceState(e, desiredAction = '') {
             e.preventDefault();
             e.stopPropagation();
             
-            Swal.fire({
-                title: '¿Confirmar cambio?',
-                text: "Esto afectará el acceso de todos los usuarios no administradores.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ea580c',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, Cambiar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('../acciones/toggle_maintenance.php')
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                const badge = document.getElementById('maintenanceStatusBadge');
-                                if (data.activo) {
-                                    badge.className = 'badge bg-danger mb-1 d-block shadow-sm';
-                                    badge.innerText = 'Estado: ON';
-                                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'warning', title: 'Mantenimiento Activado', text: 'El sistema ahora es inaccesible para los usuarios regulares.', timer: 2500, showConfirmButton: false});
+            const title = (desiredAction === 'off') ? '¿Abrir el sistema?' : '¿Confirmar cambio de estado?';
+            const text = (desiredAction === 'off') ? "Se restaurará el acceso para todos los usuarios." : "Esto afectará el acceso de todos los usuarios no administradores.";
+            const confirmBtnText = (desiredAction === 'off') ? 'Sí, Abrir Ahora' : 'Sí, Cambiar';
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: (desiredAction === 'off') ? '#10b981' : '#ea580c',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: confirmBtnText,
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const url = desiredAction ? `../acciones/toggle_maintenance.php?action=${desiredAction}` : '../acciones/toggle_maintenance.php';
+                        fetch(url)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const badge = document.getElementById('maintenanceStatusBadge');
+                                    if (data.activo) {
+                                        badge.className = 'badge bg-danger mb-2 d-block shadow-sm py-2';
+                                        badge.innerHTML = '<i class="fas fa-lock me-1"></i> PLATAFORMA CERRADA';
+                                        Swal.fire({icon: 'warning', title: 'Mantenimiento Activado', text: 'El sistema ahora es inaccesible.', timer: 2000, showConfirmButton: false});
+                                    } else {
+                                        badge.className = 'badge bg-success mb-2 d-block shadow-sm py-2';
+                                        badge.innerHTML = '<i class="fas fa-check-circle me-1"></i> SISTEMA OPERATIVO';
+                                        Swal.fire({icon: 'success', title: 'Mantenimiento Desactivado', text: 'Acceso restaurado con éxito.', timer: 2000, showConfirmButton: false})
+                                            .then(() => location.reload()); // Recargar para limpiar el botón de bypass y actualizar lógica PHP
+                                    }
                                 } else {
-                                    badge.className = 'badge bg-success mb-1 d-block shadow-sm';
-                                    badge.innerText = 'Estado: OFF';
-                                    if (typeof Swal !== 'undefined') Swal.fire({icon: 'success', title: 'Mantenimiento Desactivado', text: 'El acceso ha sido restaurado para todos los usuarios.', timer: 2500, showConfirmButton: false});
+                                    Swal.fire('Error', data.message || 'Error al cambiar estado.', 'error');
                                 }
-                            } else {
-                                if (typeof Swal !== 'undefined') Swal.fire('Error', data.message || 'Error al cambiar estado.', 'error');
-                            }
-                        })
-                        .catch(err => {
-                            if (typeof Swal !== 'undefined') Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
-                        });
-                }
-            });
+                            })
+                            .catch(err => {
+                                Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+                            });
+                    }
+                });
+            }
         }
 
         // Manejar envío del formulario de ajustes vía AJAX

@@ -159,7 +159,7 @@ $archivos = array_diff(scandir($rutaCarpeta), array('.', '..'));
             </button>
             <nav aria-label="breadcrumb" class="d-none d-lg-block">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Comprobantes</li>
                 </ol>
             </nav>
@@ -407,6 +407,40 @@ $archivos = array_diff(scandir($rutaCarpeta), array('.', '..'));
             });
         }
     </script>
+
+    <?php if (isset($_GET['mensaje'])): ?>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            <?php if ($_GET['mensaje'] == 'exito'): ?>
+                Swal.fire({
+                    title: '¡Comprobante Generado!',
+                    text: 'El comprobante se ha generado y guardado correctamente.',
+                    icon: 'success',
+                    confirmButtonColor: '#198754',
+                    confirmButtonText: 'Aceptar'
+                }).then((result) => {
+                    <?php if (isset($_GET['archivo'])): ?>
+                        // Disparar la descarga automáticamente
+                        const archivo = "<?php echo htmlspecialchars($_GET['archivo']); ?>";
+                        const link = document.createElement('a');
+                        link.href = "../comprobantes/" + archivo;
+                        link.download = archivo;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    <?php endif; ?>
+                });
+            <?php elseif ($_GET['mensaje'] == 'error'): ?>
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Hubo un problema al generar el comprobante. Por favor, intente nuevamente.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            <?php endif; ?>
+        });
+    </script>
+    <?php endif; ?>
 </div>
 <?php
 require_once("../models/footer.php");

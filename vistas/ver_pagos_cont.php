@@ -1,13 +1,22 @@
 <?php
-include_once("../models/header.php");
-include_once("../models/funciones.php");
-require_once("../conexion.php");
+global $conexion;
+$is_ajax = isset($_GET['ajax']);
+
+if ($is_ajax) {
+    session_start();
+    require_once("../conexion.php");
+} else {
+    require_once("../models/header.php");
+    require_once("../conexion.php");
+}
 
 // Verificar si el usuario tiene permisos de tipo "cont" o "admin"
-if ($_SESSION["tipo"] != "cont" && $_SESSION["tipo"] != "admin") {
+if (!isset($_SESSION["tipo"]) || ($_SESSION["tipo"] != "cont" && $_SESSION["tipo"] != "admin")) {
     header("Location: inicio.php");
     exit();
 }
+
+include_once("../models/funciones.php");
 
 // Variables para los filtros
 $estado = $_GET['estado'] ?? '';
@@ -15,6 +24,9 @@ $fecha_inicio = $_GET['fecha_inicio'] ?? '';
 $fecha_fin = $_GET['fecha_fin'] ?? '';
 $referencia = $_GET['referencia'] ?? '';
 $usuario_upu = $_GET['usuario_upu'] ?? '';
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$records_per_page = 10;
+$offset = ($page - 1) * $records_per_page;
 
 // --- Lógica PHP para la Consulta de Pagos ---
 $where_clauses = ["1=1"];
@@ -40,17 +52,23 @@ if (!empty($usuario_upu)) {
 
 $where_sql = implode(" AND ", $where_clauses);
 
-// Consulta Principal
-$sql = "SELECT pagos.*, usuario.nombre AS nombre_cliente FROM pagos 
+$sql = "SELECT pagos.id, pagos.nombre_cliente, pagos.monto, pagos.descripcion, pagos.referencia, pagos.fecha_pago, pagos.estado, pagos.tipo, pagos.cliente, pagos.comprobante_archivo, pagos.saldo_resultante, pagos.usuario_aprobador, pagos.metodo_pago, pagos.forma_pago, pagos.des_rechazo, usuario.nombre AS nombre_full 
+         FROM pagos 
          INNER JOIN usuario_pagos ON pagos.id = usuario_pagos.pago_id
          INNER JOIN usuario ON usuario.id_usuario = usuario_pagos.usuario_id
          WHERE $where_sql
-         ORDER BY id DESC";
+         ORDER BY pagos.id DESC
+         LIMIT ? OFFSET ?";
 
 $stmt = $conexion->prepare($sql);
-if ($params) {
-    $types = str_repeat("s", count($params));
-    $stmt->bind_param($types, ...$params);
+$params_with_paging = $params;
+$params_with_paging[] = $records_per_page;
+$params_with_paging[] = $offset;
+
+$types_filters = str_repeat("s", count($params));
+
+if ($params_with_paging) {
+    $stmt->bind_param($types_filters . "ii", ...$params_with_paging);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -67,7 +85,7 @@ $sql_metrics = "SELECT
 
 $stmt_m = $conexion->prepare($sql_metrics);
 if ($params) {
-    $stmt_m->bind_param($types, ...$params);
+    $stmt_m->bind_param($types_filters, ...$params);
 }
 $stmt_m->execute();
 $metrics = $stmt_m->get_result()->fetch_assoc();
@@ -76,6 +94,7 @@ $total_ingresos = $metrics['total_ingresos'] ?? 0;
 $total_egresos = $metrics['total_egresos'] ?? 0;
 $pago_count = $metrics['total_transacciones'] ?? 0;
 $balance_global = $total_ingresos - $total_egresos;
+$total_pages = ceil($pago_count / $records_per_page);
 
 // Consultas para selects
 $query_usuarios_upu = "SELECT id_usuario, nombre FROM usuario WHERE tipos = 'upu'";
@@ -84,6 +103,19 @@ $result_usuarios_upu_export = $conexion->query($query_usuarios_upu);
 $query_upu_saldos = "SELECT nombre, correo, saldo FROM usuario WHERE tipos = 'upu'";
 $result_upu_saldos = $conexion->query($query_upu_saldos);
 ?>
+
+<?php if ($is_ajax): ?>
+    <div id="ajax-response">
+        <div id="pago-count-update"><?php echo $pago_count; ?></div>
+        <div id="metrics-update">
+            <span id="total-ingresos"><?php echo number_format($total_ingresos, 2, ',', '.'); ?></span>
+            <span id="total-egresos"><?php echo number_format($total_egresos, 2, ',', '.'); ?></span>
+            <span id="balance-global"><?php echo number_format($balance_global, 2, ',', '.'); ?></span>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php if (!$is_ajax): ?>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -255,7 +287,7 @@ $result_upu_saldos = $conexion->query($query_upu_saldos);
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Reporte Global</li>
                 </ol>
             </nav>
@@ -311,11 +343,15 @@ $result_upu_saldos = $conexion->query($query_upu_saldos);
                         <option value="rechazado" <?php echo $estado == 'rechazado' ? 'selected' : ''; ?>>❌ Rechazados</option>
                     </select>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-bold text-muted uppercase">Referencia</label>
+                    <input type="text" name="referencia" class="form-control border-0 bg-light rounded-3" placeholder="Buscar ref..." value="<?php echo htmlspecialchars($referencia); ?>">
+                </div>
+                <div class="col-6 col-md-2">
                     <label class="form-label small fw-bold text-muted uppercase">Desde</label>
                     <input type="text" name="fecha_inicio" class="form-control border-0 bg-light rounded-3 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_inicio; ?>">
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-2">
                     <label class="form-label small fw-bold text-muted uppercase">Hasta</label>
                     <input type="text" name="fecha_fin" class="form-control border-0 bg-light rounded-3 datepicker-flat" placeholder="YYYY-MM-DD" value="<?php echo $fecha_fin; ?>">
                 </div>
@@ -395,8 +431,8 @@ if ($result_usuarios_upu_export->num_rows > 0) {
                 </a>
             </div>
 
-            <div class="table-responsive">
-                <table id="datatablesSimple" class="table custom-table">
+            <div class="table-responsive" id="table-container">
+                <table id="datatablesSimple" class="table custom-table" data-paging="false" data-searching="false">
                     <thead>
                         <tr>
                             <th>UPU / Cliente</th>
@@ -407,7 +443,8 @@ if ($result_usuarios_upu_export->num_rows > 0) {
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="pago-table-body">
+                        <?php if ($is_ajax) echo "<table-body>"; ?>
                         <?php if ($result->num_rows > 0): ?>
                             <?php while ($row = $result->fetch_assoc()): ?>
                                 <?php if ($row['estado'] == 'rechazado' && $estado != 'rechazado')
@@ -419,17 +456,19 @@ if ($result_usuarios_upu_export->num_rows > 0) {
                                                 <?php echo substr($row["nombre_cliente"], 0, 1); ?>
                                             </div>
                                             <div>
-                                                <div class="fw-bold text-dark"><?php echo ucfirst($row["nombre_cliente"]); ?></div>
-                                                <div class="text-muted small"><?php echo $row['cliente']; ?></div>
-                                            </div>
+                                            <div class="fw-bold text-dark"><?php echo ucfirst($row["nombre_full"]); ?></div>
+                                            <div class="text-muted small"><?php echo $row['cliente']; ?></div>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <div class="small fw-semibold text-dark"><?php echo ucfirst($row["descripcion"]); ?></div>
-                                        <div class="text-muted extra-small">
-                                            <span class="me-2"><i class="fas fa-calendar-alt me-1"></i><?php echo date('d/m/Y', strtotime($row["fecha_pago"])); ?></span>
-                                            <span><i class="fas fa-barcode me-1"></i><?php echo $row["referencia"]; ?></span>
-                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-dark"><?php echo ucfirst($row["descripcion"]); ?></div>
+                                    <div class="text-muted extra-small">
+                                        <span class="me-2"><i class="fas fa-calendar-alt me-1"></i><?php echo date('d/m/Y', strtotime($row["fecha_pago"])); ?></span>
+                                        <span><i class="fas fa-barcode me-1"></i><?php echo $row["referencia"]; ?></span>
+                                        <span class="mx-1">|</span>
+                                        <span class="extra-small"><i class="<?php echo ($row['forma_pago'] == 'Tarjeta de Débito') ? 'fas fa-credit-card' : 'fas fa-exchange-alt'; ?> me-1"></i><?php echo $row["forma_pago"]; ?></span>
+                                    </div>
                                     </td>
                                     <td class="text-center">
                                         <?php if ($row["tipo"] == "Ingreso"): ?>
@@ -501,13 +540,53 @@ if ($result_usuarios_upu_export->num_rows > 0) {
     endwhile; ?>
                         <?php
 endif; ?>
+                        <?php if ($is_ajax) echo "</table-body>"; ?>
                     </tbody>
                 </table>
             </div>
-        </div>
+
+            <!-- Pagination Controls -->
+            <div id="pagination-container">
+            <?php if ($is_ajax) echo '<div id="pagination-update">'; ?>
+            <?php if ($total_pages > 1): ?>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted small">
+                        Mostrando registros <?php echo $offset + 1; ?> al <?php echo min($offset + $records_per_page, $pago_count); ?> de <?php echo $pago_count; ?>
+                    </div>
+                    <nav aria-label="Navegación de páginas">
+                        <ul class="pagination pagination-rounded mb-0">
+                            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <?php
+                            $start = max(1, $page - 2);
+                            $end = min($total_pages, $page + 2);
+                            for ($i = $start; $i <= $end; $i++): ?>
+                                <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?<?php echo http_build_query(array_merge($_GET, ['page' => $i])); ?>"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+                            <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            <?php endif; ?>
+            <?php if ($is_ajax) echo '</div>'; ?>
+            </div>
+<?php endif; ?>
+
+<?php if ($is_ajax) exit(); ?>
+
+<?php if (!$is_ajax): ?>
 
         <!-- UPU Balances -->
-        <div class="glass-card p-4 mb-5 fade-in-up stagger-5">
+        <div class="glass-card p-4 mt-5 mb-5 fade-in-up stagger-5">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
                 <div class="d-flex align-items-center">
                     <div class="bg-indigo bg-opacity-10 p-2 rounded-circle me-3">
@@ -717,6 +796,7 @@ endif; ?>
             const url = `../dompdf/exportar_pdf_I-E.php?filtro_fecha_inicio=${fecha_inicio}&filtro_fecha_fin=${fecha_fin}&usuario_upu=${upu}`;
             showPremiumReport(url, 'Reporte de Ingresos y Egresos');
         };
+
     });
 </script>
 
@@ -726,6 +806,5 @@ endif; ?>
     .zoomed { transform: scale(1.5); transform-origin: top center; margin-bottom: 50px; }
 </style>
 
-<?php
-require_once("../models/footer.php");
-?>
+<?php endif; ?>
+<?php if (!$is_ajax) require_once("../models/footer.php"); ?>

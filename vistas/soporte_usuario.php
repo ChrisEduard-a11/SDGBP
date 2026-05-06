@@ -1,4 +1,5 @@
 <?php
+global $conexion;
 require_once("../models/header.php");
 include('../conexion.php');
 

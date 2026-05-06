@@ -3,16 +3,11 @@ require '../vendor/autoload.php'; // Ajusta la ruta si es necesario
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-session_start();
-
 // Validar que los datos del formulario existan y no estén vacíos
 if (!isset($_POST['num_comprobante'], $_POST['nombre'], $_POST['monto'], $_POST['fecha'], $_POST['descripcion'], $_POST['rif'], $_POST['telefono'], $_POST['direccion'], $_POST['ciudad'], $_POST['correo'], 
           $_POST['tipo_pago'], $_POST['banco'], $_POST['cuenta'], $_POST['referencia']) || 
     empty($_POST['num_comprobante']) || empty($_POST['nombre']) || empty($_POST['monto']) || empty($_POST['fecha']) || empty($_POST['tipo_pago']) || empty($_POST['banco']) || empty($_POST['cuenta']) || empty($_POST['referencia'])) {
-    $_SESSION["estatus"] = "error";
-    $_SESSION["mensaje"] = "Todos los campos obligatorios deben ser completados correctamente.";
-    header("Location: ../vistas/formulario_comprobante.php");
-    exit();
+    die("Error: Todos los campos obligatorios deben ser completados.");
 }
 
 // Obtener datos del formulario
@@ -34,10 +29,7 @@ $referencia = htmlspecialchars($_POST['referencia']);
 // Verificar que la plantilla exista
 $plantilla = "plantillas/comprobante_egreso.xlsm"; // Ruta de la plantilla
 if (!file_exists($plantilla)) {
-    $_SESSION["estatus"] = "error";
-    $_SESSION["mensaje"] = "La plantilla Excel no se encuentra en el servidor.";
-    header("Location: ../vistas/formulario_comprobante.php");
-    exit();
+    die("Error: La plantilla Excel no se encuentra en la ruta especificada.");
 }
 
 // Cargar plantilla
@@ -74,17 +66,14 @@ $rutaArchivo = $rutaCarpeta . $nombreArchivo;
 
 // Guardar el archivo en la carpeta
 $writer = new Xlsx($spreadsheet);
-$writer->save($rutaArchivo);
-
-// Descargar el archivo directamente
-header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header("Content-Disposition: attachment;filename=\"$nombreArchivo\"");
-header('Cache-Control: max-age=0');
-readfile($rutaArchivo);
-
-// Redirigir al usuario a la lista de comprobantes después de la descarga
-echo "<script>
-    window.location.href = '../comprobantes';
-</script>";
-exit();
+try {
+    $writer->save($rutaArchivo);
+    // Redirigir al usuario a la lista de comprobantes con mensaje de éxito y el nombre del archivo para descarga automática
+    header("Location: ../vistas/listar_comprobantes.php?mensaje=exito&archivo=" . urlencode($nombreArchivo));
+    exit();
+} catch (Exception $e) {
+    // Redirigir con mensaje de error en caso de fallo en el guardado
+    header("Location: ../vistas/listar_comprobantes.php?mensaje=error");
+    exit();
+}
 ?>

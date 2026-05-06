@@ -1,7 +1,19 @@
 <?php
-// PHP SCRIPT START - NO CHANGES MADE TO BACKEND LOGIC
-require_once("../models/header.php");
-require_once("../conexion.php");
+global $conexion;
+$is_ajax = isset($_GET['ajax']);
+
+if ($is_ajax) {
+    session_start();
+    require_once("../conexion.php");
+} else {
+    require_once("../models/header.php");
+
+}
+
+if (!isset($_SESSION['id'])) {
+    header("Location: auth/login.php");
+    exit();
+}
 
 // Verificar si el usuario tiene permisos de tipo "upu"
 if ($_SESSION["tipo"] != "upu") {
@@ -16,12 +28,14 @@ $fecha_fin = $_GET['fecha_fin'] ?? '';
 $referencia = $_GET['referencia'] ?? '';
 $cliente = $_GET['cliente'] ?? '';
 
-// Construir la consulta SQL con filtros
-$sql = "SELECT pagos.*, pagos.des_rechazo 
+$sql = "SELECT pagos.id, pagos.monto, pagos.descripcion, pagos.referencia, pagos.fecha_pago, pagos.estado, pagos.tipo, pagos.cliente, pagos.metodo_pago, pagos.forma_pago, pagos.des_rechazo, pagos.comprobante_archivo, pagos.saldo_resultante
         FROM pagos
         INNER JOIN usuario_pagos ON pagos.id = usuario_pagos.pago_id
         WHERE usuario_pagos.usuario_id = ?";
 $params = [$_SESSION['id']];
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$records_per_page = 10;
+$offset = ($page - 1) * $records_per_page;
 
 if (!empty($estado)) {
     $sql .= " AND estado = ?";
@@ -44,42 +58,28 @@ if (!empty($cliente)) {
     $params[] = $cliente; // Comparar con el nombre del cliente
 }
 
-$sql .= " ORDER BY pagos.id DESC";
+$sql_count = "SELECT COUNT(*) as count FROM pagos INNER JOIN usuario_pagos ON pagos.id = usuario_pagos.pago_id WHERE usuario_pagos.usuario_id = ?" . substr($sql, strpos($sql, "WHERE usuario_pagos.usuario_id = ?") + strlen("WHERE usuario_pagos.usuario_id = ?"));
 
-// Preparar y ejecutar la consulta
+$sql .= " ORDER BY pagos.id DESC LIMIT ? OFFSET ?";
+
+// Ejecutar conteo para paginación
+$types = 'i' . str_repeat("s", count($params) - 1);
+$stmt_count = $conexion->prepare($sql_count);
+$stmt_count->bind_param($types, ...$params);
+$stmt_count->execute();
+$total_records = $stmt_count->get_result()->fetch_assoc()['count'];
+$total_pages = ceil($total_records / $records_per_page);
+
+// Ejecutar consulta principal
 $stmt = $conexion->prepare($sql);
-$types = str_repeat("s", count($params));
-
-if ($stmt === false) {
-// Manejar el error de preparación si es necesario
-// die('Error de preparación: ' . $conexion->error);
-}
-// Ajuste para el primer parámetro que es integer (usuario_id) si los demás son strings
-// El código original asume todos como 's', se mantiene por compatibilidad del código dado.
-$types = 'i' . substr($types, 1);
-
-if (!empty($params)) {
-    // Usamos 'i' para el primer parámetro (id) y 's' para los demás.
-    // Asumiendo que el ID es un entero y los demás (estado, fechas, referencia, cliente) son strings.
-    // PHP >= 5.6 allows $stmt->bind_param($types, ...$params); 
-    $stmt->bind_param($types, ...$params);
-}
+$main_params = $params;
+$main_params[] = $records_per_page;
+$main_params[] = $offset;
+$main_types = $types . "ii";
+$stmt->bind_param($main_types, ...$main_params);
 
 $stmt->execute();
 $result = $stmt->get_result();
-
-// Obtener el saldo del usuario si es de tipo "UPU"
-$saldo = 0;
-if ($_SESSION["tipo"] == "upu") {
-    $query_saldo = "SELECT saldo FROM usuario WHERE id_usuario = ?";
-    $stmt_saldo = $conexion->prepare($query_saldo);
-    $stmt_saldo->bind_param("i", $_SESSION['id']);
-    $stmt_saldo->execute();
-    $result_saldo = $stmt_saldo->get_result();
-    if ($result_saldo->num_rows > 0) {
-        $saldo = $result_saldo->fetch_assoc()['saldo'];
-    }
-}
 
 // 1. Métricas: Pagos Pendientes (Específicos del UPU)
 $sql_pendientes = "SELECT COUNT(*) as count, SUM(monto) as total FROM pagos 
@@ -91,7 +91,6 @@ $stmt_p->execute();
 $metrics_p = $stmt_p->get_result()->fetch_assoc();
 
 // 2. Métricas: Actividad en el rango filtrado (Aprobados)
-// Reutilizamos la lógica de filtros para las métricas de actividad
 $sql_actividad = "SELECT 
     SUM(CASE WHEN tipo = 'Ingreso' THEN monto ELSE 0 END) as ingresos,
     SUM(CASE WHEN tipo = 'Egreso' THEN monto ELSE 0 END) as egresos,
@@ -113,7 +112,29 @@ $a_types[0] = 'i';
 $stmt_a->bind_param($a_types, ...$act_params);
 $stmt_a->execute();
 $metrics_act = $stmt_a->get_result()->fetch_assoc();
+// 3. Saldo actual del usuario
+$saldo = 0;
+$stmtSaldo = $conexion->prepare("SELECT saldo FROM usuario WHERE id_usuario = ?");
+$stmtSaldo->bind_param("i", $_SESSION['id']);
+$stmtSaldo->execute();
+$stmtSaldo->bind_result($saldo);
+$stmtSaldo->fetch();
+$stmtSaldo->close();
 ?>
+
+<?php if ($is_ajax): ?>
+<div id="ajax-response">
+    <div id="pago-pendientes-count"><?php echo $metrics_p['count'] ?? 0; ?></div>
+    <div id="pago-pendientes-total"><?php echo number_format($metrics_p['total'] ?? 0, 2, ',', '.'); ?></div>
+    <div id="metrics-update">
+        <span id="act-ingresos"><?php echo number_format($metrics_act['ingresos'] ?? 0, 0, ',', '.'); ?></span>
+        <span id="act-egresos"><?php echo number_format($metrics_act['egresos'] ?? 0, 0, ',', '.'); ?></span>
+        <span id="act-items"><?php echo $metrics_act['transacciones'] ?? 0; ?></span>
+    </div>
+</div>
+<?php endif; ?>
+
+<?php if (!$is_ajax): ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
@@ -279,11 +300,24 @@ $metrics_act = $stmt_a->get_result()->fetch_assoc();
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Historial</li>
                 </ol>
             </nav>
         </header>
+
+        <!-- Alert: Cierre Mensual -->
+        <div id="cierreMensualContainer" class="mb-4 animate-up d-none" style="animation-delay: 0.05s;">
+            <div class="glass-card p-3 d-flex align-items-center" style="border-left: 5px solid var(--accent-danger); background: rgba(231, 29, 54, 0.05);">
+                <div class="bg-danger bg-opacity-10 p-3 rounded-circle me-3">
+                    <i class="fas fa-lock text-danger fs-4"></i>
+                </div>
+                <div>
+                    <h5 class="mb-1 fw-bold text-danger">Período Auditado y Cerrado</h5>
+                    <p class="mb-0 text-muted small">El mes seleccionado ha sido finalizado administrativamente. No se permiten nuevos registros ni modificaciones para este período.</p>
+                </div>
+            </div>
+        </div>
 
         <!-- Dynamic Metrics Dashboard -->
         <div class="row g-4 mb-5 animate-up" style="animation-delay: 0.1s;">
@@ -348,7 +382,7 @@ $metrics_act = $stmt_a->get_result()->fetch_assoc();
                         <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-search me-2"></i> Filtros de Búsqueda</h5>
                     </div>
                     <div class="card-body px-4">
-                        <form method="get" class="row g-3">
+                        <form method="get" class="row g-3" id="filter-form-user">
                             <div class="col-6 col-md-2">
                                 <label class="form-label small fw-bold">Estado</label>
                                 <select name="estado" class="form-select form-select-sm rounded-3">
@@ -468,8 +502,8 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
             <div class="card-header bg-transparent border-0 pt-4 px-4">
                 <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list-ul me-2 text-primary"></i> Historial de Movimientos</h5>
             </div>
-            <div class="card-body table-responsive px-4">
-                <table id="datatablesSimple" class="table custom-table w-100"> 
+            <div class="card-body table-responsive px-4" id="table-container">
+                <table id="datatablesSimple" class="table custom-table w-100" data-paging="false" data-searching="false"> 
                     <thead>
                         <tr>
                             <th>Concepto / Referencia</th>
@@ -481,8 +515,9 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
                             <th class="text-center">Comprobante</th>
                         </tr>
                     </thead>
-                    <tbody>
-                            <?php if ($result->num_rows > 0): ?>
+                        <tbody id="pago-table-body">
+                            <?php if ($is_ajax) echo "<table-body>"; ?>
+<?php endif; ?>
                                 <?php while ($row = $result->fetch_assoc()): ?>
                                     <tr class="align-middle">
                                         <td>
@@ -490,7 +525,9 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
                                             <div class="text-muted small">
                                                 <i class="fas fa-barcode me-1"></i> <?php echo htmlspecialchars($row['referencia']); ?>
                                                 <span class="mx-1">|</span>
-                                                <i class="fas fa-credit-card me-1"></i> <?php echo htmlspecialchars($row['metodo_pago']); ?>
+                                                <i class="fas fa-university me-1"></i> <?php echo htmlspecialchars($row['metodo_pago']); ?>
+                                                <span class="mx-1">|</span>
+                                                <i class="<?php echo ($row['forma_pago'] == 'Tarjeta de Débito') ? 'fas fa-credit-card' : 'fas fa-exchange-alt'; ?> me-1"></i> <?php echo htmlspecialchars($row['forma_pago']); ?>
                                             </div>
                                         </td>
                                         <td class="text-center">
@@ -571,12 +608,55 @@ while ($rowCliente = $resultClientes->fetch_assoc()) {
                                     </tr>
                                 <?php
     endwhile; ?>
-                            <?php
-endif; ?>
+                <?php if ($is_ajax) echo "</table-body>"; ?>
+                <?php if (!$is_ajax): ?>
                         </tbody>
-                    </table>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div id="pagination-container">
+            <?php if ($is_ajax) echo '<div id="pagination-update">'; ?>
+<?php endif; ?>
+            <?php if ($total_pages > 1): ?>
+                <div class="d-flex justify-content-between align-items-center mt-4 px-3 pb-3">
+                    <div class="text-muted small">
+                        Mostrando registros <?php echo $offset + 1; ?> al <?php echo min($offset + $records_per_page, $total_records); ?> de <?php echo $total_records; ?>
+                    </div>
+                    <nav aria-label="Navegación de páginas">
+                        <ul class="pagination pagination-rounded mb-0">
+                            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <?php
+                            $start = max(1, $page - 2);
+                            $end = min($total_pages, $page + 2);
+                            for ($i = $start; $i <= $end; $i++): ?>
+                                <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?<?php echo http_build_query(array_merge($_GET, ['page' => $i])); ?>"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+                            <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            <?php endif; ?>
+            </div>
         </div>
-    </div>
+<?php
+if ($is_ajax):
+    $html_content = ob_get_clean();
+    echo $html_content;
+    echo "</table-body></div>";
+    exit();
+endif;
+?>
 </div>
 
      <!-- Modal Detalle Mensual (Restaurado y Mejorado) -->
@@ -642,7 +722,27 @@ endif; ?>
                 const mes = document.getElementById('mesFiltro').value;
                 const resultadoDiv = document.getElementById('resultadoSaldoMes');
                 
-                resultadoDiv.innerHTML = '<div class="spinner-border text-primary my-4" role="status"><span class="visually-hidden">Cargando...</span></div><p class="text-muted small">Consultando...</p>';
+                const closedPeriods = window.SDGBP_CLOSED_PERIODS || [];
+                if (!closedPeriods.includes(mes)) {
+                    Swal.fire({
+                        title: 'Período no Auditado',
+                        text: 'El saldo detallado solo puede consultarse para meses que ya han sido auditados y cerrados administrativamente.',
+                        icon: 'warning',
+                        confirmButtonColor: '#f7b731',
+                        background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#fff',
+                        color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#1e293b'
+                    });
+                    resultadoDiv.innerHTML = `
+                        <div class="text-warning py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3 opacity-50"></i>
+                            <h6 class="fw-bold">Acceso Restringido</h6>
+                            <p class="text-muted small mb-0 px-4">Este mes aún no ha sido cerrado por la empresa. No hay datos auditivos disponibles.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                resultadoDiv.innerHTML = '<div class="spinner-border text-primary my-4" role="status"><span class="visually-hidden">Cargando...</span></div><p class="text-muted small">Consultando inteligencia financiera...</p>';
+
                 
                 fetch(`../acciones/obtener_saldo_mes.php?mes=${mes}`)
                     .then(response => response.text())
@@ -694,6 +794,7 @@ endif; ?>
         }
         
         document.getElementById('downloadLink').href = path;
+        document.getElementById('downloadLink').href = path;
         modalPreview.show();
     }
 
@@ -722,27 +823,72 @@ endif; ?>
             title: 'Motivo del Rechazo',
             text: motivo || 'No se especificó un motivo.',
             icon: 'error',
-            confirmButtonColor: '#e71d36',
+            confirmButtonColor: '#e44f60ff',
             confirmButtonText: 'Entendido',
             background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#fff',
             color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#1e293b'
         });
     }
 
-    // Función para lanzar Reporte I-E con Modal Premium
-    function launchPremiumIE() {
-        const fecha_inicio = $('#filtro_fecha_inicio_pdf').val();
-        const fecha_fin = $('#filtro_fecha_fin_pdf').val();
-        const upu = $('#usuario_upu_pdf').val();
+    // (sin AJAX en paginación - recarga normal de página)
+    // Función para lanzar Reporte I-E Premium para UPU
+    window.launchPremiumIE = function() {
+        const fecha_inicio = document.getElementById('filtro_fecha_inicio_pdf').value;
+        const fecha_fin = document.getElementById('filtro_fecha_fin_pdf').value;
+        const upu = document.getElementById('usuario_upu_pdf').value;
         
         if (!fecha_inicio || !fecha_fin) {
-            Swal.fire('Atención', 'Por favor selecciona un rango de fechas.', 'warning');
+            Swal.fire({
+                title: 'Atención',
+                text: 'Por favor selecciona un rango de fechas completo para el reporte.',
+                icon: 'warning',
+                confirmButtonColor: '#2ec4b6'
+            });
             return;
         }
         
-        const url = `../dompdf/exportar_pdf_I-E_UPU.php?filtro_fecha_inicio=${fecha_inicio}&filtro_fecha_fin=${fecha_fin}&usuario_upu=${upu}`;
-        showPremiumReport(url, 'Reporte de Ingresos y Egresos');
+        // Construir URL para el reporte
+        const url = `../dompdf/exportar_pdf_I-E.php?filtro_fecha_inicio=${fecha_inicio}&filtro_fecha_fin=${fecha_fin}&usuario_upu=${upu}`;
+        
+        // Usar la función global definida en header.php
+        if (typeof showPremiumReport === 'function') {
+            showPremiumReport(url, 'Reporte de Ingresos y Egresos (UPU)');
+        } else {
+            // Fallback si la función no está disponible (no debería ocurrir)
+            window.open(url, '_blank');
+        }
+    };
+
+    // Lógica para verificar cierre de mes
+    function checkMonthClosure() {
+        const closedPeriods = window.SDGBP_CLOSED_PERIODS || [];
+        const fechaInicioStr = document.querySelector('input[name="fecha_inicio"]').value;
+        
+        let monthToCheck = '';
+        if (fechaInicioStr) {
+            // Si hay filtro, tomamos el mes del filtro (formato YYYY-MM-DD -> YYYY-MM)
+            monthToCheck = fechaInicioStr.substring(0, 7);
+        } else {
+            // Si no hay filtro, tomamos el mes actual
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            monthToCheck = `${yyyy}-${mm}`;
+        }
+
+        const isClosed = closedPeriods.includes(monthToCheck);
+        const container = document.getElementById('cierreMensualContainer');
+        
+        if (container) {
+            if (isClosed) {
+                container.classList.remove('d-none');
+            } else {
+                container.classList.add('d-none');
+            }
+        }
     }
+
+    document.addEventListener('DOMContentLoaded', checkMonthClosure);
 </script>
 
 <style>
@@ -760,6 +906,5 @@ endif; ?>
     .zoomed { transform: scale(1.5); transform-origin: top center; margin-bottom: 50px; }
 </style>
 
-<?php
-require_once("../models/footer.php");
-?>
+<?php if ($is_ajax) exit(); ?>
+<?php if (!$is_ajax) require_once("../models/footer.php"); ?>

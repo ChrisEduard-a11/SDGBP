@@ -127,8 +127,8 @@ require_once("../conexion.php");
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('ver_clientes.php')" class="text-decoration-none">Clientes</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="ver_clientes.php" class="text-decoration-none">Clientes</a></li>
                     <li class="breadcrumb-item active">Nuevo</li>
                 </ol>
             </nav>

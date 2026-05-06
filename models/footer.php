@@ -45,36 +45,34 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
     <script src="../js/validaciones.js?v=<?php echo time(); ?>"></script>
 
     <script>
-    $(document).ready(function() {
-        if ($('#datatablesSimple').length > 0) {
-            $('#datatablesSimple').DataTable({
+      $(document).ready(function() {
+        $('table[id^="datatablesSimple"]').each(function() {
+            const $table = $(this);
+            const isPagingEnabled = $table.attr('data-paging') !== 'false';
+            const isSearchingEnabled = $table.attr('data-searching') !== 'false';
+            
+            $table.DataTable({
+                "paging": isPagingEnabled,
+                "searching": isSearchingEnabled,
                 "language": {
                     "sProcessing":     "Procesando...",
                     "sLengthMenu":     "Mostrar _MENU_ registros",
                     "sZeroRecords":    "No se encontraron resultados",
                     "sEmptyTable":     "Ningún dato disponible en esta tabla",
-                    "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                    "sInfo":           isPagingEnabled ? "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros" : "Mostrando total de _TOTAL_ registros en esta página",
                     "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
                     "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
-                    "sInfoPostFix":    "",
                     "sSearch":         "Buscar:",
-                    "sUrl":            "",
-                    "sInfoThousands":  ",",
-                    "sLoadingRecords": "Cargando...",
                     "oPaginate": {
                         "sFirst":    "Primero",
                         "sLast":     "Último",
                         "sNext":     "Siguiente",
                         "sPrevious": "Anterior"
-                    },
-                    "oAria": {
-                        "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
-                        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
                     }
                 },
                 "order": []
             });
-        }
+        });
     });
     </script>
 
@@ -217,8 +215,63 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
             color: #f18000 !important;
         }
         .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
-            color: #e2e8f0 !important;
+            color: #cbd5e1 !important;
+            background: rgba(239, 68, 68, 0.05) !important;
+            cursor: not-allowed !important;
         }
+
+        /* Indicadores de Estado Neutros (Solo para Módulos Financieros) */
+        .datepicker-finance-calendar .flatpickr-day {
+            position: relative !important;
+        }
+        .datepicker-finance-calendar .flatpickr-day::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 25%;
+            width: 50%;
+            height: 3px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        /* Línea Naranja (Estándar): Disponible */
+        .datepicker-finance-calendar .flatpickr-day:not(.flatpickr-disabled):not(.prevMonthDay):not(.nextMonthDay)::after {
+            background: #f18000 !important; /* Naranja Institucional */
+            box-shadow: 0 1px 4px rgba(241, 128, 0, 0.3);
+        }
+
+        /* Línea Gris: Bloqueado (Passado/Futuro/Cerrado) */
+        .datepicker-finance-calendar .flatpickr-day.flatpickr-disabled::after {
+            background: #94a3b8 !important; /* Gris Neutro Slated */
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* SOBREESCRITURA PARA MÓDULOS FINANCIEROS (Verde=Ideal, Rojo=Bloqueado, Naranja=Aviso) */
+        
+        /* 1. Naranja para registros "retroactivos" o anteriores al último (Alta prioridad) */
+        .datepicker-finance-calendar .flatpickr-day.is-back-dated:not(.flatpickr-disabled):not(.prevMonthDay):not(.nextMonthDay)::after {
+            background: #f59e0b !important; /* Naranja Advertencia */
+            box-shadow: 0 1px 4px rgba(245, 158, 11, 0.4);
+            z-index: 2;
+        }
+
+        /* 2. Verde Ingreso por defecto (Solo si no es retroactivo) */
+        .datepicker-finance-calendar .flatpickr-day:not(.is-back-dated):not(.flatpickr-disabled):not(.prevMonthDay):not(.nextMonthDay)::after {
+            background: #10b981 !important; 
+            box-shadow: 0 1px 4px rgba(16, 185, 129, 0.4);
+        }
+
+        .datepicker-finance-calendar .flatpickr-day.flatpickr-disabled::after {
+            background: #ef4444 !important; /* Rojo Bloqueado */
+            box-shadow: 0 1px 4px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Ocultar en días de otros meses para no confundir */
+        .flatpickr-day.prevMonthDay::after, .flatpickr-day.nextMonthDay::after {
+            display: none !important;
+        }
+
 
         /* Fix Select2 en Input Group (Para que el icono y el select se unan sin bordes dobles) */
         .input-group > .select2-container {
@@ -300,38 +353,188 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
             z-index: 9999 !important;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Re-inicialización de Flatpickr con MODO STATIC y Bloqueo de Períodos Cerrados
-            flatpickr(".datepicker-flat", {
-                dateFormat: "Y-m-d",
-                locale: "es",
-                allowInput: false,
-                maxDate: "today",
-                disableMobile: true,
-                monthSelectorType: "static", 
-                altInput: true,
-                altFormat: "d/m/Y",
-                disable: [
-                    function(date) {
-                        // Solo restringir si el usuario es UPU
-                        if (window.USER_ROLE !== 'upu') return false;
-                        
-                        const now = new Date();
-                        const currentYear = now.getFullYear();
-                        const year = date.getFullYear();
-                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                        const period = `${year}-${month}`;
-                        
-                        // 1. Bloquear AÑOS anteriores COMPLETOS (2025, 2024...)
-                        if (year < currentYear) return true;
-                        
-                        // 2. Bloquear MESES CERRADOS del año actual
-                        return window.SDGBP_CLOSED_PERIODS && window.SDGBP_CLOSED_PERIODS.includes(period);
+            document.querySelectorAll(".datepicker-flat").forEach(function(el) {
+                let options = {
+                    dateFormat: "Y-m-d",
+                    locale: "es",
+                    allowInput: false,
+                    maxDate: "today",
+                    disableMobile: true,
+                    monthSelectorType: "static", 
+                    altInput: true,
+                    altFormat: "d/m/Y",
+                    onReady: function(selectedDates, dateStr, instance) {
+                        instance.altInput.classList.add("form-control");
                     }
-                ],
-                onReady: function(selectedDates, dateStr, instance) {
-                    instance.altInput.classList.add("form-control");
+                };
+
+                // Si el input está dentro de un formulario de filtro (GET), NO lo bloqueamos
+                const originForm = el.closest('form');
+                const isGetForm = originForm && originForm.method.toUpperCase() === 'GET';
+                const isFilterInput = el.name && (el.name.includes('filtro') || el.name.includes('fecha_inicio') || el.name.includes('fecha_fin'));
+
+                if (!isGetForm && !isFilterInput) {
+                    // Es un formulario POST (Registro y creación), aplicar bloqueo UPU de mes cerrado
+                    options.disable = [
+                        function(date) {
+                            // Solo restringir si el usuario es UPU
+                            if (window.USER_ROLE !== 'upu') return false;
+                            
+                            const now = new Date();
+                            const year = date.getFullYear();
+                            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                            const period = `${year}-${month}`;
+                            
+                            // 1. Bloquear MESES CERRADOS (Auditoría finalizada)
+                            if (window.SDGBP_CLOSED_PERIODS && window.SDGBP_CLOSED_PERIODS.includes(period)) {
+                                return true;
+                            }
+                            
+                            // 2. REGLA DE CASCADA: No se puede registrar en un mes si el anterior está abierto.
+                            // Esto solo aplica si ya existe al menos un periodo cerrado (para tener un punto de partida).
+                            if (window.SDGBP_CLOSED_PERIODS && window.SDGBP_CLOSED_PERIODS.length > 0) {
+                                const sorted = [...window.SDGBP_CLOSED_PERIODS].sort();
+                                const lastClosed = sorted[sorted.length - 1]; // "YYYY-MM"
+                                
+                                // Calcular el siguiente mes permitido (Last Closed + 1)
+                                const [ly, lm] = lastClosed.split('-').map(Number);
+                                let nextY = ly, nextM = lm + 1;
+                                if (nextM > 12) { nextM = 1; nextY++; }
+                                const nextAllowed = `${nextY}-${nextM.toString().padStart(2, '0')}`;
+                                
+                                // Si el mes que evaluamos es posterior al "siguiente permitido", se bloquea.
+                                if (period > nextAllowed) {
+                                    return true;
+                                }
+                            } else {
+                                // Caso especial: Si NO hay cierres registrados aún (sistema nuevo),
+                                // permitimos registrar en el mes actual y meses anteriores, 
+                                // pero aplicamos la regla de "si abril abierto, mayo bloqueado"
+                                // comparando con el mes actual de la vida real.
+                                const realNow = new Date();
+                                const currentPeriod = `${realNow.getFullYear()}-${(realNow.getMonth() + 1).toString().padStart(2, '0')}`;
+                                
+                                const prevDate = new Date(realNow.getFullYear(), realNow.getMonth() - 1, 1);
+                                const prevPeriod = `${prevDate.getFullYear()}-${(prevDate.getMonth() + 1).toString().padStart(2, '0')}`;
+                                
+                                // Si estamos evaluando el mes actual, y el anterior no está cerrado, bloqueamos el actual.
+                                if (period === currentPeriod && !window.SDGBP_CLOSED_PERIODS.includes(prevPeriod)) {
+                                    return true;
+                                }
+                            }
+                            
+                            return false;
+                        }
+                    ];
+                }
+
+                // Personalización para módulos financieros (Inyectar clase en el contenedor del calendario)
+                if (el.classList.contains('datepicker-finance')) {
+                    options.onOpen = function(selectedDates, dateStr, instance) {
+                        instance.calendarContainer.classList.add("datepicker-finance-calendar");
+                    };
+                    
+                    // Lógica para marcar días anteriores al último pago como "Aviso" (Naranja)
+                    options.onDayCreate = function(dObj, dStr, fp, dayElem) {
+                        if (window.SDGBP_LAST_PAYMENT_DATE && dayElem.dateObj) {
+                            const y = dayElem.dateObj.getFullYear();
+                            const m = String(dayElem.dateObj.getMonth() + 1).padStart(2, '0');
+                            const d = String(dayElem.dateObj.getDate()).padStart(2, '0');
+                            const dateStr = `${y}-${m}-${d}`;
+                            
+                            if (dateStr < window.SDGBP_LAST_PAYMENT_DATE) {
+                                dayElem.classList.add("is-back-dated");
+                            }
+                        }
+                    };
+
+                    // Alerta de advertencia al seleccionar una fecha naranja (Solo una vez por sesión de formulario)
+                    let alreadyWarned = false;
+                    options.onChange = function(selectedDates, dateStr, instance) {
+                        if (selectedDates.length > 0 && window.SDGBP_LAST_PAYMENT_DATE) {
+                            const selDate = selectedDates[0];
+                            const y = selDate.getFullYear();
+                            const m = String(selDate.getMonth() + 1).padStart(2, '0');
+                            const d = String(selDate.getDate()).padStart(2, '0');
+                            const selStr = `${y}-${m}-${d}`;
+                            
+                            if (selStr < window.SDGBP_LAST_PAYMENT_DATE) {
+                                if (!alreadyWarned) {
+                                    Swal.fire({
+                                        title: 'Aviso: Registro Retroactivo',
+                                        text: 'Estás seleccionando una fecha anterior a tu último registro. Asegúrate de que esto sea correcto para el balance.',
+                                        icon: 'warning',
+                                        confirmButtonColor: '#f59e0b',
+                                        confirmButtonText: 'Entendido'
+                                    }).then(() => {
+                                        alreadyWarned = true;
+                                    });
+                                }
+                            } else {
+                                // Si cambia a una fecha correcta, reiniciamos el flag por si vuelve a equivocarse
+                                alreadyWarned = false;
+                            }
+                        }
+                    };
+                }
+
+                flatpickr(el, options);
+            });
+
+            // =====================================================================
+            // LOGICA DE INPUT HÍBRIDO (CLIENTE/PROVEEDOR) CON DATALIST
+            // =====================================================================
+            $(document).on('input', '.hybrid-client-input', function() {
+                const val = $(this).val().trim();
+                const listId = $(this).attr('list');
+                const datalist = document.getElementById(listId);
+                
+                if (!datalist) return;
+
+                const options = datalist.options;
+                let found = false;
+                
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].value === val) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                const $saveContainer = $('#save-client-container');
+                if (val === '') {
+                    $saveContainer.slideUp(150);
+                    $('#save_client_db').prop('checked', false);
+                } else if (!found) {
+                    $saveContainer.slideDown(200);
+                } else {
+                    $saveContainer.slideUp(150);
+                    $('#save_client_db').prop('checked', false);
+                }
+            });
+
+            // Handler para selección desde el dropdown de clientes guardados
+            $(document).on('click', '.hybrid-client-pick', function(e) {
+                e.preventDefault();
+                const targetId   = $(this).data('target');          // id del input de texto
+                const clientName = $(this).data('name');             // nombre del cliente
+                const saveContId = $(this).data('save-container');   // id del div save-toggle
+
+                const $input = $('#' + targetId);
+                if ($input.length) {
+                    $input.val(clientName);
+                    // Ocultar el toggle de guardar (es un cliente existente)
+                    if (saveContId) {
+                        $('#' + saveContId).slideUp(150);
+                        $('#save_client_db').prop('checked', false);
+                    }
+                    // Pequeña animación de confirmación en el input
+                    $input.addClass('border-success');
+                    setTimeout(() => $input.removeClass('border-success'), 800);
                 }
             });
 

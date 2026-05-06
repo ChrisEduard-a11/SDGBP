@@ -285,7 +285,7 @@ if (!isset($_SESSION['form_tokens'])) {
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item active">Aprobar Pagos</li>
                 </ol>
             </nav>
@@ -368,6 +368,7 @@ if (!isset($_SESSION['form_tokens'])) {
                                         $upu_name = htmlspecialchars($row['nombre_cliente'] ?? 'Sin UPU'); 
                                         if ($current_upu !== $upu_name):
                                             $current_upu = $upu_name;
+                                            $is_first_pending = true; // El más antiguo pendiente
                                     ?>
                                         <tr class="upu-group-header">
                                             <td colspan="8">
@@ -385,12 +386,18 @@ if (!isset($_SESSION['form_tokens'])) {
                                                 </div>
                                             </td>
                                         </tr>
-                                    <?php endif; ?>
-                                    <tr class="text-center">
+                                    <?php else:
+                                        $is_first_pending = false; // Pagos más recientes de la misma UPU quedan bloqueados
+                                    endif; ?>
+                                    
+                                    <tr class="text-center <?php echo !$is_first_pending ? 'opacity-75' : ''; ?>">
                                         <td>
                                             <div class="d-flex align-items-center justify-content-center">
-                                                <div class="avatar-sm bg-light text-primary rounded-circle p-2 me-2">
+                                                <div class="avatar-sm bg-light text-primary rounded-circle p-2 me-2 position-relative">
                                                     <i class="fas fa-user"></i>
+                                                    <?php if (!$is_first_pending): ?>
+                                                        <i class="fas fa-lock text-danger position-absolute" style="font-size: 0.6rem; bottom: -2px; right: -2px;"></i>
+                                                    <?php endif; ?>
                                                 </div>
                                                 <span class="fw-bold"><?php echo $upu_name; ?></span>
                                             </div>
@@ -412,28 +419,26 @@ if (!isset($_SESSION['form_tokens'])) {
                                         <td class="fw-semibold"><?php echo htmlspecialchars($row["cliente"]); ?></td>
                                         <td>
                                             <?php if (!empty($row["comprobante_archivo"])): ?>
-                                                <button onclick="previewComprobante('<?php echo $row['comprobante_archivo']; ?>')" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm border-0 bg-light">
+                                                <button onclick="previewComprobante('<?php echo $row['comprobante_archivo']; ?>')" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm border-0 bg-light <?php echo !$is_first_pending ? 'disabled' : ''; ?>">
                                                     <i class="fas fa-image me-1"></i> Ver
                                                 </button>
-                                            <?php
-        else: ?>
+                                            <?php else: ?>
                                                 <span class="text-muted small">N/A</span>
-                                            <?php
-        endif; ?>
+                                            <?php endif; ?>
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-center">
                                                 <button type="button"
-                                                    class="btn-action btn-approve"
-                                                    onclick="abrirModalAprobar(<?php echo $row['id']; ?>, '<?php echo $row['monto']; ?>', '<?php echo $row['referencia']; ?>', '<?php echo $row['tipo']; ?>', '<?php echo $upu_name; ?>', '<?php echo date('d/m/Y', strtotime($row['fecha_pago'])); ?>', '<?php echo htmlspecialchars($row['cliente']); ?>')"
-                                                    data-bs-toggle="tooltip" title="Aprobar Pago">
-                                                    <i class="fas fa-check"></i>
+                                                    class="btn-action btn-approve <?php echo !$is_first_pending ? 'disabled' : ''; ?>"
+                                                    onclick="<?php echo $is_first_pending ? "abrirModalAprobar({$row['id']}, '{$row['monto']}', '{$row['referencia']}', '{$row['tipo']}', '{$upu_name}', '" . date('d/m/Y', strtotime($row['fecha_pago'])) . "', '" . htmlspecialchars($row['cliente']) . "')" : 'Swal.fire(\'Cola Bloqueada\',\'Debes procesar y aprobar el pago más antiguo de esta UPU en la cola antes de continuar con los posteriores.\', \'warning\')'; ?>"
+                                                    data-bs-toggle="tooltip" title="<?php echo $is_first_pending ? 'Aprobar Pago' : 'Bloqueado: Procese el pago anterior'; ?>">
+                                                    <i class="fas <?php echo $is_first_pending ? 'fa-check' : 'fa-lock'; ?>"></i>
                                                 </button>
                                                 
                                                 <button type="button"
-                                                    class="btn-action btn-reject"
-                                                    onclick="rechazarPago(<?php echo $row['id']; ?>, '<?php echo $row['monto']; ?>', '<?php echo $row['referencia']; ?>', '<?php echo $upu_name; ?>', '<?php echo date('d/m/Y', strtotime($row['fecha_pago'])); ?>', '<?php echo htmlspecialchars($row['cliente']); ?>')"
-                                                    data-bs-toggle="tooltip" title="Rechazar Pago">
+                                                    class="btn-action btn-reject <?php echo !$is_first_pending ? 'disabled' : ''; ?>"
+                                                    onclick="<?php echo $is_first_pending ? "rechazarPago({$row['id']}, '{$row['monto']}', '{$row['referencia']}', '{$upu_name}', '" . date('d/m/Y', strtotime($row['fecha_pago'])) . "', '" . htmlspecialchars($row['cliente']) . "')" : ''; ?>"
+                                                    data-bs-toggle="tooltip" title="<?php echo $is_first_pending ? 'Rechazar Pago' : 'Bloqueado: Procese el pago anterior'; ?>">
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </div>
@@ -456,10 +461,8 @@ if (!isset($_SESSION['form_tokens'])) {
                                              </form>
                                         </td>
                                     </tr>
-                                <?php
-    endwhile; ?>
-                            <?php
-endif; ?>
+                                <?php endwhile; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>

@@ -7,22 +7,24 @@
 */
 
 // 1. CONFIGURACIÓN GLOBAL DE TOASTR Y SONIDO
-toastr.options = {
-    "closeButton": true,
-    "debug": false,
-    "newestOnTop": true,
-    "progressBar": true,
-    "positionClass": "toast-bottom-right", // Abajo a la derecha para no obstruir el menú superior
-    "preventDuplicates": true,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": "5000",
-    "extendedTimeOut": "1000",
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn", // Animación más ligera
-    "hideMethod": "fadeOut"
-};
+if (typeof toastr !== 'undefined') {
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": true,
+        "progressBar": true,
+        "positionClass": "toast-bottom-right",
+        "preventDuplicates": true,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+}
 
 // HELPER: Limpiar valores monetarios (Quitar puntos de miles y cambiar coma a punto decimal)
 function cleanNumericValue(val) {
@@ -43,6 +45,38 @@ function cleanNumericValue(val) {
 function playErrorSound() {
     const audio = new Audio('../error/validation_error.mp3');
     audio.play().catch(err => {});
+}
+
+// Muestra modal de carga bloqueante (Preloader visual)
+function showPreloader(title) {
+    if (typeof Swal !== 'undefined') {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        Swal.fire({
+            html: `
+                <div style="padding: 15px 0;">
+                    <div style="position: relative; width: 80px; height: 80px; margin: 0 auto 25px auto;">
+                        <div class="spinner-border text-primary" role="status" style="width: 80px; height: 80px; border-width: 4px; position: relative; z-index: 2; border-right-color: transparent;"></div>
+                        <i class="fas fa-shield-alt text-primary" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; opacity: 0.8;"></i>
+                    </div>
+                    <h4 style="font-weight: 800; color: var(--text-main, ${isDark ? '#f8fafc' : '#0f172a'}); letter-spacing: -0.5px;">${title || 'Ejecutando Transacción...'}</h4>
+                    <p style="color: var(--text-muted, ${isDark ? '#94a3b8' : '#64748b'}); font-size: 0.9rem; margin-top: 10px; margin-bottom: 0;">Asegurando la encriptación y comprobando datos en la bóveda, no cierres la ventana.</p>
+                </div>
+            `,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            background: isDark ? '#1e293b' : '#ffffff',
+            customClass: {
+                popup: 'border-0 shadow-lg',
+                container: 'backdrop-blur'
+            }
+        });
+        
+        // Agregar plugin style for blur effect
+        const blurStyle = document.createElement('style');
+        blurStyle.innerHTML = `.backdrop-blur { backdrop-filter: blur(8px); background: rgba(15, 23, 42, 0.6) !important; } .swal2-popup { border-radius: 24px !important; }`;
+        document.head.appendChild(blurStyle);
+    }
 }
 
 // 0. UTILIDADES DE RESTRICCIÓN DE ENTRADA (Monto/Precios/Números)
@@ -105,6 +139,11 @@ function initializeNumericRestrictions() {
     // Cantidades y Stock (solo enteros)
     setupNumericRestriction('#cantidad', false);
     setupNumericRestriction('#stock', false);
+
+    // Nuevas restricciones para Comprobantes
+    setupNumericRestriction('#num_comprobante', false);
+    setupNumericRestriction('#cuenta', false);
+    setupNumericRestriction('#referencia', false);
 }
 
 // 2. GESTIÓN DE PAGOS Y INGRESOS (UPU/ADMIN)
@@ -194,11 +233,7 @@ function validateFormRegistroP() {
         const ref = document.getElementById("codigo_pago").value;
         const desc = document.getElementById("descripcion").value || "Sin descripción";
         
-        let clienteText = "";
-        const clienteEl = document.getElementById("cliente");
-        if(clienteEl && clienteEl.selectedIndex >= 0) {
-            clienteText = clienteEl.options[clienteEl.selectedIndex].text;
-        }
+        const clienteText = $('#cliente').val() || "";
 
         Swal.fire({
             title: 'Confirmar Registro de Ingreso',
@@ -292,8 +327,9 @@ function validateFormRegistroEgreso() {
         
         let clienteText = "";
         const clienteEl = document.getElementById("cliente");
-        if(clienteEl && clienteEl.selectedIndex >= 0) {
-            clienteText = clienteEl.options[clienteEl.selectedIndex].text;
+        if (clienteEl) {
+            // Funciona tanto para <input type="text"> como para <input type="hidden">
+            clienteText = clienteEl.value.trim();
         }
 
         const userRoleEl = document.getElementById("user_role_global");
@@ -335,75 +371,140 @@ function validateFormRegistroEgreso() {
 }
 
 function validateFormComprobante() {
-    const fields = [
-        "num_comprobante", "fecha", "monto", 
-        "nombre", "rif", "telefono", "correo", 
-        "ciudad", "direccion", "banco", 
-        "tipo_pago", "cuenta", "referencia", "descripcion"
-    ];
-    let ok = true;
-    fields.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el || !el.value.trim()) { 
-            setFieldInvalid(id, true); 
-            ok = false; 
-        } else {
-            setFieldInvalid(id, false);
+    try {
+        console.log("Iniciando validación de comprobante...");
+        const campos = [
+            { id: "num_comprobante", name: "N° de Comprobante" },
+            { id: "fecha_comprobante", name: "Fecha de Emisión" },
+            { id: "monto",           name: "Monto Total" },
+            { id: "nombre",          name: "Nombre / Razón Social" },
+            { id: "rif",             name: "RIF / C.I." },
+            { id: "telefono",        name: "Teléfono" },
+            { id: "correo",          name: "Correo Electrónico" },
+            { id: "ciudad",          name: "Ciudad / Estado" },
+            { id: "direccion",       name: "Dirección Fiscal" },
+            { id: "banco",           name: "Banco de Destino" },
+            { id: "tipo_pago",       name: "Tipo de Cuenta" },
+            { id: "cuenta",          name: "Número de Cuenta (20 dígitos)" },
+            { id: "referencia",      name: "Referencia Bancaria" },
+            { id: "descripcion",     name: "Concepto del Egreso" }
+        ];
+
+        let ok = true;
+        let faltantes = [];
+
+        // 1. Validar campos vacíos
+        campos.forEach(c => {
+            const el = document.getElementById(c.id);
+            let val = "";
+            
+            if (el) {
+                // Si es un input de Flatpickr con altInput, el valor visible está en el siguiente elemento
+                // pero el valor real debería estar en el original. Si el original está vacío pero hay altInput visible,
+                // tratamos de obtenerlo del altInput (aunque lo ideal es que Flatpickr lo sincronice).
+                val = el.value || "";
+                
+                // Caso especial: Flatpickr altInput
+                if (!val.trim() && el.classList.contains("flatpickr-input") && el.nextElementSibling && el.nextElementSibling.classList.contains("form-control")) {
+                    val = el.nextElementSibling.value || "";
+                }
+            }
+
+            if (!el || !val.trim()) { 
+                setFieldInvalid(c.id, true); 
+                faltantes.push(c.name);
+                ok = false; 
+            } else {
+                setFieldInvalid(c.id, false);
+            }
+        });
+
+        if (!ok) {
+            playErrorSound();
+            const msg = "Campos obligatorios faltantes: " + faltantes.join(", ");
+            if (typeof toastr !== 'undefined') {
+                toastr.error(msg, "Información Incompleta");
+            } else {
+                alert(msg);
+            }
+            return false;
         }
-    });
 
-    if (!ok) {
-        playErrorSound();
-        toastr.error("Faltan campos obligatorios por completar para generar el documento.", "Datos Incompletos");
+        // 2. Validaciones Específicas
+        
+        // Monto
+        const montoEl = document.getElementById("monto");
+        const m = cleanNumericValue(montoEl ? montoEl.value : "");
+        if (isNaN(m) || parseFloat(m) <= 0) {
+            playErrorSound();
+            const msg = "El monto debe ser un valor numérico superior a cero.";
+            if (typeof toastr !== 'undefined') {
+                toastr.error(msg, "Error de Monto");
+            } else {
+                alert(msg);
+            }
+            setFieldInvalid("monto", true);
+            return false;
+        }
+
+        // RIF / C.I.
+        const rifEl = document.getElementById("rif");
+        const rif = rifEl ? rifEl.value.trim().toUpperCase() : "";
+        const rifRegex = /^[VJGPE]-[0-9]{7,10}-[0-9]$|^[VJGPE][0-9]{7,10}$/;
+        if (!rifRegex.test(rif)) {
+            playErrorSound();
+            const msg = "Formato de RIF/C.I. inválido. Use el formato: V-00000000-0 o el número directo.";
+            if (typeof toastr !== 'undefined') {
+                toastr.warning(msg, "Validación de Identidad");
+            } else {
+                alert(msg);
+            }
+            setFieldInvalid("rif", true);
+            return false;
+        }
+
+        // Correo
+        const correoEl = document.getElementById("correo");
+        const correo = correoEl ? correoEl.value.trim() : "";
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(correo)) {
+            playErrorSound();
+            const msg = "La dirección de correo electrónico no es válida.";
+            if (typeof toastr !== 'undefined') {
+                toastr.error(msg, "Error de Contacto");
+            } else {
+                alert(msg);
+            }
+            setFieldInvalid("correo", true);
+            return false;
+        }
+
+        // Número de Cuenta (Exactamente 20 dígitos)
+        const cuentaEl = document.getElementById("cuenta");
+        const cuenta = cuentaEl ? cuentaEl.value.trim() : "";
+        if (cuenta.length !== 20 || isNaN(cuenta)) {
+            playErrorSound();
+            const msg = "El número de cuenta bancaria debe tener exactamente 20 dígitos numéricos.";
+            if (typeof toastr !== 'undefined') {
+                toastr.error(msg, "Error Bancario");
+            } else {
+                alert(msg);
+            }
+            setFieldInvalid("cuenta", true);
+            return false;
+        }
+
+        console.log("Validación exitosa.");
+        return true;
+    } catch (e) {
+        console.error("Error en validateFormComprobante:", e);
+        alert("Error crítico en la validación: " + e.message);
         return false;
     }
-
-    // Validación numérica para monto
-    const m = cleanNumericValue(document.getElementById("monto").value);
-    if (isNaN(m) || parseFloat(m) <= 0) {
-        playErrorSound();
-        toastr.error("El monto debe ser un valor numérico válido y mayor a cero.", "Error de Datos");
-        setFieldInvalid("monto", true);
-        return false;
-    }
-
-    return true;
 }
 
 function validateFormEditarComprobante() {
-    const fields = [
-        "num_comprobante", "fecha", "monto", 
-        "nombre", "rif", "telefono", "correo", 
-        "ciudad", "direccion", "banco", 
-        "tipo_pago", "cuenta", "referencia", "descripcion"
-    ];
-    let ok = true;
-    fields.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el || !el.value.trim()) { 
-            setFieldInvalid(id, true); 
-            ok = false; 
-        } else {
-            setFieldInvalid(id, false);
-        }
-    });
-
-    if (!ok) {
-        playErrorSound();
-        toastr.error("Faltan campos obligatorios al intentar editar el documento.", "Campos Vacíos");
-        return false;
-    }
-
-    // Validación numérica para monto
-    const m = cleanNumericValue(document.getElementById("monto").value);
-    if (isNaN(m) || parseFloat(m) <= 0) {
-        playErrorSound();
-        toastr.error("El monto debe ser un valor numérico válido y mayor a cero.", "Error de Datos");
-        setFieldInvalid("monto", true);
-        return false;
-    }
-
-    return true;
+    return validateFormComprobante();
 }
 
 // 3. GESTIÓN DE INVENTARIO Y BIENES

@@ -1,4 +1,5 @@
 <?php
+global $conexion;
 require_once("../models/header.php");
 require_once("../conexion.php");
 require_once("../models/notificaciones.php");
@@ -162,7 +163,7 @@ $notificaciones = array_merge($notificaciones_locales, $notificaciones_db);
             </div>
             <nav aria-label="breadcrumb" class="d-none d-lg-block">
                 <ol class="breadcrumb bg-transparent p-0 m-0">
-                    <li class="breadcrumb-item"><a href="javascript:void(0);" onclick="navigateTo('inicio.php')" class="text-decoration-none fw-bold">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="inicio.php" class="text-decoration-none fw-bold">Dashboard</a></li>
                     <li class="breadcrumb-item active fw-bold">Notificaciones</li>
                 </ol>
             </nav>
