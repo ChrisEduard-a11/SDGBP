@@ -6,11 +6,12 @@
             const delay = 0;
             setTimeout(() => {
                 Swal.fire({
-                    icon: '<?php echo $_SESSION["estatus"]; ?>',
-                    title: '<?php echo $_SESSION["mensaje"]; ?>',
+                    icon: '<?php echo ($_SESSION["estatus"] === "success_usuario") ? "success" : $_SESSION["estatus"]; ?>',
+                    title: '<?php echo ($_SESSION["estatus"] === "success_usuario") ? "¡Usuario Encontrado!" : ($_SESSION["estatus"] === "success" ? "¡Éxito!" : ($_SESSION["estatus"] === "error" ? "¡Error!" : "Aviso")); ?>',
+                    text: '<?php echo $_SESSION["mensaje"]; ?>',
                     showConfirmButton: true,
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#007bff'
+                    confirmButtonText: '<?php echo ($_SESSION["estatus"] === "success_usuario") ? "Entendido" : "Aceptar"; ?>',
+                    confirmButtonColor: '#f18000'
                 });
             }, delay);
         });

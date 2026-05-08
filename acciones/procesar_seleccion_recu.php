@@ -3,11 +3,14 @@ session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $metodo = $_POST['metodo'];
+    $_SESSION['metodo_recu'] = $metodo;
 
     if ($metodo == 'correo') {
         header("Location: ../vistas/recu_correo.php");
     } elseif ($metodo == '2fa') {
         header("Location: ../acciones/enviar_2fa_recu.php");
+    } elseif ($metodo == 'telegram') {
+        header("Location: ../acciones/enviar_telegram_recu.php");
     } elseif ($metodo == 'preguntas') {
         header("Location: ../vistas/pregunta.php");
     } else {

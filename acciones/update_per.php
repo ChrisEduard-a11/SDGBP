@@ -21,9 +21,11 @@ exit();
 // Procesar la imagen
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     // Obtener la ruta de la imagen actual
-    $sql = "SELECT foto FROM personal WHERE id='$id_personal'";
-    $result = mysqli_query($conexion, $sql);
-    $row = mysqli_fetch_assoc($result);
+    $sql = "SELECT foto FROM personal WHERE id=?";
+    $stmt_foto = $conexion->prepare($sql);
+    $stmt_foto->bind_param("i", $id_personal);
+    $stmt_foto->execute();
+    $row = $stmt_foto->get_result()->fetch_assoc();
 
     if ($row) {
         $rutaImagenActual = $row['foto'];
@@ -52,12 +54,14 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
 
         if (move_uploaded_file($imagen['tmp_name'], $rutaDestino)) {
             // Eliminar la imagen anterior del servidor
-            if (file_exists($rutaImagenActual)) {
+            if (file_exists($rutaImagenActual) && strpos($rutaImagenActual, 'default_profile') === false) {
                 unlink($rutaImagenActual);
             }
 
             // Actualizar la ruta de la imagen en la base de datos
-            $sql = "UPDATE personal SET nombre='$nombre', nacionalidad='$nacionalidad', cedula='$cedula', codigo='$codigo', cargo='$cargo', ingreso='$ingreso', fecha_nacimiento='$nacimiento', activo='$activo', foto='$rutaDestino' WHERE id='$id_personal'";
+            $sql = "UPDATE personal SET nombre=?, nacionalidad=?, cedula=?, codigo=?, cargo=?, ingreso=?, fecha_nacimiento=?, activo=?, foto=? WHERE id=?";
+            $stmt = $conexion->prepare($sql);
+            $stmt->bind_param("sssssssssi", $nombre, $nacionalidad, $cedula, $codigo, $cargo, $ingreso, $nacimiento, $activo, $rutaDestino, $id_personal);
         } else {
             $_SESSION["estatus"] = "error";
             $_SESSION["mensaje"] = "Error al subir la nueva imagen";
@@ -72,10 +76,12 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     }
 } else {
     // Si no se sube una nueva imagen, solo actualizar los demás campos
-    $sql = "UPDATE personal SET nombre='$nombre', nacionalidad='$nacionalidad', cedula='$cedula', codigo='$codigo', cargo='$cargo', ingreso='$ingreso', fecha_nacimiento='$nacimiento', activo='$activo' WHERE id='$id_personal'";
+    $sql = "UPDATE personal SET nombre=?, nacionalidad=?, cedula=?, codigo=?, cargo=?, ingreso=?, fecha_nacimiento=?, activo=? WHERE id=?";
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("ssssssssi", $nombre, $nacionalidad, $cedula, $codigo, $cargo, $ingreso, $nacimiento, $activo, $id_personal);
 }
 
-$result = mysqli_query($conexion, $sql);
+$result = $stmt->execute();
 
 if ($result) {
     $_SESSION["estatus"] = "success";

@@ -136,9 +136,14 @@ if (empty($_SESSION["usuario"])) { header("Location: denegado_a.php"); exit(); }
                     <p class="text-slate-500 text-sm font-medium mt-1">Ingresa el código cifrado para permitir tu acceso.</p>
                 </div>
 
+                <?php 
+                $metodo = $_SESSION['metodo_recu'] ?? 'correo'; 
+                $icon = ($metodo === 'telegram') ? 'fab fa-telegram-plane' : 'fas fa-paper-plane';
+                $dest = ($metodo === 'telegram') ? 'tu cuenta de <b>Telegram</b>' : 'tu <b>correo electrónico</b>';
+                ?>
                 <div class="alert-info-premium">
-                    <i class="fas fa-paper-plane"></i>
-                    <span>Hemos enviado un <b>código de 6 dígitos</b> a tu correo electrónico. Recuerda verificar tu bandeja de SPAM.</span>
+                    <i class="<?php echo $icon; ?>"></i>
+                    <span>Hemos enviado un <b>código de 6 dígitos</b> a <?php echo $dest; ?>. <?php if($metodo === 'correo') echo 'Recuerda verificar tu bandeja de SPAM.'; ?></span>
                 </div>
 
                 <form action="../acciones/validar_2fa_recu.php" method="POST" onsubmit="return validateFormCodigo()" class="mt-4">

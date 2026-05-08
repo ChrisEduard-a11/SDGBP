@@ -438,15 +438,19 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
                         instance.calendarContainer.classList.add("datepicker-finance-calendar");
                     };
                     
-                    // Lógica para marcar días anteriores al último pago como "Aviso" (Naranja)
+                    // Lógica para marcar días anteriores a HOY como "Aviso" (Naranja)
                     options.onDayCreate = function(dObj, dStr, fp, dayElem) {
-                        if (window.SDGBP_LAST_PAYMENT_DATE && dayElem.dateObj) {
+                        if (dayElem.dateObj) {
                             const y = dayElem.dateObj.getFullYear();
                             const m = String(dayElem.dateObj.getMonth() + 1).padStart(2, '0');
                             const d = String(dayElem.dateObj.getDate()).padStart(2, '0');
                             const dateStr = `${y}-${m}-${d}`;
                             
-                            if (dateStr < window.SDGBP_LAST_PAYMENT_DATE) {
+                            // Obtener fecha de hoy
+                            const realNow = new Date();
+                            const todayStr = `${realNow.getFullYear()}-${String(realNow.getMonth() + 1).padStart(2, '0')}-${String(realNow.getDate()).padStart(2, '0')}`;
+                            
+                            if (dateStr < todayStr) {
                                 dayElem.classList.add("is-back-dated");
                             }
                         }
@@ -455,18 +459,22 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
                     // Alerta de advertencia al seleccionar una fecha naranja (Solo una vez por sesión de formulario)
                     let alreadyWarned = false;
                     options.onChange = function(selectedDates, dateStr, instance) {
-                        if (selectedDates.length > 0 && window.SDGBP_LAST_PAYMENT_DATE) {
+                        if (selectedDates.length > 0) {
                             const selDate = selectedDates[0];
                             const y = selDate.getFullYear();
                             const m = String(selDate.getMonth() + 1).padStart(2, '0');
                             const d = String(selDate.getDate()).padStart(2, '0');
                             const selStr = `${y}-${m}-${d}`;
                             
-                            if (selStr < window.SDGBP_LAST_PAYMENT_DATE) {
+                            // Obtener fecha de hoy
+                            const realNow = new Date();
+                            const todayStr = `${realNow.getFullYear()}-${String(realNow.getMonth() + 1).padStart(2, '0')}-${String(realNow.getDate()).padStart(2, '0')}`;
+                            
+                            if (selStr < todayStr) {
                                 if (!alreadyWarned) {
                                     Swal.fire({
-                                        title: 'Aviso: Registro Retroactivo',
-                                        text: 'Estás seleccionando una fecha anterior a tu último registro. Asegúrate de que esto sea correcto para el balance.',
+                                        title: 'Aviso: Registro en Fecha Anterior',
+                                        text: 'Estás seleccionando una fecha anterior al día de hoy. Asegúrate de que esto sea correcto para tu declaración de balance.',
                                         icon: 'warning',
                                         confirmButtonColor: '#f59e0b',
                                         confirmButtonText: 'Entendido'

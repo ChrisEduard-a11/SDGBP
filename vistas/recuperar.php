@@ -235,20 +235,20 @@ session_start();
 
                 <div class="text-center md:text-left mb-6">
                     <h4 class="font-bold text-lg text-slate-800">Paso 1: Identificación</h4>
-                    <p class="text-slate-500 text-sm font-medium mt-1">Introduce tu usuario para validar tu identidad.</p>
+                    <p class="text-slate-500 text-sm font-medium mt-1">Introduce tu Cédula para validar tu identidad.</p>
                 </div>
 
                 <form name="recuperarForm" action="../acciones/recuperar_clave.php" method="POST" onsubmit="return validateFormRCU()" class="mt-4">
                     
                     <div class="recovery-icon mx-auto md:mx-0">
-                        <i class="fas fa-user-shield"></i>
+                        <i class="fas fa-user-circle"></i>
                     </div>
 
                     <div>
                         <label class="inst-label text-center md:text-left" for="inputUsuario">Nombre de Usuario (*)</label>
                         <div class="inst-input-wrapper">
                             <i class="fas fa-user-tag inst-icon"></i>
-                            <input id="inputUsuario" type="text" name="usuario" class="inst-input" style="text-align: center; font-size: 1.1rem; letter-spacing: 1px;" placeholder="Ingresa tu usuario" autocomplete="off" />
+                            <input id="inputUsuario" type="text" name="usuario" class="inst-input" style="text-align: center; font-size: 1.1rem; letter-spacing: 1px;" placeholder="Tu nombre de usuario" autocomplete="off" />
                         </div>
                     </div>
 

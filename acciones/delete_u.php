@@ -27,8 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $puedeBorrar = true;
     } else {
         // Si no es el super admin, validar la clave del super admin
-        $sql = "SELECT clave FROM usuario WHERE id_usuario = $superAdminId";
-        $res = $conexion->query($sql);
+        $sql = "SELECT clave FROM usuario WHERE id_usuario = ?";
+        $stmt_sa = $conexion->prepare($sql);
+        $stmt_sa->bind_param("i", $superAdminId);
+        $stmt_sa->execute();
+        $res = $stmt_sa->get_result();
         if ($row = $res->fetch_assoc()) {
             // Suponiendo que usas SHA-1 para las contraseñas
             if (sha1($claveSuperAdmin) === $row['clave']) {
@@ -45,8 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($puedeBorrar) {
         // Obtener la información del usuario, incluyendo la foto
-        $sql = "SELECT foto, usuario, nombre FROM usuario WHERE id_usuario = $id_usuario";
-        $result = mysqli_query($conexion, $sql);
+        $sql = "SELECT foto, usuario, nombre FROM usuario WHERE id_usuario = ?";
+        $stmt_u = $conexion->prepare($sql);
+        $stmt_u->bind_param("i", $id_usuario);
+        $stmt_u->execute();
+        $result = $stmt_u->get_result();
 
         if (mysqli_num_rows($result) == 1) {
             $row = mysqli_fetch_assoc($result);
@@ -61,8 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Eliminar el usuario de la base de datos
-            $sql_delete = "DELETE FROM usuario WHERE id_usuario = $id_usuario";
-            $result_delete = mysqli_query($conexion, $sql_delete);
+            $sql_delete = "DELETE FROM usuario WHERE id_usuario = ?";
+            $stmt_del = $conexion->prepare($sql_delete);
+            $stmt_del->bind_param("i", $id_usuario);
+            $result_delete = $stmt_del->execute();
 
             // Registrar en bitácora
             if (isset($_SESSION['id'])) {

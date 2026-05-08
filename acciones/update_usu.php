@@ -10,29 +10,41 @@ $nacionalidad = $_POST['nacionalidad'];
 $cedula = $_POST['cedula'];
 $nombre = $_POST['nombre'];
 $correo = $_POST['correo'];
+$telefono = $_POST['telefono'];
+$telegram_id = $_POST['telegram_id'] ?? '';
 $clave = $_POST['clave'];
 $confirmar_clave = $_POST['confirmar_clave'];
 $tipo = $_POST['tipo'];
 
 // Obtener el valor actual del campo `usuario` desde la base de datos
-$sql = "SELECT usuario FROM usuario WHERE id_usuario = '$id_usuario'";
-$result = mysqli_query($conexion, $sql);
-$row = mysqli_fetch_assoc($result);
+$sql = "SELECT usuario FROM usuario WHERE id_usuario = ?";
+$stmt = $conexion->prepare($sql);
+$stmt->bind_param("i", $id_usuario);
+$stmt->execute();
+$row = $stmt->get_result()->fetch_assoc();
 $usuario_actual = $row['usuario'];
 
 // Verificar si el campo `usuario` ha cambiado
 if ($nuevo_usuario !== $usuario_actual) {
-    $sql_usuario = ", usuario='$nuevo_usuario'";
+    $sql_usuario = ", usuario=?";
 } else {
     $sql_usuario = ""; // No actualizar el campo `usuario`
 }
 
-// Verificar duplicado de Usuario o Cédula (excluyendo al usuario actual)
-$sql_check = "SELECT id_usuario FROM usuario WHERE (cedula = '$cedula' OR usuario = '$nuevo_usuario') AND id_usuario != '$id_usuario'";
-$res_check = mysqli_query($conexion, $sql_check);
-if (mysqli_num_rows($res_check) > 0) {
+// Verificar duplicado de Usuario, Cédula, Teléfono o Telegram ID (excluyendo al usuario actual)
+$sql_check = "SELECT id_usuario, usuario, cedula, telefono, telegram_id FROM usuario WHERE (cedula = ? OR usuario = ? OR (telefono = ? AND telefono != '') OR (telegram_id = ? AND telegram_id != '')) AND id_usuario != ?";
+$stmt_check = $conexion->prepare($sql_check);
+$stmt_check->bind_param("ssssi", $cedula, $nuevo_usuario, $telefono, $telegram_id, $id_usuario);
+$stmt_check->execute();
+$res_check = $stmt_check->get_result();
+if ($res_check->num_rows > 0) {
+    $dup = mysqli_fetch_assoc($res_check);
+    $msg = "El Nombre de Usuario o la Cédula ya existen.";
+    if ($dup['telefono'] === $telefono && !empty($telefono)) $msg = "El número de teléfono ya está vinculado a otra cuenta.";
+    if ($dup['telegram_id'] === $telegram_id && !empty($telegram_id)) $msg = "El Telegram ID ya está vinculado a otra cuenta.";
+    
     $_SESSION["estatus"] = "error";
-    $_SESSION["mensaje"] = "El Nombre de Usuario o la Cédula ya se encuentran vinculados a otra cuenta.";
+    $_SESSION["mensaje"] = $msg;
     header("Location: ../vistas/edit_u.php?id=$id_usuario");
     exit();
 }
@@ -55,13 +67,32 @@ if (!empty($clave) && !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{
 // Encriptar la contraseña si se ha proporcionado una nueva
 if (!empty($clave)) {
     $clave_encrip = sha1($clave);
-    $sql_clave = ", clave='$clave_encrip', fecha_cambio_clave=CURRENT_DATE";
+    $sql_clave = ", clave=?, fecha_cambio_clave=CURRENT_DATE";
 } else {
     $sql_clave = "";
 }
 
-// Procesar la imagen
-if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
+$sql_imagen = "";
+$rutaDestino = "";
+
+// Procesar la imagen o borrado
+if (isset($_POST['eliminar_foto']) && $_POST['eliminar_foto'] == '1') {
+    // Obtener la foto actual
+    $sql_foto = "SELECT foto FROM usuario WHERE id_usuario = ?";
+    $stmt_foto = $conexion->prepare($sql_foto);
+    $stmt_foto->bind_param("i", $id_usuario);
+    $stmt_foto->execute();
+    $user_foto = $stmt_foto->get_result()->fetch_assoc();
+    $rutaFotoAnterior = $user_foto['foto'];
+    
+    // Eliminar la imagen anterior si no es la default
+    if (!empty($rutaFotoAnterior) && file_exists($rutaFotoAnterior) && strpos($rutaFotoAnterior, 'default_profile.png') === false) {
+        unlink($rutaFotoAnterior);
+    }
+    
+    $rutaDestino = '../img/default_profile.png';
+    $sql_imagen = ", foto=?";
+} else if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     $imagen = $_FILES['imagen'];
     $nombreImagen = time() . '_' . $imagen['name'];
     $rutaDestino = '../img/fotos_perfil/' . $nombreImagen;
@@ -88,18 +119,20 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     // Mover la imagen a la carpeta de destino
     if (move_uploaded_file($imagen['tmp_name'], $rutaDestino)) {
         // Obtener la ruta de la imagen anterior
-        $sql = "SELECT foto FROM usuario WHERE id_usuario = '$id_usuario'";
-        $result = mysqli_query($conexion, $sql);
-        $usuario = mysqli_fetch_assoc($result);
-        $rutaFotoAnterior = $usuario['foto'];
+        $sql = "SELECT foto FROM usuario WHERE id_usuario = ?";
+        $stmt_del = $conexion->prepare($sql);
+        $stmt_del->bind_param("i", $id_usuario);
+        $stmt_del->execute();
+        $user_foto_del = $stmt_del->get_result()->fetch_assoc();
+        $rutaFotoAnterior = $user_foto_del['foto'];
 
         // Eliminar la imagen anterior si existe y no es la por defecto
-        if (file_exists($rutaFotoAnterior) && strpos($rutaFotoAnterior, 'default_profile.png') === false) {
+        if (!empty($rutaFotoAnterior) && file_exists($rutaFotoAnterior) && strpos($rutaFotoAnterior, 'default_profile.png') === false) {
             unlink($rutaFotoAnterior);
         }
 
         // Actualizar la ruta de la imagen en la base de datos
-        $sql_imagen = ", foto='$rutaDestino'";
+        $sql_imagen = ", foto=?";
     } else {
         $_SESSION["estatus"] = "error";
         $_SESSION["mensaje"] = "Error al subir la imagen";
@@ -110,9 +143,31 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     $sql_imagen = "";
 }
 
+// Construcción dinámica de parámetros para UPDATE
+$types = "sssssss";
+$params = [$nacionalidad, $cedula, $nombre, $correo, $telefono, $telegram_id, $tipo];
+
+if (!empty($sql_usuario)) {
+    $types .= "s";
+    $params[] = $nuevo_usuario;
+}
+if (!empty($sql_clave)) {
+    $types .= "s";
+    $params[] = $clave_encrip;
+}
+if (!empty($sql_imagen)) {
+    $types .= "s";
+    $params[] = $rutaDestino;
+}
+
+$types .= "i";
+$params[] = $id_usuario;
+
 // Actualizar los datos del usuario en la base de datos
-$sql = "UPDATE usuario SET nacionalidad='$nacionalidad', cedula='$cedula', nombre='$nombre', correo='$correo', tipos='$tipo' $sql_usuario $sql_clave $sql_imagen WHERE id_usuario='$id_usuario'";
-$result = mysqli_query($conexion, $sql);
+$sql = "UPDATE usuario SET nacionalidad=?, cedula=?, nombre=?, correo=?, telefono=?, telegram_id=?, tipos=? $sql_usuario $sql_clave $sql_imagen WHERE id_usuario=?";
+$stmt = $conexion->prepare($sql);
+$stmt->bind_param($types, ...$params);
+$result = $stmt->execute();
 
 if ($result) {
     // Actualizar las variables de sesión con los nuevos valores si el usuario editado es el usuario actual

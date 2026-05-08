@@ -5,8 +5,10 @@ include_once('../models/bitacora.php'); // Asegúrate de incluir el archivo dond
 
     $nombre = $_POST['nombre'];
     if (!empty($nombre)) {
-        $sql = "INSERT INTO categorias (nombre) VALUES ('$nombre')";
-        if (mysqli_query($conexion, $sql)) {
+        $sql = "INSERT INTO categorias (nombre) VALUES (?)";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bind_param("s", $nombre);
+        if ($stmt->execute()) {
             $_SESSION["estatus"] = "success";
             $_SESSION["mensaje"] = "Categoría registrada exitosamente.";
             // Registrar en bitácora

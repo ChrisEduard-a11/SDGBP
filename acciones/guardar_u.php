@@ -10,6 +10,7 @@ $nombre = $_POST['nombre'];
 $cedula = $_POST['cedula'];
 $nacionalidad = $_POST['nacionalidad'];
 $correo = $_POST['correo'];
+$telefono = $_POST['telefono'];
 $clave = $_POST['clave'];
 $confirmar_clave = $_POST['confirmar_clave'];
 $tipo = $_POST['tipo'];
@@ -38,18 +39,25 @@ if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/', $clave))
 // Encriptar la contraseña
 $clave_encrip = sha1($clave);
 
-// Verificar duplicado de Usuario o Cédula
-$sql_check = "SELECT id_usuario FROM usuario WHERE cedula = '$cedula' OR usuario = '$usuario'";
-$res_check = mysqli_query($conexion, $sql_check);
-if (mysqli_num_rows($res_check) > 0) {
+// Verificar duplicado de Usuario, Cédula o Teléfono
+$sql_check = "SELECT id_usuario, usuario, cedula, telefono FROM usuario WHERE cedula = ? OR usuario = ? OR (telefono = ? AND telefono != '')";
+$stmt_check = $conexion->prepare($sql_check);
+$stmt_check->bind_param("sss", $cedula, $usuario, $telefono);
+$stmt_check->execute();
+$res_check = $stmt_check->get_result();
+if ($res_check->num_rows > 0) {
+    $dup = mysqli_fetch_assoc($res_check);
+    $msg = "El Nombre de Usuario o la Cédula ya se encuentran registrados.";
+    if ($dup['telefono'] === $telefono && !empty($telefono)) $msg = "El número de teléfono ya está vinculado a otra cuenta.";
+    
     $_SESSION["estatus"] = "error";
-    $_SESSION["mensaje"] = "El Nombre de Usuario o la Cédula ya se encuentran registrados.";
+    $_SESSION["mensaje"] = $msg;
     header("Location: ../vistas/registro_u.php");
     exit();
 }
 
 // Ruta por defecto de la foto si no se sube ninguna
-$rutaDestino = '../img/fotos/default_profile.png';
+$rutaDestino = '../img/default_profile.png';
 
 // Si se subió imagen, procesarla
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
@@ -87,10 +95,12 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     }
 }
 
-// Insertar los datos en la base de datos
-$sql = "INSERT INTO usuario (nombre, nacionalidad, cedula, usuario, correo, clave, pregunta, respuesta, pregunta2, respuesta2, foto, tipos) 
-        VALUES ('$nombre', '$nacionalidad', '$cedula', '$usuario', '$correo', '$clave_encrip', '$pregunta', '$respuesta_encrip', '$pregunta2', '$respuesta_encrip2', '$rutaDestino', '$tipo')";
-$result = mysqli_query($conexion, $sql);
+// Insertar los datos en la base de datos, marcándolo como aprobado=1 automáticamente
+$sql = "INSERT INTO usuario (nombre, nacionalidad, cedula, usuario, correo, telefono, clave, pregunta, respuesta, pregunta2, respuesta2, foto, tipos, aprobado) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+$stmt = $conexion->prepare($sql);
+$stmt->bind_param("sssssssssssss", $nombre, $nacionalidad, $cedula, $usuario, $correo, $telefono, $clave_encrip, $pregunta, $respuesta_encrip, $pregunta2, $respuesta_encrip2, $rutaDestino, $tipo);
+$result = $stmt->execute();
 
 if ($result) {
     $id_usuario = $_SESSION['id'];

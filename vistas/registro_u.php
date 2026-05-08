@@ -132,6 +132,13 @@ require_once("../models/header.php")
                                 <input class="form-control" id="inputEmail" type="email" name="correo" placeholder="ej. correo@gmail.com">
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <label for="inputTelefono" class="form-label fw-semibold">Teléfono/WhatsApp (*)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input class="form-control" id="inputTelefono" type="text" name="telefono" placeholder="Ej. 04121234567" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

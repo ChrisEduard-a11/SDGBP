@@ -371,7 +371,6 @@ $mostrar_aviso = ($aviso_activo && $dias_transcurridos <= 90);
                 <div class="inst-links">
                     <a href="recuperar.php" class="inst-link"><i class="fas fa-unlock-alt"></i> Recuperar</a>
                     <a href="solicitar_desbloqueo.php" class="inst-link"><i class="fas fa-key"></i> Desbloquear</a>
-                    <a href="register.php" class="inst-link"><i class="fas fa-user-plus"></i> Registrarse</a>
                     
                     <!-- Soporte Dropdown Integrado -->
                     <div class="relative inline-block">

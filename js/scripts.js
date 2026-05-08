@@ -24,3 +24,8 @@ window.addEventListener('DOMContentLoaded', event => {
     }
 
 });
+
+// Global Navigation Helper
+window.navigateTo = function(url) {
+    window.location.href = url;
+};

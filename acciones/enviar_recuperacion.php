@@ -13,16 +13,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $correo = $_POST['correo'];
 
     // Verificar si el correo existe en la base de datos
-    $sql = "SELECT * FROM usuario WHERE correo = '$correo'";
-    $result = mysqli_query($conexion, $sql);
-    if (mysqli_num_rows($result) > 0) {
-        $usuario = mysqli_fetch_assoc($result);
+    $sql = "SELECT * FROM usuario WHERE correo = ?";
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("s", $correo);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $usuario = $result->fetch_assoc();
         $token = bin2hex(random_bytes(50)); // Generar un token único
         $expira = date("Y-m-d H:i:s", strtotime('+1 hour')); // Token expira en 1 hora
 
         // Guardar el token en la base de datos
-        $sql = "INSERT INTO recuperacion (correo, token, expira) VALUES ('$correo', '$token', '$expira')";
-        mysqli_query($conexion, $sql);
+        $sql = "INSERT INTO recuperacion (correo, token, expira) VALUES (?, ?, ?)";
+        $stmt_rec = $conexion->prepare($sql);
+        $stmt_rec->bind_param("sss", $correo, $token, $expira);
+        $stmt_rec->execute();
 
         // Enviar el correo electrónico
         $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";

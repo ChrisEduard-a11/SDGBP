@@ -24,8 +24,8 @@ $stmtFoto->close();
 
 $usuario_id = $_SESSION['id']; // Obtén el ID del usuario actual
 
-// Obtener datos del usuario incluyendo preferencias
-$sql = "SELECT pregunta, pregunta2 FROM usuario WHERE id_usuario = ?";
+// Obtener datos del usuario incluyendo preferencias y contacto
+$sql = "SELECT pregunta, pregunta2, telefono, telegram_id FROM usuario WHERE id_usuario = ?";
 $stmt = $conexion->prepare($sql);
 $stmt->bind_param("i", $usuario_id);
 $stmt->execute();
@@ -33,6 +33,8 @@ $result = $stmt->get_result();
 $row = $result->fetch_assoc();
 $pregunta1 = $row['pregunta'];
 $pregunta2 = $row['pregunta2'];
+$telefono = $row['telefono'] ?? '';
+$telegram_id = $row['telegram_id'] ?? '';
 $stmt->close();
 
 // Lista completa de opciones de preguntas de seguridad
@@ -304,13 +306,19 @@ $opciones_preguntas = [
                             <div class="profile-pic-container">
                                 <img src="<?php echo $foto_perfil; ?>" alt="Perfil" id="profileImagePreview" class="profile-pic">
                             </div>
-                            <label for="inputFotoPerfil" class="upload-btn-floating">
-                                <i class="fas fa-camera"></i>
-                            </label>
+                            <div class="d-flex justify-content-center gap-2 mt-3 position-absolute" style="bottom: -20px; left: 50%; transform: translateX(-50%); width: 100%;">
+                                <label for="inputFotoPerfil" class="upload-btn-floating position-relative d-inline-flex m-0" style="bottom: auto; right: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                                <button type="button" class="upload-btn-floating position-relative d-inline-flex m-0 bg-danger text-white border-0" style="bottom: auto; right: auto; box-shadow: 0 4px 10px rgba(220,53,69,0.3);" onclick="eliminarFotoConfigU()" title="Eliminar Foto">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                             <input type="file" id="inputFotoPerfil" name="imagen" accept="image/*" class="d-none" onchange="previewProfileImageConfig(this)">
+                            <input type="hidden" name="eliminar_foto" id="eliminar_foto_config" value="0">
                         </div>
-                        <h5 class="mt-3 fw-bold mb-1"><?php echo $_SESSION['nombre']; ?></h5>
-                        <p class="text-muted small">Haz clic en la cámara para actualizar tu foto</p>
+                        <h5 class="mt-4 fw-bold mb-1 pt-3"><?php echo $_SESSION['nombre']; ?></h5>
+                        <p class="text-muted small">Usa la cámara para subir foto o la papelera para quitarla</p>
                     </div>
 
                     <!-- INFORMACIÓN BÁSICA (BOXES) -->
@@ -339,6 +347,45 @@ $opciones_preguntas = [
                                 <div class="info-item-label">Correo</div>
                                 <div class="info-item-value"><?php echo $_SESSION['correo']; ?></div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTACTO Y NOTIFICACIONES -->
+                    <h5 class="section-title"><i class="fas fa-address-book"></i> Información de Contacto (Seguridad)</h5>
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <label class="form-label fw-600">Teléfono / WhatsApp <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-premium">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="text" class="form-control form-control-premium" name="telefono" value="<?php echo $telefono; ?>" 
+                                    placeholder="Ej: 04121234567" 
+                                    <?php echo !empty($telefono) ? 'readonly' : ''; ?>
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '');" maxlength="11">
+                            </div>
+                            <?php if (!empty($telefono)): ?>
+                                <small class="text-muted mt-1 d-block"><i class="fas fa-lock me-1"></i> Campo bloqueado por seguridad.</small>
+                            <?php else: ?>
+                                <small class="text-primary mt-1 d-block"><i class="fas fa-info-circle me-1"></i> Una vez registrado, no podrá ser modificado.</small>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-600 mb-0">Telegram Chat ID <span class="text-muted fw-normal">(Opcional)</span></label>
+                                <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none fw-bold" data-bs-toggle="modal" data-bs-target="#modalAyudaTelegram">
+                                    <i class="fas fa-question-circle me-1"></i>¿Cómo obtenerlo?
+                                </button>
+                            </div>
+                            <div class="input-group input-group-premium">
+                                <span class="input-group-text"><i class="fab fa-telegram-plane"></i></span>
+                                <input type="text" class="form-control form-control-premium" name="telegram_id" value="<?php echo $telefono === '' ? '' : $telegram_id; ?>" 
+                                    placeholder="Tu ID de Telegram"
+                                    <?php echo !empty($telegram_id) ? 'readonly' : ''; ?>>
+                            </div>
+                            <?php if (!empty($telegram_id)): ?>
+                                <small class="text-muted mt-1 d-block"><i class="fas fa-lock me-1"></i> Chat ID vinculado correctamente.</small>
+                            <?php else: ?>
+                                <small class="text-muted mt-1 d-block">Necesario para la recuperación vía Telegram Bot.</small>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -413,9 +460,62 @@ $opciones_preguntas = [
         </div>
     </div>
 
+    <!-- MODAL AYUDA TELEGRAM -->
+    <div class="modal fade" id="modalAyudaTelegram" tabindex="-1" aria-labelledby="modalAyudaTelegramLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header bg-primary text-white py-3">
+                    <h5 class="modal-title fw-bold" id="modalAyudaTelegramLabel"><i class="fab fa-telegram-plane me-2"></i>Vinculación con Telegram</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- ADVERTENCIA ESTRÍCTA DE SEGURIDAD -->
+                    <div class="p-3 mb-4 rounded-3 border-start border-4 border-danger" style="background: rgba(220, 53, 69, 0.05);">
+                        <h6 class="text-danger fw-bold mb-1"><i class="fas fa-exclamation-triangle me-2"></i>AVISO DE SEGURIDAD ESTRICTA</h6>
+                        <p class="small text-muted mb-0">La vinculación con Telegram es una operación <b>crítica</b>. Si introduces un ID que no es el tuyo, estarías permitiendo que un tercero <u>tome el control total de tu cuenta</u>. Asegúrate de seguir los pasos con extrema precisión.</p>
+                    </div>
+
+                    <p class="text-muted mb-4">Sigue estos pasos para vincular tu cuenta de forma segura:</p>
+                    
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="bg-primary-light text-primary rounded-circle p-3 me-3" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><b>1</b></div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Obtener tu ID Personal</h6>
+                            <p class="small text-muted mb-0">Busca en Telegram al bot <a href="https://t.me/userinfobot" target="_blank" class="text-primary fw-bold">@userinfobot</a> y presiona <b>/start</b>. Copia el número que dice <b>"Your ID"</b>. <i>(Verifica que sea tu propio perfil)</i>.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="bg-primary-light text-primary rounded-circle p-3 me-3" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><b>2</b></div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Activar Recepción en SDGBP</h6>
+                            <p class="small text-muted mb-0">Busca a <a href="https://t.me/SDGBP_SeguridadBot" target="_blank" class="text-primary fw-bold">@SDGBP_SeguridadBot</a> y presiona <b>/start</b>. Sin este paso, el sistema no podrá enviarte tus códigos.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start">
+                        <div class="bg-primary-light text-primary rounded-circle p-3 me-3" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><b>3</b></div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Registrar y Bloquear</h6>
+                            <p class="small text-muted mb-0">Pega el ID obtenido (Paso 1) en el campo "Telegram Chat ID" y guarda. <b>Una vez guardado, el campo se bloqueará por seguridad.</b></p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 border-0 rounded-3">
+                        <small class="d-block"><i class="fas fa-shield-alt me-1"></i> Una vez vinculado, tu cuenta estará protegida por Verificación en Dos Pasos (2FA) vía Telegram.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-3">
+                    <button type="button" class="btn btn-secondary rounded-3 px-4" data-bs-dismiss="modal">Entendido, tendré cuidado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 <script>
     function previewProfileImageConfig(input) {
+        document.getElementById('eliminar_foto_config').value = '0';
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -426,6 +526,20 @@ $opciones_preguntas = [
             };
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    function eliminarFotoConfigU() {
+        document.getElementById('eliminar_foto_config').value = '1';
+        document.getElementById('profileImagePreview').src = '../img/default_profile.png';
+        document.getElementById('inputFotoPerfil').value = '';
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'info',
+            title: 'Foto marcada para eliminar. Guarda los cambios para aplicar.',
+            showConfirmButton: false,
+            timer: 3000
+        });
     }
 </script>
 

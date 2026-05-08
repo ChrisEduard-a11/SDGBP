@@ -17,15 +17,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $correo = $_SESSION['correo_desbloqueo'];
 
         // Obtener el nombre
-        $sql = "SELECT nombre FROM usuario WHERE usuario = '$usuario'";
-        $result = mysqli_query($conexion, $sql);
-        $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+        $sql = "SELECT nombre FROM usuario WHERE usuario = ?";
+        $stmt_nombre = $conexion->prepare($sql);
+        $stmt_nombre->bind_param("s", $usuario);
+        $stmt_nombre->execute();
+        $row = $stmt_nombre->get_result()->fetch_assoc();
         $nombre = $row ? $row['nombre'] : 'Usuario';
 
         // Ahora generar el token real
         $token = bin2hex(random_bytes(50));
-        $sql_token = "UPDATE usuario SET token = '$token' WHERE usuario = '$usuario'";
-        mysqli_query($conexion, $sql_token);
+        $sql_token = "UPDATE usuario SET token = ? WHERE usuario = ?";
+        $stmt_token = $conexion->prepare($sql_token);
+        $stmt_token->bind_param("ss", $token, $usuario);
+        $stmt_token->execute();
 
         $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
         $host = $_SERVER['HTTP_HOST'];

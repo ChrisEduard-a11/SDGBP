@@ -16,9 +16,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || (isset($_GET['reenviar']) && isset($
     }
 
     // Verificar si el usuario existe en la base de datos
-    $sql = "SELECT * FROM usuario WHERE usuario = '$usuario'";
-    $result = mysqli_query($conexion, $sql);
-    $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+    $sql = "SELECT * FROM usuario WHERE usuario = ?";
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("s", $usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_array(MYSQLI_ASSOC);
 
     if ($row) {
         if ($row['intentos'] == 3) {

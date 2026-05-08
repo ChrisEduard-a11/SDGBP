@@ -71,9 +71,8 @@ if ($maintenance_data) {
     }
 }
 // =====================================================================
- // Consulta consolidada de seguridad y vigencia de clave
-// Usamos una sola consulta para optimizar y evitar inconsistencias
-$sql_seguridad = "SELECT session_token, fecha_cambio_clave, tipos, foto FROM usuario WHERE id_usuario = '$usuarioid'";
+// Consulta consolidada de seguridad y vigencia de clave
+$sql_seguridad = "SELECT session_token, fecha_cambio_clave, tipos, foto, telefono, telegram_id FROM usuario WHERE id_usuario = '$usuarioid'";
 $res_seguridad = mysqli_query($conexion, $sql_seguridad);
 $row = mysqli_fetch_assoc($res_seguridad);
 
@@ -88,6 +87,8 @@ if (!$row || $row['session_token'] !== $session_token) {
 $tipo_usuario = $row['tipos'];
 $nombre_usuario = $_SESSION['nombre'];
 $_SESSION['foto'] = $row['foto'];
+$_SESSION['telefono'] = $row['telefono'] ?? '';
+$_SESSION['telegram_id'] = $row['telegram_id'] ?? '';
 
 // Lógica de Vencimiento de Contraseña
 $fecha_db = $row['fecha_cambio_clave'] ?? '';
@@ -142,6 +143,20 @@ mysqli_query($conexion,
            OR (n.usuario_id IS NOT NULL AND LOWER(u.tipos) = 'upu')
        )"
 );
+
+// Notificación de Teléfono Faltante (Seguridad Crítica)
+if (empty($_SESSION['telefono'])) {
+    $notificaciones[] = [
+        'id' => null,
+        'titulo' => 'Seguridad: Teléfono Requerido',
+        'mensaje' => 'Por motivos de seguridad, debes registrar un número de teléfono para recuperar tu cuenta. <a href="configuracion_usuario.php" class="fw-bold text-danger">Completar ahora</a>',
+        'tipo' => 'danger',
+        'icono' => 'fas fa-phone-slash',
+        'leida' => 0,
+        'fecha' => date('Y-m-d H:i:s')
+    ];
+}
+// =====================================================================
 // =====================================================================
 
 require_once(__DIR__ . "/notificaciones.php");
@@ -1085,7 +1100,11 @@ while ($c = mysqli_fetch_assoc($res_cierres)) {
                             <span class="small text-muted"><?php echo ucfirst($tipo_usuario); ?></span>
                         </li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item py-2" href="configuracion_usuario.php"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Configuración</a></li>
+                        <?php if (strtolower($tipo_usuario) === 'admin'): ?>
+                            <li><a class="dropdown-item py-2" href="usuario.php"><i class="fas fa-users-cog fa-fw me-2 text-muted"></i> Gestión de Usuarios</a></li>
+                        <?php else: ?>
+                            <li><a class="dropdown-item py-2" href="configuracion_usuario.php"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Configuración</a></li>
+                        <?php endif; ?>
                         <li><hr class="dropdown-divider"></li>
                         <li class="px-3 py-1">
                             <button class="btn btn-danger btn-sm w-100 rounded-pill" onclick="confsalir(event)" data-no-preloader="true">

@@ -22,8 +22,11 @@ if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/', $nueva_c
 }
 
 // Verificar el token
-$sql = "SELECT * FROM recuperacion WHERE token = '$token' AND expira > NOW()";
-$result = mysqli_query($conexion, $sql);
+$sql = "SELECT * FROM recuperacion WHERE token = ? AND expira > NOW()";
+$stmt = $conexion->prepare($sql);
+$stmt->bind_param("s", $token);
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Manejar errores en la consulta SQL
 if (!$result) {
@@ -39,19 +42,23 @@ if (mysqli_num_rows($result) > 0) {
 
     // Actualizar la contraseña
     $nueva_contrasena_encrip = sha1($nueva_contrasena);
-    $sql = "UPDATE usuario SET clave = '$nueva_contrasena_encrip', fecha_cambio_clave = CURRENT_DATE WHERE correo = '$correo'";
-    if (!mysqli_query($conexion, $sql)) {
+    $sql = "UPDATE usuario SET clave = ?, fecha_cambio_clave = CURRENT_DATE WHERE correo = ?";
+    $stmt_upd = $conexion->prepare($sql);
+    $stmt_upd->bind_param("ss", $nueva_contrasena_encrip, $correo);
+    if (!$stmt_upd->execute()) {
         $_SESSION["estatus"] = "error";
-        $_SESSION["mensaje"] = "Error al actualizar la contraseña: " . mysqli_error($conexion);
+        $_SESSION["mensaje"] = "Error al actualizar la contraseña: " . $conexion->error;
         header("Location: ../vistas/recu_correo.php");
         exit();
     }
 
     // Eliminar el token
-    $sql = "DELETE FROM recuperacion WHERE token = '$token'";
-    if (!mysqli_query($conexion, $sql)) {
+    $sql = "DELETE FROM recuperacion WHERE token = ?";
+    $stmt_del = $conexion->prepare($sql);
+    $stmt_del->bind_param("s", $token);
+    if (!$stmt_del->execute()) {
         $_SESSION["estatus"] = "error";
-        $_SESSION["mensaje"] = "Error al eliminar el token: " . mysqli_error($conexion);
+        $_SESSION["mensaje"] = "Error al eliminar el token: " . $conexion->error;
         header("Location: ../vistas/recu_correo.php");
         exit();
     }

@@ -11,15 +11,19 @@ if (isset($data['id'])) {
     $id = intval($data['id']);
 
     $nombre_bien = 'Desconocido';
-    $sql_bien = "SELECT nombre FROM bienes WHERE id = $id";
-    if ($res_bien = mysqli_query($conexion, $sql_bien)) {
-        if ($row_bien = mysqli_fetch_assoc($res_bien)) {
-            $nombre_bien = $row_bien['nombre'];
-        }
+    $sql_bien = "SELECT nombre FROM bienes WHERE id = ?";
+    $stmt_bien = $conexion->prepare($sql_bien);
+    $stmt_bien->bind_param("i", $id);
+    $stmt_bien->execute();
+    $res_bien = $stmt_bien->get_result();
+    if ($row_bien = $res_bien->fetch_assoc()) {
+        $nombre_bien = $row_bien['nombre'];
     }
 
-    $query = "DELETE FROM bienes WHERE id = $id";
-    $result = mysqli_query($conexion, $query);
+    $query = "DELETE FROM bienes WHERE id = ?";
+    $stmt_del = $conexion->prepare($query);
+    $stmt_del->bind_param("i", $id);
+    $result = $stmt_del->execute();
 
     if ($result) {
         if (isset($_SESSION['id'])) {

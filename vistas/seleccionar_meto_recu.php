@@ -1,6 +1,14 @@
 <?php
 session_start();
-if (empty($_SESSION["usuario"])) { header("Location: denegado_a.php"); exit(); }
+if (empty($_SESSION["usuario"]) && empty($_SESSION["id_usuario"])) { 
+    header("Location: denegado_a.php"); 
+    exit(); 
+}
+// Si no es un usuario logueado, al menos debe estar en proceso de recuperación
+if (empty($_SESSION["usuario_id_login"]) && empty($_SESSION['recuperar_modo'])) {
+    header("Location: denegado_a.php"); 
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -136,9 +144,9 @@ if (empty($_SESSION["usuario"])) { header("Location: denegado_a.php"); exit(); }
             <img src="../img/login_bg_premium.png" alt="Corporative Office" class="login-bg-img">
             <div class="login-overlay"></div>
             <div class="login-image-content">
-                <div class="login-badge">Soporte Técnico</div>
+                <div class="login-badge"><?php echo (isset($_SESSION['recuperar_modo']) && $_SESSION['recuperar_modo'] === 'usuario') ? 'Recuperar Usuario' : 'Soporte Técnico'; ?></div>
                 <h1 class="login-image-title">Selecciona un<br><span>Método</span></h1>
-                <p class="login-image-desc">Elige la forma más cómoda y segura para verificar tu identidad y restaurar el acceso al sistema corporativo.</p>
+                <p class="login-image-desc"><?php echo (isset($_SESSION['recuperar_modo']) && $_SESSION['recuperar_modo'] === 'usuario') ? 'Elige cómo deseas recibir tu nombre de usuario corporativo de forma segura.' : 'Elige la forma más cómoda y segura para verificar tu identidad y restaurar el acceso al sistema corporativo.'; ?></p>
                 <div class="flex items-center gap-4 mt-8">
                     <div class="flex -space-x-3">
                         <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center"><i class="fas fa-envelope text-slate-300 text-sm"></i></div>
@@ -152,7 +160,7 @@ if (empty($_SESSION["usuario"])) { header("Location: denegado_a.php"); exit(); }
             <div class="login-form-container">
                 <div class="text-center md:text-left mb-6">
                     <img src="../img/Logo-OP2_V4.webp" alt="Logo" class="inst-logo mx-auto md:mx-0">
-                    <h2 class="inst-title">Recuperación de Cuenta</h2>
+                    <h2 class="inst-title"><?php echo (isset($_SESSION['recuperar_modo']) && $_SESSION['recuperar_modo'] === 'usuario') ? 'Recuperar Usuario' : 'Recuperación de Cuenta'; ?></h2>
                 </div>
 
                 <div class="stepper">
@@ -185,6 +193,9 @@ if (empty($_SESSION["usuario"])) { header("Location: denegado_a.php"); exit(); }
                             <select class="inst-select" id="metodo" name="metodo">
                                 <option value="" selected disabled>Seleccione un método</option>
                                 <option value="2fa">Verificación 2FA (Código al Correo)</option>
+                                <?php if (!empty($_SESSION["telegram_id"])): ?>
+                                <option value="telegram">Verificación vía Telegram Bot</option>
+                                <?php endif; ?>
                                 <option value="preguntas">Preguntas de Seguridad</option>
                             </select>
                         </div>

@@ -15,22 +15,27 @@ if (!isset($_POST['usuario_id']) || empty($_POST['usuario_id'])) {
 $id_usuario = (int)$_POST['usuario_id'];
 
 // Obtener nombre de usuario para notificar
-$sql_info = "SELECT usuario FROM usuario WHERE id_usuario = $id_usuario";
-$resultado = mysqli_query($conexion, $sql_info);
+$sql_info = "SELECT usuario FROM usuario WHERE id_usuario = ?";
+$stmt_info = $conexion->prepare($sql_info);
+$stmt_info->bind_param("i", $id_usuario);
+$stmt_info->execute();
+$resultado = $stmt_info->get_result();
 $nombre_usuario = "";
 if ($row = mysqli_fetch_assoc($resultado)) {
     $nombre_usuario = $row['usuario'];
 }
 
 // Aprobar al usuario (aprobado = 1)
-$sql = "UPDATE usuario SET aprobado = 1 WHERE id_usuario = $id_usuario";
-if (mysqli_query($conexion, $sql)) {
+$sql = "UPDATE usuario SET aprobado = 1 WHERE id_usuario = ?";
+$stmt_aprobar = $conexion->prepare($sql);
+$stmt_aprobar->bind_param("i", $id_usuario);
+if ($stmt_aprobar->execute()) {
     // Eliminar notificación de registro pendiente
     eliminarNotificacionUsuarioPendiente($conexion, $nombre_usuario);
 
     // Enviar notificación de bienvenida al usuario aprobado
     $bt = "¡Cuenta Aprobada!";
-    $bm = "¡Bienvenido! Tu cuenta ha sido aprobada por un administrador. Ya puedes gestionar tus ingresos y egresos.";
+    $bm = "¡Bienvenido! Tu cuenta ha sido aprobada por {$_SESSION['nombre']}. Ya puedes gestionar tus procesos.";
     crearNotificacion($conexion, $id_usuario, $bt, $bm, 'success', 'fas fa-user-check');
 
     $_SESSION['estatus'] = 'success';

@@ -1,5 +1,6 @@
 <?php
 session_start();
+include('../conexion.php');
 include_once('../models/bitacora.php'); // Asegúrate de incluir el archivo donde está registrarAccion
     // Obtener los datos del formulario
     $nombre = $_POST['nombre'];
@@ -13,20 +14,22 @@ include_once('../models/bitacora.php'); // Asegúrate de incluir el archivo dond
         $error = "Todos los campos son obligatorios.";
     } else {
         // Insertar los datos en la base de datos
-        $sql = "INSERT INTO bienes (nombre, descripcion, categoria, cantidad, fecha_adquisicion) VALUES ('$nombre', '$descripcion', '$categoria', '$cantidad', '$fecha_adquisicion')";
+        $sql = "INSERT INTO bienes (nombre, descripcion, categoria, cantidad, fecha_adquisicion) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bind_param("sssss", $nombre, $descripcion, $categoria, $cantidad, $fecha_adquisicion);
 
-        if ($conn->query($sql) === TRUE) {
+        if ($stmt->execute()) {
             $success = "Bien nacional registrado exitosamente.";
             // Registrar en bitácora
             if (isset($_SESSION['id'])) {
                 $accion_bitacora = 'Registró Bien Nacional - Nombre: ' . $nombre;
-                registrarAccion($conn, $accion_bitacora, $_SESSION['id']);
+                registrarAccion($conexion, $accion_bitacora, $_SESSION['id']);
             }
         } else {
-            $error = "Error al registrar el bien: " . $conn->error;
+            $error = "Error al registrar el bien: " . $conexion->error;
         }
 
         // Cerrar la conexión
-        $conn->close();
+        $conexion->close();
     }
 ?>

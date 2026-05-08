@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cedula = $_POST['cedula'];
 
     // Buscar el usuario por cédula
-    $sql = "SELECT correo, nombre FROM usuario WHERE cedula = ?";
+    $sql = "SELECT id_usuario, usuario, correo, telegram_id, pregunta, pregunta2 FROM usuario WHERE cedula = ?";
     $stmt = $conexion->prepare($sql);
     $stmt->bind_param("s", $cedula);
     $stmt->execute();
@@ -16,11 +16,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $row = $result->fetch_assoc();
         
         // Guardar datos temporales en sesión para el siguiente paso
-        $_SESSION['temp_recu_cedula'] = $cedula;
-        $_SESSION['temp_recu_correo_real'] = $row['correo'];
-        $_SESSION['temp_recu_nombre'] = $row['nombre'];
+        $_SESSION['id_usuario'] = $row['id_usuario'];
+        $_SESSION['usuario'] = $row['usuario']; 
+        $_SESSION['correo'] = $row['correo'];
+        $_SESSION['telegram_id'] = $row['telegram_id'];
+        $_SESSION['pregunta'] = $row['pregunta'];
+        $_SESSION['pregunta2'] = $row['pregunta2'];
+        $_SESSION['recuperar_modo'] = 'usuario'; // Modo recuperación de usuario
 
-        header("Location: ../vistas/verificar_email_usuario.php");
+        header("Location: ../vistas/seleccionar_meto_recu.php");
         exit();
     } else {
         $_SESSION["estatus"] = "error";

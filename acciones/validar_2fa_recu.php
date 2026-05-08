@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once("../conexion.php");
+require_once("mail_helper.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($_SESSION["usuario"])) {
@@ -27,14 +28,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt_clear->bind_param("i", $row['id_usuario']);
         $stmt_clear->execute();
 
-        // Establecer variables de sesión definitivas para nueva_clave.php
-        $_SESSION["id"] = $row['id_usuario'];
-        $_SESSION["user"] = $row['usuario'];
-        $_SESSION['identidad_verificada'] = true; // Bandera para omitir doble 2FA
-        
-        $_SESSION["estatus"] = "success";
-        $_SESSION["mensaje"] = "Identidad verificada con éxito.";
-        header("Location: ../vistas/nueva_clave.php");
+        if (isset($_SESSION['recuperar_modo']) && $_SESSION['recuperar_modo'] === 'usuario') {
+            // Enviar correo con el usuario
+            $correo_dest = $_SESSION["correo"];
+            if (enviarUsuarioCorreo($correo_dest, $row['usuario'])) {
+                $_SESSION["mensaje"] = "Tu nombre de usuario ha sido enviado a tu correo electrónico.";
+                $_SESSION["estatus"] = "success"; 
+            } else {
+                $_SESSION["mensaje"] = "Tu usuario es: " . $row['usuario'] . " (No pudimos enviar el correo).";
+                $_SESSION["estatus"] = "info";
+            }
+            header("Location: ../vistas/login.php");
+        } else {
+            // Solo establecer para el flujo de cambio de clave
+            $_SESSION["id"] = $row['id_usuario'];
+            $_SESSION["user"] = $row['usuario'];
+            $_SESSION['identidad_verificada'] = true; 
+            header("Location: ../vistas/nueva_clave.php");
+        }
         exit();
     } else {
         $_SESSION["estatus"] = "error";

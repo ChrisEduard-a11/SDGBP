@@ -587,7 +587,8 @@ function validateFormRU() { // Registro Interno (Admin)
         { id: "inputPregunta1", name: "Pregunta 1" },
         { id: "inputRespuesta1", name: "Respuesta 1" },
         { id: "inputPregunta2", name: "Pregunta 2" },
-        { id: "inputRespuesta2", name: "Respuesta 2" }
+        { id: "inputRespuesta2", name: "Respuesta 2" },
+        { id: "inputTelefono", name: "Teléfono" }
     ];
 
     let faltantes = [];
@@ -633,6 +634,14 @@ function validateFormRU() { // Registro Interno (Admin)
         return false;
     }
 
+    const t = document.getElementById("inputTelefono")?.value.trim();
+    if (t && !/^\d{10,11}$/.test(t)) {
+        setFieldInvalid("inputTelefono", true);
+        playErrorSound();
+        toastr.error("El teléfono debe tener entre 10 y 11 dígitos.", "Formato");
+        return false;
+    }
+
     const pr1 = document.getElementById("inputPregunta1")?.value;
     const pr2 = document.getElementById("inputPregunta2")?.value;
     if (pr1 && pr2 && pr1 === pr2) {
@@ -647,7 +656,7 @@ function validateFormRU() { // Registro Interno (Admin)
 }
 
 function validateFormEditU() {
-    const fields = ["inputUsuario", "inputNacionalidad", "inputCedula", "inputNombre", "inputEmail"];
+    const fields = ["inputUsuario", "inputNacionalidad", "inputCedula", "inputNombre", "inputEmail", "inputTelefono"];
     let faltantes = [];
     fields.forEach(id => {
         const el = document.getElementById(id);
@@ -670,6 +679,14 @@ function validateFormEditU() {
         setFieldInvalid("inputCedula", true);
         playErrorSound();
         toastr.error("Cédula inválida (debe tener entre 6 y 9 dígitos).", "Formato");
+        return false;
+    }
+
+    const t = document.getElementById("inputTelefono")?.value.trim();
+    if (t && !/^\d{10,11}$/.test(t)) {
+        setFieldInvalid("inputTelefono", true);
+        playErrorSound();
+        toastr.error("El teléfono debe tener entre 10 y 11 dígitos.", "Formato");
         return false;
     }
 

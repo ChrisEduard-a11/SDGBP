@@ -15,16 +15,21 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 $id_usuario = (int)$_GET['id'];
 
 // Obtener datos del usuario antes de eliminar para la bitácora
-$sql_info = "SELECT nombre, usuario, foto FROM usuario WHERE id_usuario = $id_usuario";
-$resultado = mysqli_query($conexion, $sql_info);
+$sql_info = "SELECT nombre, usuario, foto FROM usuario WHERE id_usuario = ?";
+$stmt_info = $conexion->prepare($sql_info);
+$stmt_info->bind_param("i", $id_usuario);
+$stmt_info->execute();
+$resultado = $stmt_info->get_result();
 
 if ($row = mysqli_fetch_assoc($resultado)) {
     $usuario = $row['usuario'];
     $foto = $row['foto'];
     
     // Rechazar (eliminar de la BD)
-    $sql_delete = "DELETE FROM usuario WHERE id_usuario = $id_usuario";
-    if (mysqli_query($conexion, $sql_delete)) {
+    $sql_delete = "DELETE FROM usuario WHERE id_usuario = ?";
+    $stmt_del = $conexion->prepare($sql_delete);
+    $stmt_del->bind_param("i", $id_usuario);
+    if ($stmt_del->execute()) {
         // Eliminar notificación de registro pendiente
         eliminarNotificacionUsuarioPendiente($conexion, $usuario);
 

@@ -146,6 +146,20 @@ require_once("../models/header.php");
                                 <input class="form-control" type="email" id="inputEmail" name="correo" maxlength="255" value="<?php echo htmlspecialchars($row['correo']); ?>">
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Teléfono/WhatsApp (*)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input class="form-control" type="text" id="inputTelefono" name="telefono" maxlength="20" value="<?php echo htmlspecialchars($row['telefono']); ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Telegram Chat ID</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fab fa-telegram-plane"></i></span>
+                                <input class="form-control" type="text" id="inputTelegram" name="telegram_id" maxlength="30" value="<?php echo htmlspecialchars($row['telegram_id']); ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -200,15 +214,19 @@ require_once("../models/header.php");
                             <small class="text-muted">JPG, JPEG o PNG. Máx 10MB.</small>
                         </div>
                         <div class="col-md-3">
-                            <div class="profile-preview-box">
+                            <div class="profile-preview-box position-relative">
                                 <p class="small fw-bold text-muted mb-2">Foto Actual</p>
-                                <img src="<?php echo htmlspecialchars($row['foto']); ?>" id="imagenActual" width="90" height="90" alt="Foto actual">
+                                <img src="<?php echo htmlspecialchars($row['foto'] != '' ? $row['foto'] : '../img/default_profile.png'); ?>" id="imagenActual" width="90" height="90" style="object-fit: cover;" alt="Foto actual">
+                                <button type="button" class="btn btn-sm btn-danger rounded-circle position-absolute" style="bottom: 10px; right: 10px;" onclick="eliminarFotoEditU()" title="Eliminar Foto Actual">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <input type="hidden" name="eliminar_foto" id="eliminar_foto" value="0">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="profile-preview-box">
                                 <p class="small fw-bold text-muted mb-2">Vista Previa</p>
-                                <img src="" id="imagenPreview" width="90" height="90" alt="Vista previa">
+                                <img src="" id="imagenPreview" width="90" height="90" style="object-fit: cover; display: none;" alt="Vista previa">
                             </div>
                         </div>
                     </div>
@@ -226,6 +244,28 @@ require_once("../models/header.php");
 
         </form>
     </div>
+    
+    <script>
+        function eliminarFotoEditU() {
+            document.getElementById('eliminar_foto').value = '1';
+            document.getElementById('imagenActual').src = '../img/default_profile.png';
+            document.getElementById('imagen').value = '';
+            document.getElementById('imagenPreview').style.display = 'none';
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: 'Foto marcada para eliminar. Guarda los cambios para aplicar.',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        }
+        
+        // Listener sobre el input file para resetear eliminar_foto
+        document.getElementById('imagen').addEventListener('change', function() {
+            document.getElementById('eliminar_foto').value = '0';
+        });
+    </script>
     <script src="../js/vali_login.js"></script>
 <?php
 require_once("../models/footer.php");
