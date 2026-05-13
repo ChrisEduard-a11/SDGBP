@@ -420,15 +420,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST[
         $mail->CharSet = 'UTF-8'; 
         try {
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = env('SMTP_HOST');
             $mail->SMTPAuth = true;
-            $mail->Username = 'soporte.sdgbp2024@gmail.com';
-            $mail->Password = 'ktwf cyvz rmyh lqfy';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            $mail->Port = 465;
+            $mail->Username = env('SMTP_USER');
+            $mail->Password = env('SMTP_PASS');
+            $mail->SMTPSecure = env('SMTP_ENCRYPTION', 'ssl') == 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = env('SMTP_PORT', 465);
             $mail->Timeout = 30; // Aumentar timeout por si acaso
 
-            $mail->setFrom('soporte.sdgbp2024@gmail.com', 'Sistema de Gestión de Bienes y Pagos');
+            $mail->setFrom(env('SMTP_FROM_EMAIL', 'soporte.sdgbp2024@gmail.com'), env('SMTP_FROM_NAME', 'Sistema de Gestión de Bienes y Pagos'));
             $mail->addAddress($correo);
             $mail->isHTML(true);
             $mail->Subject = $asunto;

@@ -14,14 +14,14 @@ function enviarUsuarioCorreo($correo_dest, $usuario_nombre) {
     try {
         // Configuración del servidor (Basada en enviar_2fa_recu.php)
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = env('SMTP_HOST');
         $mail->SMTPAuth = true;
-        $mail->Username = 'soporte.sdgbp2024@gmail.com';
-        $mail->Password = 'ktwf cyvz rmyh lqfy';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port = 465;
+        $mail->Username = env('SMTP_USER');
+        $mail->Password = env('SMTP_PASS');
+        $mail->SMTPSecure = env('SMTP_ENCRYPTION', 'ssl') == 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = env('SMTP_PORT', 465);
         
-        $mail->setFrom('soporte.sdgbp2024@gmail.com', 'SDGBP Security');
+        $mail->setFrom(env('SMTP_FROM_EMAIL', 'soporte.sdgbp2024@gmail.com'), env('SMTP_FROM_NAME', 'SDGBP Security'));
         $mail->addAddress($correo_dest);
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';

@@ -6,14 +6,12 @@ use JsonSerializable;
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
 use PhpOffice\PhpSpreadsheet\Document\Properties;
 use PhpOffice\PhpSpreadsheet\Document\Security;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
-use PhpOffice\PhpSpreadsheet\Shared\File;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Iterator;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 
 class Spreadsheet implements JsonSerializable
 {
@@ -30,6 +28,8 @@ class Spreadsheet implements JsonSerializable
         self::VISIBILITY_HIDDEN,
         self::VISIBILITY_VERY_HIDDEN,
     ];
+
+    protected int $excelCalendar = Date::CALENDAR_WINDOWS_1900;
 
     /**
      * Unique ID.
@@ -253,7 +253,7 @@ class Spreadsheet implements JsonSerializable
      */
     public function setRibbonXMLData(mixed $target, mixed $xmlData): void
     {
-        if ($target !== null && $xmlData !== null) {
+        if (is_string($target) && is_string($xmlData)) {
             $this->ribbonXMLData = ['target' => $target, 'data' => $xmlData];
         } else {
             $this->ribbonXMLData = null;
@@ -567,6 +567,9 @@ class Spreadsheet implements JsonSerializable
             if ($this->activeSheetIndex >= $sheetIndex) {
                 ++$this->activeSheetIndex;
             }
+            if ($this->activeSheetIndex < 0) {
+                $this->activeSheetIndex = 0;
+            }
         }
 
         if ($worksheet->getParent() === null) {
@@ -665,9 +668,8 @@ class Spreadsheet implements JsonSerializable
      */
     public function getIndex(Worksheet $worksheet, bool $noThrow = false): int
     {
-        $wsHash = $worksheet->getHashInt();
         foreach ($this->workSheetCollection as $key => $value) {
-            if ($value->getHashInt() === $wsHash) {
+            if ($value === $worksheet) {
                 return $key;
             }
         }
@@ -1045,17 +1047,7 @@ class Spreadsheet implements JsonSerializable
      */
     public function copy(): self
     {
-        $filename = File::temporaryFilename();
-        $writer = new XlsxWriter($this);
-        $writer->setIncludeCharts(true);
-        $writer->save($filename);
-
-        $reader = new XlsxReader();
-        $reader->setIncludeCharts(true);
-        $reloadedSpreadsheet = $reader->load($filename);
-        unlink($filename);
-
-        return $reloadedSpreadsheet;
+        return unserialize(serialize($this));
     }
 
     public function __clone()
@@ -1522,14 +1514,6 @@ class Spreadsheet implements JsonSerializable
     /**
      * @throws Exception
      */
-    public function __serialize(): array
-    {
-        throw new Exception('Spreadsheet objects cannot be serialized');
-    }
-
-    /**
-     * @throws Exception
-     */
     public function jsonSerialize(): mixed
     {
         throw new Exception('Spreadsheet objects cannot be json encoded');
@@ -1568,5 +1552,48 @@ class Spreadsheet implements JsonSerializable
         }
 
         return $table;
+    }
+
+    /**
+     * @return bool Success or failure
+     */
+    public function setExcelCalendar(int $baseYear): bool
+    {
+        if (($baseYear === Date::CALENDAR_WINDOWS_1900) || ($baseYear === Date::CALENDAR_MAC_1904)) {
+            $this->excelCalendar = $baseYear;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return int Excel base date (1900 or 1904)
+     */
+    public function getExcelCalendar(): int
+    {
+        return $this->excelCalendar;
+    }
+
+    /** @var string[] */
+    private $domainWhiteList = [];
+
+    /**
+     * Currently used only by WEBSERVICE function.
+     *
+     * @param string[] $domainWhiteList
+     */
+    public function setDomainWhiteList(array $domainWhiteList): self
+    {
+        $this->domainWhiteList = $domainWhiteList;
+
+        return $this;
+    }
+
+    /** @return string[] */
+    public function getDomainWhiteList(): array
+    {
+        return $this->domainWhiteList;
     }
 }

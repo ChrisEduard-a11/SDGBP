@@ -309,12 +309,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $mail = new PHPMailer(true);
                 try {
                     $mail->isSMTP();
-                    $mail->Host = 'smtp.gmail.com'; // Cambia esto por tu servidor SMTP
+                    $mail->Host = env('SMTP_HOST');
                     $mail->SMTPAuth = true;
-                    $mail->Username = 'soporte.sdgbp2024@gmail.com'; // Cambia esto por tu usuario SMTP
-                    $mail->Password = 'ktwf cyvz rmyh lqfy'; // Cambia esto por tu contraseña SMTP
-                    $mail->SMTPSecure = 'ssl';
-                    $mail->Port = 465;
+                    $mail->Username = env('SMTP_USER');
+                    $mail->Password = env('SMTP_PASS');
+                    $mail->SMTPSecure = env('SMTP_ENCRYPTION', 'ssl') == 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port = env('SMTP_PORT', 465);
 
                     $mail->setFrom('soporte.sdgbp2024@gmail.com', 'Sistema de Pagos');
                     $mail->addAddress($correo_destino);

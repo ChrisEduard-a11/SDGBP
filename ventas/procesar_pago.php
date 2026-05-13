@@ -5,6 +5,8 @@ require_once("../conexion.php");
 require_once '../PHPMailer/src/PHPMailer.php';
 require_once '../PHPMailer/src/Exception.php';
 require_once '../PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/../config/env.php';
+
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -252,12 +254,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Configurar PHPMailer
         $mail = new PHPMailer(true);
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = env('SMTP_HOST');
         $mail->SMTPAuth = true;
-        $mail->Username = 'soporte.sdgbp2024@gmail.com'; // Cambia esto por tu correo
-        $mail->Password = 'ktwf cyvz rmyh lqfy'; // Cambia esto por tu contraseña
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port = 465;
+        $mail->Username = env('SMTP_USER');
+        $mail->Password = env('SMTP_PASS');
+        $mail->SMTPSecure = env('SMTP_ENCRYPTION', 'ssl') == 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = env('SMTP_PORT', 465);
         $mail->setFrom('soporte.sdgbp2024@gmail.com', 'EURIPYS 2024, C.A.');
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';

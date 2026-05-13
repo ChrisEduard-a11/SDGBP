@@ -1,9 +1,12 @@
 <?php
+require_once __DIR__ . '/config/env.php';
+
 /*INICIO CONEXION DB*/
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "if0_38581055_sys_inv";
+$host = env('DB_HOST', 'localhost');
+$user = env('DB_USER', 'root');
+$pass = env('DB_PASS', '');
+$db   = env('DB_NAME', 'if0_38581055_sys_inv');
+
 
 $conexion = new mysqli($host, $user, $pass, $db);
 

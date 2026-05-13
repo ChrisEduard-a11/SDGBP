@@ -47,13 +47,12 @@ if ($stmt->execute()) {
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = env('SMTP_HOST');
         $mail->SMTPAuth = true;
-        // Usamos la configuración de correo que tienen en sus otros archivos
-        $mail->Username = 'soporte.sdgbp2024@gmail.com';
-        $mail->Password = 'ktwf cyvz rmyh lqfy';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port = 465;
+        $mail->Username = env('SMTP_USER');
+        $mail->Password = env('SMTP_PASS');
+        $mail->SMTPSecure = env('SMTP_ENCRYPTION', 'ssl') == 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = env('SMTP_PORT', 465);
 
         $mail->setFrom('soporte.sdgbp2024@gmail.com', 'Seguridad SDGBP');
         $mail->addAddress($correoSA);
