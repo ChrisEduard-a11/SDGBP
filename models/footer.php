@@ -446,11 +446,13 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
                             const d = String(dayElem.dateObj.getDate()).padStart(2, '0');
                             const dateStr = `${y}-${m}-${d}`;
                             
-                            // Obtener fecha de hoy
+                            // Obtener fecha de hoy y fecha de último pago
                             const realNow = new Date();
                             const todayStr = `${realNow.getFullYear()}-${String(realNow.getMonth() + 1).padStart(2, '0')}-${String(realNow.getDate()).padStart(2, '0')}`;
+                            const lastPaymentStr = window.SDGBP_LAST_PAYMENT_DATE || '2000-01-01';
                             
-                            if (dateStr < todayStr) {
+                            // Un día es "back-dated" (naranja) si es anterior al último pago registrado
+                            if (dateStr < lastPaymentStr) {
                                 dayElem.classList.add("is-back-dated");
                             }
                         }
@@ -466,15 +468,16 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
                             const d = String(selDate.getDate()).padStart(2, '0');
                             const selStr = `${y}-${m}-${d}`;
                             
-                            // Obtener fecha de hoy
+                            // Obtener fecha de hoy y fecha del último pago
                             const realNow = new Date();
                             const todayStr = `${realNow.getFullYear()}-${String(realNow.getMonth() + 1).padStart(2, '0')}-${String(realNow.getDate()).padStart(2, '0')}`;
+                            const lastPaymentStr = window.SDGBP_LAST_PAYMENT_DATE || '2000-01-01';
                             
-                            if (selStr < todayStr) {
+                            if (selStr < lastPaymentStr) {
                                 if (!alreadyWarned) {
                                     Swal.fire({
                                         title: 'Aviso: Registro en Fecha Anterior',
-                                        text: 'Estás seleccionando una fecha anterior al día de hoy. Asegúrate de que esto sea correcto para tu declaración de balance.',
+                                        text: 'Estás seleccionando una fecha anterior a tu último pago registrado. Asegúrate de que esto sea correcto para el orden cronológico de tu declaración.',
                                         icon: 'warning',
                                         confirmButtonColor: '#f59e0b',
                                         confirmButtonText: 'Entendido'
@@ -482,8 +485,11 @@ if (!isset($_SESSION['id']) && file_exists("../models/chat_widget.php")) {
                                         alreadyWarned = true;
                                     });
                                 }
+                            } else if (selStr < todayStr) {
+                                // Se seleccionó un día entre el último pago y hoy (verde)
+                                alreadyWarned = false; // No avisamos, es un registro normal pendiente
                             } else {
-                                // Si cambia a una fecha correcta, reiniciamos el flag por si vuelve a equivocarse
+                                // Si cambia a hoy, reiniciamos el flag
                                 alreadyWarned = false;
                             }
                         }

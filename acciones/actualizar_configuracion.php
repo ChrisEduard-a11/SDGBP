@@ -70,7 +70,7 @@ if (isset($_POST['eliminar_foto']) && $_POST['eliminar_foto'] == '1') {
     }
     
     $rutaDestino = '../img/default_profile.png';
-    $sql_imagen = ", foto='$rutaDestino'";
+    $sql_imagen = ", foto = ?";
 } else if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
     $imagen = $_FILES['imagen'];
     $nombreImagen = time() . '_' . $imagen['name'];
@@ -109,7 +109,7 @@ if (isset($_POST['eliminar_foto']) && $_POST['eliminar_foto'] == '1') {
         }
 
         // Actualizar la ruta completa de la imagen en la base de datos
-        $sql_imagen = ", foto='$rutaDestino'";
+        $sql_imagen = ", foto = ?";
     } else {
         $_SESSION["estatus"] = "error";
         $_SESSION["mensaje"] = "Error al mover el archivo a la carpeta de destino.";

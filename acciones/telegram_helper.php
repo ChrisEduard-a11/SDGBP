@@ -1,12 +1,12 @@
 <?php
-/**
- * Helper para integración con Telegram Bot API
- */
+require_once __DIR__ . '/../config/env.php';
 
-// NOTA: El administrador debe configurar el TOKEN del Bot aquí o en un archivo de config global
+// Cargar TOKEN desde el entorno
 if (!defined('TELEGRAM_BOT_TOKEN')) {
-    define('TELEGRAM_BOT_TOKEN', '8760292086:AAFCnKOXqkKiCzYJBFrjOhHc1PXPjvf197s'); // Token configurado
+
+    define('TELEGRAM_BOT_TOKEN', env('TELEGRAM_BOT_TOKEN', 'TU_BOT_TOKEN_AQUI')); 
 }
+
 
 /**
  * Envía un mensaje a un chat ID específico vía Telegram
